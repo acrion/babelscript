@@ -17,7 +17,8 @@ namespace network
 
 			if (probability < 1)
 			{
-				std::size_t hash = std::hash<A>()(a)^std::hash<B>()(b);
+        std::size_t hash = std::hash<A>()(a)
+                         ^ std::hash<B>()(b);
 				typename decltype(_probabilities)::iterator it = _probabilities.find(hash);
 
 				if (it == _probabilities.end())

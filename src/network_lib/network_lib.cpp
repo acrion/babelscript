@@ -84,6 +84,25 @@ std::wstring Network_lib::getName(int64_t node, std::string lang)
 }
 
 
+bool Network_lib::setName(int64_t node, std::wstring newName, std::string lang)
+{
+  decltype(_pImpl->_names)::iterator namesInLang = _pImpl->_names.find(lang);
+  decltype(namesInLang->second.left)::iterator name;
+
+  if (   namesInLang != _pImpl->_names.end()
+      && (name = namesInLang->second.left.find(node)) != namesInLang->second.left.end()
+     )
+  {
+    return name->second == newName;
+  }
+  else
+  {
+    _pImpl->_names[lang].insert(Impl::Names(node, newName));
+    return true;
+  }
+}
+
+
 void Network_lib::connect(int64_t a, int64_t b)
 {
 	_pImpl->_core.connect(a,b);

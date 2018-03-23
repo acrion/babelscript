@@ -18,10 +18,11 @@ namespace network
 		struct PredefinedNode
 		{
 			static constexpr int64_t RelationType{ 1 };
-			static constexpr int64_t Not{ 2 };
+      static constexpr int64_t Rule{ 2 };
 			static constexpr int64_t And{ 3 };
-			static constexpr int64_t If{ 4 };
-			static constexpr int64_t Contradiction{ 5 };
+      static constexpr int64_t IsA{ 4 };
+      static constexpr int64_t Unequal{ 5 };
+      static constexpr int64_t Contradiction{ 6 };
 		};
 
 		int64_t _lastNode{ PredefinedNode::Contradiction };
