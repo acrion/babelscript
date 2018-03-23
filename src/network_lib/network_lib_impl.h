@@ -26,7 +26,7 @@ namespace network
 		};
 
 		int64_t _lastNode{ PredefinedNode::Contradiction };
-		Core<int64_t,int64_t> _core;
+    Network<int64_t,int64_t> _network;
 		std::map<std::string, boost::bimap<int64_t, std::wstring>> _names;
 		using Names = boost::bimap<int64_t, std::wstring>::value_type;
 	};

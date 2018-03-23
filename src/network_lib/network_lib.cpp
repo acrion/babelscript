@@ -27,10 +27,10 @@ using namespace network;
 	void Network_lib::debug()
 	{
 		std::cout << "left" << std::endl;
-		print_map(_pImpl->_core._left);
+    print_map(_pImpl->_network._left);
 
 		std::cout << "right" << std::endl;
-		print_map(_pImpl->_core._right);
+    print_map(_pImpl->_network._right);
 	}
 #else
 	void Network_lib::debug()
@@ -105,21 +105,5 @@ bool Network_lib::setName(int64_t node, std::wstring newName, std::string lang)
 
 void Network_lib::connect(int64_t a, int64_t b)
 {
-	_pImpl->_core.connect(a,b);
+  _pImpl->_network.connect(a,b);
 }
-
-
-double Network_lib::getProbability(int64_t a, int64_t b)
-{
-//	auto it = _pImpl->_data.left.find(a);
-
-	//if (it == _data.end())
-	//{
-	//	return 0;
-	//}
-
-	//auto it2 = it->get_right()
-
-	return 0;
-}
-

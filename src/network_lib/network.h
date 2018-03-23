@@ -7,29 +7,14 @@
 namespace network
 {
 	template<typename A, typename B>
-	class Core
+  class Network
 	{
 	public:
-		void connect(A a, B b, long double probability=1)
+    void connect(A a, B b)
 		{
 			_left[a].insert(b);
 			_right[b].insert(a);
 
-			if (probability < 1)
-			{
-        std::size_t hash = std::hash<A>()(a)
-                         ^ std::hash<B>()(b);
-				typename decltype(_probabilities)::iterator it = _probabilities.find(hash);
-
-				if (it == _probabilities.end())
-				{
-					_probabilities[hash] = probability;
-				}
-				else
-				{
-					it->second = std::min(it->second, probability);
-				}
-			}
 		}
 
 		typename std::map<A, std::set<B>>::iterator find_left(A a)
@@ -90,6 +75,5 @@ namespace network
 #endif
 		std::map<A, std::set<B>> _left;
 		std::map<B, std::set<A>> _right;
-		std::map<std::size_t, long double> _probabilities;
 	};
 }
