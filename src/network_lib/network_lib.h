@@ -15,7 +15,6 @@ namespace network
 		std::wstring getName(int64_t node, std::string lang="en");
     bool setName(int64_t node, std::wstring name, std::string lang="en");
 		void connect(int64_t a, int64_t b);
-		double getProbability(int64_t a, int64_t b);
 		
 		void debug();
 #ifdef _DEBUG
