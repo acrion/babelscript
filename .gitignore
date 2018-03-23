@@ -37,4 +37,5 @@ unsuccessfulbuild
 **/packages/*
 demo_out.*
 build/*
-test.txt
+build-*
+

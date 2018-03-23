@@ -18,7 +18,7 @@ namespace network
 			if (probability < 1)
 			{
 				std::size_t hash = std::hash<A>()(a)^std::hash<B>()(b);
-				decltype(_probabilities)::iterator it = _probabilities.find(hash);
+				typename decltype(_probabilities)::iterator it = _probabilities.find(hash);
 
 				if (it == _probabilities.end())
 				{
@@ -51,9 +51,9 @@ namespace network
 			return _right.end();
 		}
 
-		typename bool find(A a, A& result, bool* isLeft=nullptr)
+		bool find(A a, A& result, bool* isLeft=nullptr)
 		{
-			static_assert(A == B);
+			//static_assert(A == B);
 			
 			auto it = find_left(a);
 
