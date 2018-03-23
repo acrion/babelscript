@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <boost/bimap.hpp>
 #include "network_lib.h"
-#include "core.h"
+#include "network.h"
 
 namespace network
 {

@@ -25,7 +25,7 @@ add_library (network_lib
 	network_lib.cpp
 	network_lib.h
 	network_lib_impl.h
-	core.h
+        network.h
 )
 
 include_directories(${Boost_INCLUDE_DIR})
