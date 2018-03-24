@@ -110,7 +110,7 @@ namespace network
     }
 
     static constexpr Node mark_hash = 0x4000000000000000ul;
-    static constexpr Node shift_inc = 4;
+    static constexpr Node shift_inc = 5;
 
     Node create_hash(Node a, Node b)
     {
@@ -129,7 +129,7 @@ namespace network
       for (Node node: vec)
       {
         result ^= rol(node, shift);
-        shift += shift_inc;
+        shift = (shift+shift_inc) % sizeof(Node);
       }
       return result;
     }
