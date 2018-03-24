@@ -43,9 +43,10 @@ using namespace network;
 
 Network_lib::Network_lib()
 	: _pImpl{new Impl}
+  , core({ _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create()})
 {
-  add_fact(_pImpl->core.IsA,     _pImpl->core.IsA, _pImpl->core.RelationTypeCategory);
-  add_fact(_pImpl->core.Unequal, _pImpl->core.IsA, _pImpl->core.RelationTypeCategory);
+  add_fact(core.IsA,     core.IsA, core.RelationTypeCategory);
+  add_fact(core.Unequal, core.IsA, core.RelationTypeCategory);
 }
 
 Network_lib::~Network_lib()
@@ -130,7 +131,7 @@ Answer Network_lib::check_fact(Node source, Node relationType, Node target)
   Node relation = _pImpl->create_hash(relationType, source, target);
 
   if (   _pImpl->exists(relation)
-      && check_fact(relation, _pImpl->core.IsA, _pImpl->core.RelationTypeCategory).is_correct())
+      && check_fact(relation, core.IsA, core.RelationTypeCategory).is_correct())
   {
     return Answer(  _pImpl->probability(source, relation)
                   * _pImpl->probability(relation, target)
@@ -151,8 +152,8 @@ void Network_lib::add_fact(Node source, Node relationType, Node target, long dou
     throw std::runtime_error("add_fact: source is identical to target");
   }
 
-  if (   relationType != _pImpl->core.IsA
-      && check_fact(relationType, _pImpl->core.IsA, _pImpl->core.RelationTypeCategory).is_wrong())
+  if (   relationType != core.IsA
+      && check_fact(relationType, core.IsA, core.RelationTypeCategory).is_wrong())
   {
     throw std::runtime_error("add_fact: node is known to be no relation");
   }

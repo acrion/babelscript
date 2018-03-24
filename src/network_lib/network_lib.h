@@ -7,8 +7,12 @@
 namespace network
 {
   class Network_lib
-	{
-	public:
+	{    
+  private:
+    class Impl;
+    Impl* _pImpl{ nullptr };
+
+  public:
 		Network_lib();
 		~Network_lib();
 
@@ -26,8 +30,14 @@ namespace network
 		void print_map(const MapType& m);
 #endif
 
-	private:
-		class Impl;
-		Impl* _pImpl{ nullptr };
+    const struct PredefinedNode
+    {
+      Node RelationTypeCategory;
+      Node Rule;
+      Node And;
+      Node IsA;
+      Node Unequal;
+      Node Contradiction;
+    } core;
 	};
 }
