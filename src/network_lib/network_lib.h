@@ -13,7 +13,8 @@ namespace network
 		~Network_lib();
 
     Node get_node(std::string lang, std::wstring name);
-    std::wstring get_name(Node node, std::string lang="en");
+    std::wstring get_name(Node node);
+    std::wstring get_name(Node node, std::string lang);
     bool set_name(Node node, std::wstring name, std::string lang="en");
     void connect(Node a, Node b);
     Answer check_fact(Node source, Node relationType, Node target);

@@ -30,5 +30,8 @@ namespace network
   private:
     std::map<std::string, boost::bimap<Node, std::wstring>> _names;
     using Names = boost::bimap<Node, std::wstring>::value_type;
-	};
+
+  protected:
+    std::wstring get_name(Node node, decltype(_names)::iterator namesInLang);
+  };
 }

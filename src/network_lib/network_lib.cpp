@@ -74,19 +74,30 @@ Node Network_lib::get_node(std::string lang, std::wstring name)
 
 std::wstring Network_lib::get_name(Node node, std::string lang)
 {
-	decltype(_pImpl->_names)::iterator namesInLang = _pImpl->_names.find(lang);
-	decltype(namesInLang->second.left)::iterator name;
+  return _pImpl->get_name(node, _pImpl->_names.find(lang));
+}
 
-	if (   namesInLang != _pImpl->_names.end()
-	    && (name = namesInLang->second.left.find(node)) != namesInLang->second.left.end()
-	   )
-	{
-		return name->second;
-	}
-	else
-	{
-		return L"";
-	}
+
+std::wstring Network_lib::get_name(Node node)
+{
+  return _pImpl->get_name(node, _pImpl->_names.begin());
+}
+
+
+std::wstring Network_lib::Impl::get_name(Node node, decltype(_names)::iterator namesInLang)
+{
+  decltype(namesInLang->second.left)::iterator name;
+
+  if (   namesInLang != _names.end()
+      && (name = namesInLang->second.left.find(node)) != namesInLang->second.left.end()
+     )
+  {
+    return name->second;
+  }
+  else
+  {
+    return L"";
+  }
 }
 
 
@@ -116,11 +127,6 @@ void Network_lib::connect(Node a, Node b)
 
 Answer Network_lib::check_fact(Node source, Node relationType, Node target)
 {
-//  if (source==_pImpl->_p.IsA && relationType==_pImpl->_p.IsA && target==_pImpl->_p.RelationTypeCategory)
-//  {
-//    return Answer::Correct;
-//  }
-
   Node relation = _pImpl->create_hash(relationType, source, target);
 
   if (   _pImpl->exists(relation)
