@@ -13,24 +13,27 @@ using namespace network;
 		typedef typename MapType::const_iterator const_iterator;
 		for (const_iterator iter = m.begin(), iend = m.end(); iter != iend; ++iter)
 		{
-			std::wcout << getName(iter->first) << L" -->";
+      if (!getName(iter->first).empty() && iter->second.size()>0)
+      {
+        std::wcout << getName(iter->first) << L" -->";
 
-      for (uint64_t a : iter->second)
-			{
-				std::wcout << L" " << getName(a);
-			}
+        for (uint64_t a : iter->second)
+        {
+          std::wcout << L" " << getName(a);
+        }
 
-			std::wcout << std::endl;
+        std::wcout << std::endl;
+      }
 		}
 	}
 
 	void Network_lib::debug()
 	{
-		std::cout << "left" << std::endl;
-    print_map(_pImpl->_network._left);
+    std::cout << " === left ===" << std::endl;
+    print_map(_pImpl->_left);
 
-		std::cout << "right" << std::endl;
-    print_map(_pImpl->_network._right);
+    std::cout << " === right ===" << std::endl;
+    print_map(_pImpl->_right);
 	}
 #else
 	void Network_lib::debug()
@@ -57,8 +60,9 @@ uint64_t Network_lib::getNode(std::string lang, std::wstring name)
 	    || (node = namesInLang->second.right.find(name)) == namesInLang->second.right.end()
 	   )
 	{
-		_pImpl->_names[lang].insert(Impl::Names(++_pImpl->_lastNode, name));
-		return _pImpl->_lastNode;
+    uint64_t newNode = _pImpl->create();
+    _pImpl->_names[lang].insert(Impl::Names(newNode, name));
+    return newNode;
 	}
 	else
 	{
@@ -105,5 +109,5 @@ bool Network_lib::setName(uint64_t node, std::wstring newName, std::string lang)
 
 void Network_lib::connect(uint64_t a, uint64_t b)
 {
-  _pImpl->_network.connect(a,b);
+  _pImpl->connect(a,b);
 }
