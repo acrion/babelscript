@@ -5,14 +5,14 @@ using namespace network;
 
 int main()
 {
-	Network_lib network;
+  Network_lib n;
 
-  Node a = network.get_node("en", L"one");
-  Node b = network.get_node("en", L"two");
-  Node c = network.get_node("en", L"three");
+  Node a = n.get_node("en", L"one");
+  Node b = n.get_node("en", L"two");
+  Node c = n.get_node("en", L"three");
 
-	network.connect(a, b);
-	network.connect(a, c);
+  n.connect(a, b);
+  n.connect(a, c);
 
-	network.debug();
+  n.debug();
 }

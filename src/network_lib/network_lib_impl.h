@@ -14,10 +14,10 @@ namespace network
 
 	public:
     Impl()
-      : _p({ create(), create(), create(), create(), create(), create()})
+      : core({ create(), create(), create(), create(), create(), create()})
     {}
 
-		struct PredefinedNode
+    const struct PredefinedNode
 		{
       Node RelationTypeCategory;
       Node Rule;
@@ -25,7 +25,7 @@ namespace network
       Node IsA;
       Node Unequal;
       Node Contradiction;
-    } _p;
+    } core;
 
   private:
     std::map<std::string, boost::bimap<Node, std::wstring>> _names;
