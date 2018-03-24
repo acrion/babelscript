@@ -2,10 +2,11 @@
 
 #include <cstdint>
 #include <string>
+#include "answer.h"
 
 namespace network
 {
-  using Node = uint64_t;
+  using Node = size_t;
 
   class Network_lib
 	{
@@ -17,7 +18,8 @@ namespace network
     std::wstring get_name(Node node, std::string lang="en");
     bool set_name(Node node, std::wstring name, std::string lang="en");
     void connect(Node a, Node b);
-    void add_fact(Node source, Node relationType, Node target);
+    Answer check_fact(Node source, Node relationType, Node target);
+    void add_fact(Node source, Node relationType, Node target, long double probability=1);
 		
 		void debug();
 #ifdef _DEBUG

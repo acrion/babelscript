@@ -44,6 +44,8 @@ using namespace network;
 Network_lib::Network_lib()
 	: _pImpl{new Impl}
 {
+  add_fact(_pImpl->_p.IsA,     _pImpl->_p.IsA, _pImpl->_p.RelationTypeCategory);
+  add_fact(_pImpl->_p.Unequal, _pImpl->_p.IsA, _pImpl->_p.RelationTypeCategory);
 }
 
 Network_lib::~Network_lib()
@@ -112,12 +114,43 @@ void Network_lib::connect(Node a, Node b)
   _pImpl->connect(a,b);
 }
 
-void Network_lib::add_fact(Node source, Node relationType, Node target)
+Answer Network_lib::check_fact(Node source, Node relationType, Node target)
+{
+  Node relation = _pImpl->create_hash(relationType, source, target);
+
+  if (   _pImpl->is_connected(source, relation) > 0 // subject
+      && _pImpl->is_connected(target, relation) < 0 // object
+      && check_fact(relation, _pImpl->_p.IsA, _pImpl->_p.RelationTypeCategory))
+  {
+    return Answer(  _pImpl->probability(source, relationType)
+                  * _pImpl->probability(target, relationType)
+                  * _pImpl->probability(relationType, _pImpl->_p.RelationTypeCategory)
+                 );
+  }
+  else
+  {
+    return Answer(Answer::State::Unknown);
+  }
+}
+
+void Network_lib::add_fact(Node source, Node relationType, Node target, long double probability)
 {
   if (source==target)
   {
     throw std::runtime_error("add_fact: source is identical to target");
   }
 
-  //if ()
+  Answer answer = check_fact(relationType, _pImpl->_p.IsA, _pImpl->_p.RelationTypeCategory);
+
+  if (answer.state == Answer::State::Known && answer.probability == 0)
+  {
+    throw std::runtime_error("add_fact: node is known to be no relation type");
+  }
+
+  answer = check_fact(source, relationType, target);
+
+  if (answer.state == Answer::State::Known && answer.probability == 0)
+  {
+    throw std::runtime_error("add_fact: node is known to be no relation type");
+  }
 }

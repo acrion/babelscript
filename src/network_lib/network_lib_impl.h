@@ -8,26 +8,26 @@
 
 namespace network
 {
-  class Network_lib::Impl : Network<Node>
+  class Network_lib::Impl : Network
 	{
 		friend class Network_lib;
 
 	public:
     Impl()
-      : _predefinedNode({ create(), create(), create(), create(), create(), create()})
+      : _p({ create(), create(), create(), create(), create(), create()})
     {}
 
-	private:
 		struct PredefinedNode
 		{
-      Node RelationType;
+      Node RelationTypeCategory;
       Node Rule;
       Node And;
       Node IsA;
       Node Unequal;
       Node Contradiction;
-    } _predefinedNode;
+    } _p;
 
+  private:
     std::map<std::string, boost::bimap<Node, std::wstring>> _names;
     using Names = boost::bimap<Node, std::wstring>::value_type;
 	};
