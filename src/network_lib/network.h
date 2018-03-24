@@ -3,12 +3,29 @@
 #include <cstdint>
 #include <map>
 #include <set>
+#include <limits.h>
 
 namespace network
 {
   class Network
 	{
 	public:
+    template<typename T>
+    static inline T rol(T n, unsigned int c=1)
+    {
+      const unsigned int mask = (CHAR_BIT*sizeof(n) - 1);
+      c &= mask;
+      return (n<<c) | (n >> ((-c)&mask));
+    }
+
+    template<typename T>
+    static inline T ror(T n, unsigned int c=1)
+    {
+      const unsigned int mask = (CHAR_BIT*sizeof(n) - 1);
+      c &= mask;
+      return (n>>c) | (n << ((-c)&mask));
+    }
+
     void connect(Node a, Node b, long double probability=1)
 		{
       auto leftIt = _left.find(a);
@@ -58,9 +75,17 @@ namespace network
 
     long double probability(Node a, Node b)
     {
-      Node hash;
-      auto it = find_probability(a,b,hash);
-      return it == _probabilities.end() ? 1:it->second;
+      int sgn = is_connected(a,b);
+      if (sgn)
+      {
+        Node hash;
+        auto it = find_probability(a,b,hash);
+        return it == _probabilities.end() ? sgn:sgn*it->second;
+      }
+      else
+      {
+        return 0;
+      }
     }
 
     Node create()
@@ -84,20 +109,28 @@ namespace network
       _right[a] = std::set<Node>();
     }
 
+    static constexpr Node mark_hash = 0x4000000000000000ul;
+    static constexpr Node shift_inc = 4;
+
     Node create_hash(Node a, Node b)
     {
-      return std::hash<Node>()(a) ^ std::hash<Node>()(b);
+      return mark_hash ^ a ^ rol(b,shift_inc);
     }
 
     Node create_hash(Node a, Node b, Node c)
     {
-      return std::hash<Node>()(a) ^ std::hash<Node>()(b) ^ std::hash<Node>()(c);
+      return mark_hash ^ a ^ rol(b,shift_inc) ^ rol(c,2*shift_inc);
     }
 
-    Node create_hash(std::vector<Node> list)
+    Node create_hash(std::vector<Node> vec)
     {
-      Node result = Node();
-      for (Node node: list) result ^= std::hash<Node>()(node);
+      Node result = mark_hash;
+      Node shift=1;
+      for (Node node: vec)
+      {
+        result ^= rol(node, shift);
+        shift += shift_inc;
+      }
       return result;
     }
 

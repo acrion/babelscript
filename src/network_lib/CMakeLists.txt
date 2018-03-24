@@ -22,6 +22,7 @@ if (MSVC) # with Visual Studio we can rely on boost auto-linking
 endif()
 
 add_library (network_lib
+        answer.cpp
         answer.h
 	network_lib.cpp
 	network_lib.h

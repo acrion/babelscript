@@ -116,20 +116,25 @@ void Network_lib::connect(Node a, Node b)
 
 Answer Network_lib::check_fact(Node source, Node relationType, Node target)
 {
+//  if (source==_pImpl->_p.IsA && relationType==_pImpl->_p.IsA && target==_pImpl->_p.RelationTypeCategory)
+//  {
+//    return Answer::Correct;
+//  }
+
   Node relation = _pImpl->create_hash(relationType, source, target);
 
-  if (   _pImpl->is_connected(source, relation) > 0 // subject
-      && _pImpl->is_connected(target, relation) < 0 // object
-      && check_fact(relation, _pImpl->_p.IsA, _pImpl->_p.RelationTypeCategory))
+  if (   _pImpl->exists(relation)
+      && check_fact(relation, _pImpl->_p.IsA, _pImpl->_p.RelationTypeCategory).is_correct())
   {
-    return Answer(  _pImpl->probability(source, relationType)
-                  * _pImpl->probability(target, relationType)
-                  * _pImpl->probability(relationType, _pImpl->_p.RelationTypeCategory)
+    return Answer(  _pImpl->probability(source, relation)
+                  * _pImpl->probability(relation, target)
+                  * _pImpl->probability(relation, relationType),
+                  relation
                  );
   }
   else
   {
-    return Answer(Answer::State::Unknown);
+    return Answer::Unknown;
   }
 }
 
@@ -140,17 +145,23 @@ void Network_lib::add_fact(Node source, Node relationType, Node target, long dou
     throw std::runtime_error("add_fact: source is identical to target");
   }
 
-  Answer answer = check_fact(relationType, _pImpl->_p.IsA, _pImpl->_p.RelationTypeCategory);
-
-  if (answer.state == Answer::State::Known && answer.probability == 0)
+  if (   relationType != _pImpl->_p.IsA
+      && check_fact(relationType, _pImpl->_p.IsA, _pImpl->_p.RelationTypeCategory).is_wrong())
   {
-    throw std::runtime_error("add_fact: node is known to be no relation type");
+    throw std::runtime_error("add_fact: node is known to be no relation");
   }
 
-  answer = check_fact(source, relationType, target);
+  Answer answer = check_fact(source, relationType, target);
 
-  if (answer.state == Answer::State::Known && answer.probability == 0)
+  if (answer.is_known())
   {
-    throw std::runtime_error("add_fact: node is known to be no relation type");
+    if (answer.is_impossible())
+    {
+      throw std::runtime_error("add_fact: this fact is known to be wrong");
+    }
+  }
+  else
+  {
+
   }
 }

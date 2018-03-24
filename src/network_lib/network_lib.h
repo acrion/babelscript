@@ -6,8 +6,6 @@
 
 namespace network
 {
-  using Node = size_t;
-
   class Network_lib
 	{
 	public:
