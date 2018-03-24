@@ -11,10 +11,10 @@ namespace network
 		Network_lib();
 		~Network_lib();
 
-		int64_t getNode(std::string lang, std::wstring name);
-		std::wstring getName(int64_t node, std::string lang="en");
-    bool setName(int64_t node, std::wstring name, std::string lang="en");
-		void connect(int64_t a, int64_t b);
+    uint64_t getNode(std::string lang, std::wstring name);
+    std::wstring getName(uint64_t node, std::string lang="en");
+    bool setName(uint64_t node, std::wstring name, std::string lang="en");
+    void connect(uint64_t a, uint64_t b);
 		
 		void debug();
 #ifdef _DEBUG

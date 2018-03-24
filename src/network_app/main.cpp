@@ -7,9 +7,9 @@ int main()
 {
 	Network_lib network;
 
-	int64_t a = network.getNode("en", L"one");
-	int64_t b = network.getNode("en", L"two");
-	int64_t c = network.getNode("en", L"three");
+  uint64_t a = network.getNode("en", L"one");
+  uint64_t b = network.getNode("en", L"two");
+  uint64_t c = network.getNode("en", L"three");
 
 	network.connect(a, b);
 	network.connect(a, c);

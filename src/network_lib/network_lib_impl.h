@@ -17,17 +17,17 @@ namespace network
 	private:
 		struct PredefinedNode
 		{
-			static constexpr int64_t RelationType{ 1 };
-      static constexpr int64_t Rule{ 2 };
-			static constexpr int64_t And{ 3 };
-      static constexpr int64_t IsA{ 4 };
-      static constexpr int64_t Unequal{ 5 };
-      static constexpr int64_t Contradiction{ 6 };
+      static constexpr uint64_t RelationType{ 1 };
+      static constexpr uint64_t Rule{ 2 };
+      static constexpr uint64_t And{ 3 };
+      static constexpr uint64_t IsA{ 4 };
+      static constexpr uint64_t Unequal{ 5 };
+      static constexpr uint64_t Contradiction{ 6 };
 		};
 
-		int64_t _lastNode{ PredefinedNode::Contradiction };
-    Network<int64_t,int64_t> _network;
-		std::map<std::string, boost::bimap<int64_t, std::wstring>> _names;
-		using Names = boost::bimap<int64_t, std::wstring>::value_type;
+    uint64_t _lastNode{ PredefinedNode::Contradiction };
+    Network<uint64_t> _network;
+    std::map<std::string, boost::bimap<uint64_t, std::wstring>> _names;
+    using Names = boost::bimap<uint64_t, std::wstring>::value_type;
 	};
 }
