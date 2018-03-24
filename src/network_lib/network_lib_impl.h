@@ -8,33 +8,27 @@
 
 namespace network
 {
-  class Network_lib::Impl : Network<uint64_t>
+  class Network_lib::Impl : Network<Node>
 	{
 		friend class Network_lib;
 
 	public:
     Impl()
-    {
-      _predefinedNode.RelationType  = create();
-      _predefinedNode.Rule          = create();
-      _predefinedNode.And           = create();
-      _predefinedNode.IsA           = create();
-      _predefinedNode.Unequal       = create();
-      _predefinedNode.Contradiction = create();
-    }
+      : _predefinedNode({ create(), create(), create(), create(), create(), create()})
+    {}
 
 	private:
 		struct PredefinedNode
 		{
-      uint64_t RelationType;
-      uint64_t Rule;
-      uint64_t And;
-      uint64_t IsA;
-      uint64_t Unequal;
-      uint64_t Contradiction;
+      Node RelationType;
+      Node Rule;
+      Node And;
+      Node IsA;
+      Node Unequal;
+      Node Contradiction;
     } _predefinedNode;
 
-    std::map<std::string, boost::bimap<uint64_t, std::wstring>> _names;
-    using Names = boost::bimap<uint64_t, std::wstring>::value_type;
+    std::map<std::string, boost::bimap<Node, std::wstring>> _names;
+    using Names = boost::bimap<Node, std::wstring>::value_type;
 	};
 }

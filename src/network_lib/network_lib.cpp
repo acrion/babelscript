@@ -13,13 +13,13 @@ using namespace network;
 		typedef typename MapType::const_iterator const_iterator;
 		for (const_iterator iter = m.begin(), iend = m.end(); iter != iend; ++iter)
 		{
-      if (!getName(iter->first).empty() && iter->second.size()>0)
+      if (!get_name(iter->first).empty() && iter->second.size()>0)
       {
-        std::wcout << getName(iter->first) << L" -->";
+        std::wcout << get_name(iter->first) << L" -->";
 
-        for (uint64_t a : iter->second)
+        for (Node a : iter->second)
         {
-          std::wcout << L" " << getName(a);
+          std::wcout << L" " << get_name(a);
         }
 
         std::wcout << std::endl;
@@ -32,7 +32,7 @@ using namespace network;
     std::cout << " === left ===" << std::endl;
     print_map(_pImpl->_left);
 
-    std::cout << " === right ===" << std::endl;
+    std::cout << std::endl << " === right ===" << std::endl;
     print_map(_pImpl->_right);
 	}
 #else
@@ -51,7 +51,7 @@ Network_lib::~Network_lib()
 	delete _pImpl;
 }
 
-uint64_t Network_lib::getNode(std::string lang, std::wstring name)
+Node Network_lib::get_node(std::string lang, std::wstring name)
 {
 	decltype(_pImpl->_names)::iterator namesInLang = _pImpl->_names.find(lang);
 	decltype(namesInLang->second.right)::iterator node;
@@ -60,7 +60,7 @@ uint64_t Network_lib::getNode(std::string lang, std::wstring name)
 	    || (node = namesInLang->second.right.find(name)) == namesInLang->second.right.end()
 	   )
 	{
-    uint64_t newNode = _pImpl->create();
+    Node newNode = _pImpl->create();
     _pImpl->_names[lang].insert(Impl::Names(newNode, name));
     return newNode;
 	}
@@ -70,7 +70,7 @@ uint64_t Network_lib::getNode(std::string lang, std::wstring name)
 	}
 }
 
-std::wstring Network_lib::getName(uint64_t node, std::string lang)
+std::wstring Network_lib::get_name(Node node, std::string lang)
 {
 	decltype(_pImpl->_names)::iterator namesInLang = _pImpl->_names.find(lang);
 	decltype(namesInLang->second.left)::iterator name;
@@ -88,7 +88,7 @@ std::wstring Network_lib::getName(uint64_t node, std::string lang)
 }
 
 
-bool Network_lib::setName(uint64_t node, std::wstring newName, std::string lang)
+bool Network_lib::set_name(Node node, std::wstring newName, std::string lang)
 {
   decltype(_pImpl->_names)::iterator namesInLang = _pImpl->_names.find(lang);
   decltype(namesInLang->second.left)::iterator name;
@@ -107,7 +107,17 @@ bool Network_lib::setName(uint64_t node, std::wstring newName, std::string lang)
 }
 
 
-void Network_lib::connect(uint64_t a, uint64_t b)
+void Network_lib::connect(Node a, Node b)
 {
   _pImpl->connect(a,b);
+}
+
+void Network_lib::add_fact(Node source, Node relationType, Node target)
+{
+  if (source==target)
+  {
+    throw std::runtime_error("add_fact: source is identical to target");
+  }
+
+  //if ()
 }

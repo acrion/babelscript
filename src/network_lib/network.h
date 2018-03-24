@@ -25,15 +25,16 @@ namespace network
         throw std::runtime_error("Network::connect: requested right node " + std::to_string(b) + " does not exist");
       }
 
-      leftIt->second.insert(b);
+       leftIt->second.insert(b);
       rightIt->second.insert(a);
 		}
 
     T create()
     {
-      while(_left.find(++_last) != _left.end());
+      while(_left.find(++_last) != _left.end())
+        ;
 
-      _left[_last] = std::set<T>();
+       _left[_last] = std::set<T>();
       _right[_last] = std::set<T>();
       return _last;
     }
@@ -50,8 +51,8 @@ namespace network
     }
 
     typename std::map<T, std::set<T>>::iterator find_left(T a)  { return  _left.find(a); }
-    typename std::map<T, std::set<T>>::iterator left_end()      { return  _left.end();	 }
     typename std::map<T, std::set<T>>::iterator find_right(T b) { return _right.find(b); }
+    typename std::map<T, std::set<T>>::iterator  left_end()     { return  _left.end();	 }
     typename std::map<T, std::set<T>>::iterator right_end()     { return _right.end();   }
 
 #ifndef _DEBUG
