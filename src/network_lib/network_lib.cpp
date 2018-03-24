@@ -54,7 +54,7 @@ Network_lib::~Network_lib()
 	delete _pImpl;
 }
 
-Node Network_lib::get_node(std::string lang, std::wstring name)
+Node Network_lib::get_node(std::wstring name, std::string lang)
 {
 	decltype(_pImpl->_names)::iterator namesInLang = _pImpl->_names.find(lang);
 	decltype(namesInLang->second.right)::iterator node;

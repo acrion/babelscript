@@ -16,7 +16,7 @@ namespace network
 		Network_lib();
 		~Network_lib();
 
-    Node get_node(std::string lang, std::wstring name);
+    Node get_node(std::wstring name, std::string lang);
     std::wstring get_name(Node node);
     std::wstring get_name(Node node, std::string lang);
     bool set_name(Node node, std::wstring name, std::string lang="en");
