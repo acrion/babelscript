@@ -23,18 +23,29 @@ int main()
 
   n.fact(n.node(L"ist Eigenschaft von", "de"), n.node(L"ist Gegenteil von",   "de"), n.node(L"hat die Eigenschaft", "de"));
   n.fact(n.node(L"ist Teil von",        "de"), n.node(L"ist Gegenteil von",   "de"), n.node(L"hat den Bestandteil", "de"));
-  n.fact(n.node(L"ist zum Beispiel",    "de"), n.node(L"ist Gegenteil von",   "de"), n.node(L"ist ein", "de"));
-  n.fact(n.node(L"hat den Bestandteil", "de"), n.node(L"hat die Eigenschaft", "de"), n.node(L"transitiv", "de"));
-  n.fact(n.node(L"hat die Eigenschaft", "de"), n.node(L"hat die Eigenschaft", "de"), n.node(L"transitiv", "de"));
-  n.fact(n.node(L"ist ein",             "de"), n.node(L"hat die Eigenschaft", "de"), n.node(L"transitiv", "de"));
+  n.fact(n.node(L"ist zum Beispiel",    "de"), n.node(L"ist Gegenteil von",   "de"), n.node(L"ist ein",             "de"));
+  n.fact(n.node(L"hat den Bestandteil", "de"), n.node(L"hat die Eigenschaft", "de"), n.node(L"transitiv",           "de"));
+  n.fact(n.node(L"hat die Eigenschaft", "de"), n.node(L"hat die Eigenschaft", "de"), n.node(L"transitiv",           "de"));
+  n.fact(n.node(L"ist ein",             "de"), n.node(L"hat die Eigenschaft", "de"), n.node(L"transitiv",           "de"));
 
-  Node X = n.var();
-  Node R = n.var();
-  Node Y = n.var();
-  Node Z = n.var();
-  Node R_is_transitive = n.fact(R, n.node(L"hat die Eigenschaft", "de"), n.node(L"transitiv", "de"));
+  {
+    Node X = n.var();
+    Node R = n.var();
+    Node Y = n.var();
+    Node Z = n.var();
+    Node R_is_transitive = n.fact(R, n.node(L"hat die Eigenschaft", "de"), n.node(L"transitiv", "de"));
+    n.fact({ R_is_transitive, n.fact(X, R, Y), n.fact(Y, R, Z) }, n.core.Rule, n.fact(X, R, Z));
+  }
 
-  n.rule({ R_is_transitive, n.fact(X, R, Y), n.fact(Y, R, Z) }, n.fact(X, R, Z));
+  try
+  {
+    n.run();
+    std::cout << "Ready." << std::endl;
+  }
+  catch (std::exception& ex)
+  {
+    std::cout << ex.what() << std::endl;
+  }
 
   n.debug();
 }

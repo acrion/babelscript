@@ -195,10 +195,21 @@ Node Network_lib::fact(Node source, Node relationType, Node target, long double 
   return answer.relation();
 }
 
-Node Network_lib::rule(std::vector<Node> conditions, Node deduction, long double probability)
+Node Network_lib::fact(std::vector<Node> conditions, Node relation, Node deduction, long double probability)
 {
-  Node and_relation = _pImpl->create_hash(core.And, conditions);
-  _pImpl->create(and_relation);
-  for (Node condition : conditions) _pImpl->connect(condition, and_relation);
-  return fact(and_relation, core.Rule, deduction, probability);
+  switch (conditions.size())
+  {
+  case 0: return deduction;
+  case 1: return fact(conditions[0], relation, deduction, probability);
+  default:
+    Node and_relation = _pImpl->create_hash(core.And, conditions);
+    _pImpl->create(and_relation);
+    for (Node condition : conditions) _pImpl->connect(condition, and_relation);
+    return fact(and_relation, relation, deduction, probability);
+  }
+}
+
+void Network_lib::run()
+{
+
 }
