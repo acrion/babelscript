@@ -2,15 +2,34 @@
 
 #include "network_lib_export.h"
 #include "network_lib.h"
+#include <vector>
+#include <string>
+#include <map>
+#include <set>
+#include <memory>
 
 namespace network
 {
+  struct RulePos
+  {
+    Node node;
+    std::set<Node>::iterator end;
+    std::set<Node>::iterator index;
+    Node deduction;
+    std::shared_ptr<std::map<std::string, std::string>> variables;
+    std::shared_ptr<std::map<std::string, std::string>> unequals;
+  };
+  
   class NETWORK_LIB_EXPORT Reasoning : public Network_lib
   {
   public:
     void run();
 
   private:
+    void evaluate(RulePos rule);
+
     bool _done;
+    Node _current_rule;
+    std::vector<RulePos> _next;
   };
 }

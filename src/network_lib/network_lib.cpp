@@ -204,6 +204,7 @@ Node Network_lib::fact(std::vector<Node> conditions, Node relation, Node deducti
   default:
     Node and_relation = _pImpl->create_hash(core.And, conditions);
     _pImpl->create(and_relation);
+    _pImpl->connect(and_relation, core.And);
     for (Node condition : conditions) _pImpl->connect(condition, and_relation);
     return fact(and_relation, relation, deduction, probability);
   }

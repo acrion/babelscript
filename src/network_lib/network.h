@@ -173,6 +173,9 @@ namespace network
     typename std::map<Node, std::set<Node>>::iterator  left_end()     { return  _left.end();	 }
     typename std::map<Node, std::set<Node>>::iterator right_end()     { return _right.end();   }
 
+    const std::set<Node>& get_left(Node b)  { auto it = _right.find(b); return it == _right.end() ? _empty : it->second; }
+    const std::set<Node>& get_right(Node b) { auto it = _left.find(b);  return it == _left.end() ? _empty : it->second;  }
+
 #ifndef _DEBUG
 	private:
 #endif
@@ -183,6 +186,7 @@ namespace network
     std::map<Node, std::set<Node>> _left;
     std::map<Node, std::set<Node>> _right;
     std::map<Node, long double> _probabilities;
+    const std::set<Node> _empty;
     Node _last{ Node() };
     Node _last_var{ Node() };
 
