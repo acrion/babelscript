@@ -10,7 +10,7 @@ namespace network
 {
   class NETWORK_LIB_EXPORT Network_lib
 	{    
-  private:
+  protected:
     class Impl;
     Impl* _pImpl{ nullptr };
 
@@ -27,7 +27,6 @@ namespace network
     Answer check_fact(Node source, Node relationType, Node target);
     Node fact(Node source, Node relationType, Node target, long double probability=1);
     Node fact(std::vector<Node> conditions, Node relation, Node deduction, long double probability=1);
-    void run();
 		
 		void debug();
 #ifdef _DEBUG

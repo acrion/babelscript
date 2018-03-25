@@ -1,11 +1,11 @@
-#include "network_lib.h"
+#include "reasoning.h"
 #include <iostream>
 
 using namespace network;
 
 int main()
 {
-  Network_lib n;
+  Reasoning n;
 
   Node a = n.node(L"one", "en");
   Node b = n.node(L"two", "en");

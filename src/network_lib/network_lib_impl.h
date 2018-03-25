@@ -8,7 +8,7 @@
 
 namespace network
 {
-  class NETWORK_LIB_EXPORT Network_lib::Impl : Network
+  class NETWORK_LIB_EXPORT Network_lib::Impl : public Network
   {
     friend class Network_lib;
 

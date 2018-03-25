@@ -27,6 +27,8 @@ add_library (network_lib SHARED
   network_lib.h
   network_lib_impl.h
   network.h
+  reasoning.cpp
+  reasoning.h
 )
 
 generate_export_header(network_lib)

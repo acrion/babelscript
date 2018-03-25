@@ -11,29 +11,6 @@ namespace network
   class Network
   {
   public:
-#ifdef _MSC_VER
-    #pragma warning( push )  
-    #pragma warning( disable : 4146 )
-#endif
-    template<typename T>
-    static inline T rol(T n, T c=1)
-    {
-    const T mask = (CHAR_BIT * sizeof(n) - 1);
-    c &= mask;
-    return (n << c) | (n >> ((-c)&mask));
-    }
-
-    template<typename T>
-    static inline T ror(T n, T c = 1)
-    {
-      const T mask = (CHAR_BIT * sizeof(n) - 1);
-      c &= mask;
-      return (n >> c) | (n << ((-c)&mask));
-    }
-#ifdef _MSC_VER
-#pragma warning( pop )
-#endif
-
     void connect(Node a, Node b, long double probability = 1)
     {
       auto leftIt = _left.find(a);
@@ -191,8 +168,8 @@ namespace network
       return (create_hash(vec) ^ rol(head, shift)) & mask_node;
     }
 
-    typename std::map<Node, std::set<Node>>::iterator find_left(Node a)  { return  _left.find(a); }
-    typename std::map<Node, std::set<Node>>::iterator find_right(Node b) { return _right.find(b); }
+    typename std::map<Node, std::set<Node>>::iterator find_right(Node a) { return  _left.find(a); }
+    typename std::map<Node, std::set<Node>>::iterator find_left(Node b)  { return _right.find(b); }
     typename std::map<Node, std::set<Node>>::iterator  left_end()     { return  _left.end();	 }
     typename std::map<Node, std::set<Node>>::iterator right_end()     { return _right.end();   }
 
@@ -214,5 +191,28 @@ namespace network
       hash = create_hash(a, b);
       return _probabilities.find(hash);
     }
+
+#ifdef _MSC_VER
+    #pragma warning( push )  
+    #pragma warning( disable : 4146 )
+#endif
+    template<typename T>
+    static inline T rol(T n, T c = 1)
+    {
+      const T mask = (CHAR_BIT * sizeof(n) - 1);
+      c &= mask;
+      return (n << c) | (n >> ((-c)&mask));
+    }
+
+    template<typename T>
+    static inline T ror(T n, T c = 1)
+    {
+      const T mask = (CHAR_BIT * sizeof(n) - 1);
+      c &= mask;
+      return (n >> c) | (n << ((-c)&mask));
+    }
+#ifdef _MSC_VER
+    #pragma warning( pop )
+#endif
   };
 }

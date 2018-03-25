@@ -208,8 +208,3 @@ Node Network_lib::fact(std::vector<Node> conditions, Node relation, Node deducti
     return fact(and_relation, relation, deduction, probability);
   }
 }
-
-void Network_lib::run()
-{
-
-}
