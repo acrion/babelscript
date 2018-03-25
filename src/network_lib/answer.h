@@ -2,12 +2,13 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <string>
+#include <map>
+#include "utils.h"
 #include "network_lib_export.h"
 
 namespace network
 {
-  using Node = uint64_t; // todo: make sure this is identical with size_t
-
   struct NETWORK_LIB_EXPORT Answer
   {
   protected:

@@ -31,6 +31,8 @@ add_library (network_lib SHARED
   reasoning.h
   unification.cpp
   unification.h
+  utils.cpp
+  utils.h
 )
 
 generate_export_header(network_lib)

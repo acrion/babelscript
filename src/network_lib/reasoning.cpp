@@ -56,5 +56,33 @@ void Reasoning::evaluate(RulePos rule)
   else
   {
     Unification u(condition, rule.variables, rule.unequals);
+
+    for (std::shared_ptr<Variables> match=u.Start(); match; match=u.Next())
+    {
+      std::shared_ptr<Variables> joined          = utils::join(*rule.variables, *match);
+      std::shared_ptr<Variables> joined_unequals = utils::join(*rule.unequals, *u.Unequals());
+
+      bool done = false;
+      if (rule.node != _current_rule)
+      {
+        RulePos next({rule.node, rule.end, rule.index, rule.deduction, joined, joined_unequals});
+        if (++next.index != next.end)
+        {
+          evaluate(next);
+          done = true;
+        }
+      }
+
+      if (!done && _next.size() > 0)
+      {
+        RulePos next(_next.back());
+        _next.pop_back();
+        evaluate(next);
+      }
+      else if (false)
+      {
+
+      }
+    }
   }
 }

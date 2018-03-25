@@ -16,8 +16,8 @@ namespace network
     std::set<Node>::iterator end;
     std::set<Node>::iterator index;
     Node deduction;
-    std::shared_ptr<std::map<std::string, std::string>> variables;
-    std::shared_ptr<std::map<std::string, std::string>> unequals;
+    std::shared_ptr<Variables> variables{ std::make_shared<Variables>() };
+    std::shared_ptr<Variables> unequals{ std::make_shared<Variables>() };
   };
   
   class NETWORK_LIB_EXPORT Reasoning : public Network_lib
