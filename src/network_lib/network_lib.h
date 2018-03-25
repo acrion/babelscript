@@ -26,7 +26,7 @@ namespace network
     void connect(Node a, Node b);
     Answer check_fact(Node source, Node relationType, Node target);
     Node fact(Node source, Node relationType, Node target, long double probability=1);
-    Node rule(std::vector<Node> conditions, Node deduction);
+    Node rule(std::vector<Node> conditions, Node deduction, long double probability=1);
 		
 		void debug();
 #ifdef _DEBUG

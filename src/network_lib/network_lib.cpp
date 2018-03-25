@@ -142,7 +142,8 @@ Answer Network_lib::check_fact(Node source, Node relationType, Node target)
 {
   Node relation = _pImpl->create_hash(relationType, source, target);
 
-  if (   _pImpl->exists(relation)
+  if (   !_pImpl->is_var(source|relationType|target)
+      && _pImpl->exists(relation)
       && check_fact(relation, core.IsA, core.RelationTypeCategory).is_correct())
   {
     return Answer(  _pImpl->probability(source, relation)
@@ -153,7 +154,7 @@ Answer Network_lib::check_fact(Node source, Node relationType, Node target)
   }
   else
   {
-    return Answer(relation);
+    return Answer(relation); // unknown
   }
 }
 
@@ -194,8 +195,10 @@ Node Network_lib::fact(Node source, Node relationType, Node target, long double 
   return answer.relation();
 }
 
-Node Network_lib::rule(std::vector<Node> conditions, Node deduction)
+Node Network_lib::rule(std::vector<Node> conditions, Node deduction, long double probability)
 {
-  
-  return 0;
+  Node and_relation = _pImpl->create_hash(core.And, conditions);
+  _pImpl->create(and_relation);
+  for (Node condition : conditions) _pImpl->connect(condition, and_relation);
+  return fact(and_relation, core.Rule, deduction, probability);
 }

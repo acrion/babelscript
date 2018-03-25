@@ -72,7 +72,5 @@ namespace network
     {
       return state==State::Known && _probability == 0;
     }
-
-    static const Answer Unknown;
   };
 }

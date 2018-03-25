@@ -81,17 +81,17 @@ namespace network
       return _left.find(a) != _left.end();
     }
 
-    int is_connected(Node a, Node b)
-    {
-      auto it = _left.find(a); if (it != _left.end() && it->second.count(b) == 1) return 1; // precedence over reverse (-1)
-      it = _left.find(b); if (it != _left.end() && it->second.count(a) == 1) return -1;
+    //int is_connected(Node a, Node b)
+    //{
+    //  auto it = _left.find(a); if (it != _left.end() && it->second.count(b) == 1) return 1; // precedence over reverse (-1)
+    //  it = _left.find(b); if (it != _left.end() && it->second.count(a) == 1) return -1;
 
-      return 0;
-    }
+    //  return 0;
+    //}
 
     long double probability(Node a, Node b)
     {
-      if (is_var(a) || is_var(b))
+      if (is_var(a|b))
       {
         return 1;
       }
@@ -133,10 +133,10 @@ namespace network
 
       if (!is_var(_last_var))
       {
-        throw std::logic_error("Network::var: Exceeded maximum number of " + std::to_string(std::numeric_limits<Node>::max() - _last_var) + " variables. Please note that variables may be reused in separate rules.");
+        throw std::logic_error("Network::var: Exceeded maximum number of " + std::to_string(std::numeric_limits<Node>::max() - _last_var) + " variables.");
       }
 
-      _left[_last_var] = std::set<Node>();
+       _left[_last_var] = std::set<Node>();
       _right[_last_var] = std::set<Node>();
 
       return _last_var;
@@ -183,6 +183,12 @@ namespace network
         shift = (shift+shift_inc) % sizeof(Node);
       }
       return result & mask_node; // exclude values that denote variables
+    }
+
+    Node create_hash(const Node head, const std::vector<Node>& vec)
+    {
+      Node shift = (1+vec.size()*shift_inc) % sizeof(Node);
+      return (create_hash(vec) ^ rol(head, shift)) & mask_node;
     }
 
     typename std::map<Node, std::set<Node>>::iterator find_left(Node a)  { return  _left.find(a); }
