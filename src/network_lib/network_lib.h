@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 #include "network_lib_export.h"
 #include "answer.h"
 
@@ -17,13 +18,15 @@ namespace network
 		Network_lib();
 		~Network_lib();
 
-    Node get_node(std::wstring name, std::string lang);
+    Node node(std::wstring name, std::string lang);
+    Node var();
     std::wstring get_name(Node node);
     std::wstring get_name(Node node, std::string lang);
     bool set_name(Node node, std::wstring name, std::string lang="en");
     void connect(Node a, Node b);
     Answer check_fact(Node source, Node relationType, Node target);
-    void add_fact(Node source, Node relationType, Node target, long double probability=1);
+    Node fact(Node source, Node relationType, Node target, long double probability=1);
+    Node rule(std::vector<Node> conditions, Node deduction);
 		
 		void debug();
 #ifdef _DEBUG

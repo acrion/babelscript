@@ -7,9 +7,9 @@ int main()
 {
   Network_lib n;
 
-  Node a = n.get_node(L"one", "en");
-  Node b = n.get_node(L"two", "en");
-  Node c = n.get_node(L"three", "en");
+  Node a = n.node(L"one", "en");
+  Node b = n.node(L"two", "en");
+  Node c = n.node(L"three", "en");
 
   n.connect(a, b);
   n.connect(a, c);
@@ -21,12 +21,20 @@ int main()
   n.set_name(n.core.Unequal,              L"ungleich",     "de");
   n.set_name(n.core.Contradiction,        L"Widerspruch",  "de");
 
-  n.add_fact(n.get_node(L"ist Eigenschaft von", "de"), n.get_node(L"ist Gegenteil von",   "de"), n.get_node(L"hat die Eigenschaft", "de"));
-  n.add_fact(n.get_node(L"ist Teil von",        "de"), n.get_node(L"ist Gegenteil von",   "de"), n.get_node(L"hat den Bestandteil", "de"));
-  n.add_fact(n.get_node(L"ist zum Beispiel",    "de"), n.get_node(L"ist Gegenteil von",   "de"), n.get_node(L"ist ein", "de"));
-  n.add_fact(n.get_node(L"hat den Bestandteil", "de"), n.get_node(L"hat die Eigenschaft", "de"), n.get_node(L"transitiv", "de"));
-  n.add_fact(n.get_node(L"hat die Eigenschaft", "de"), n.get_node(L"hat die Eigenschaft", "de"), n.get_node(L"transitiv", "de"));
-  n.add_fact(n.get_node(L"ist ein",             "de"), n.get_node(L"hat die Eigenschaft", "de"), n.get_node(L"transitiv", "de"));
+  n.fact(n.node(L"ist Eigenschaft von", "de"), n.node(L"ist Gegenteil von",   "de"), n.node(L"hat die Eigenschaft", "de"));
+  n.fact(n.node(L"ist Teil von",        "de"), n.node(L"ist Gegenteil von",   "de"), n.node(L"hat den Bestandteil", "de"));
+  n.fact(n.node(L"ist zum Beispiel",    "de"), n.node(L"ist Gegenteil von",   "de"), n.node(L"ist ein", "de"));
+  n.fact(n.node(L"hat den Bestandteil", "de"), n.node(L"hat die Eigenschaft", "de"), n.node(L"transitiv", "de"));
+  n.fact(n.node(L"hat die Eigenschaft", "de"), n.node(L"hat die Eigenschaft", "de"), n.node(L"transitiv", "de"));
+  n.fact(n.node(L"ist ein",             "de"), n.node(L"hat die Eigenschaft", "de"), n.node(L"transitiv", "de"));
+
+  Node X = n.var();
+  Node R = n.var();
+  Node Y = n.var();
+  Node Z = n.var();
+  Node R_is_transitive = n.fact(R, n.node(L"hat die Eigenschaft", "de"), n.node(L"transitiv", "de"));
+
+  n.rule({ R_is_transitive, n.fact(X, R, Y), n.fact(Y, R, Z) }, n.fact(X, R, Z));
 
   n.debug();
 }

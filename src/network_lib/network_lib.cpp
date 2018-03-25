@@ -45,8 +45,8 @@ Network_lib::Network_lib()
 	: _pImpl{new Impl}
   , core({ _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create()})
 {
-  add_fact(core.IsA,     core.IsA, core.RelationTypeCategory);
-  add_fact(core.Unequal, core.IsA, core.RelationTypeCategory);
+  fact(core.IsA,     core.IsA, core.RelationTypeCategory);
+  fact(core.Unequal, core.IsA, core.RelationTypeCategory);
 }
 
 Network_lib::~Network_lib()
@@ -54,7 +54,7 @@ Network_lib::~Network_lib()
 	delete _pImpl;
 }
 
-Node Network_lib::get_node(std::wstring name, std::string lang)
+Node Network_lib::node(std::wstring name, std::string lang)
 {
 	decltype(_pImpl->_names)::iterator namesInLang = _pImpl->_names.find(lang);
 	decltype(namesInLang->second.right)::iterator node;
@@ -71,6 +71,11 @@ Node Network_lib::get_node(std::wstring name, std::string lang)
 	{
 		return node->second;
 	}
+}
+
+Node Network_lib::var()
+{
+  return _pImpl->var();
 }
 
 std::wstring Network_lib::get_name(Node node, std::string lang)
@@ -152,7 +157,7 @@ Answer Network_lib::check_fact(Node source, Node relationType, Node target)
   }
 }
 
-void Network_lib::add_fact(Node source, Node relationType, Node target, long double probability)
+Node Network_lib::fact(Node source, Node relationType, Node target, long double probability)
 {
   if (source==target)
   {
@@ -185,4 +190,12 @@ void Network_lib::add_fact(Node source, Node relationType, Node target, long dou
     _pImpl->connect(answer.relation(), target);
     _pImpl->connect(answer.relation(), relationType, probability);
   }
+
+  return answer.relation();
+}
+
+Node Network_lib::rule(std::vector<Node> conditions, Node deduction)
+{
+  
+  return 0;
 }
