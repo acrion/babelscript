@@ -21,14 +21,12 @@ int main()
   n.set_name(n.core.Unequal,              L"ungleich",     "de");
   n.set_name(n.core.Contradiction,        L"Widerspruch",  "de");
 
-  n.add_fact(n.get_node(L"hat die Eigenschaft", "de"), n.get_node(L"ist ein", "de"), n.get_node(L"Relationstyp", "de"));
-  //n.add_fact(n.get_node(L"", "de"), n.get_node(L"", "de"), n.get_node(L"", "de"));
-  //n.add_fact(n.get_node(L"", "de"), n.get_node(L"", "de"), n.get_node(L"", "de"));
-  //n.add_fact(n.get_node(L"", "de"), n.get_node(L"", "de"), n.get_node(L"", "de"));
-  //n.add_fact(n.get_node(L"", "de"), n.get_node(L"", "de"), n.get_node(L"", "de"));
-  //n.add_fact(n.get_node(L"", "de"), n.get_node(L"", "de"), n.get_node(L"", "de"));
-  //n.add_fact(n.get_node(L"", "de"), n.get_node(L"", "de"), n.get_node(L"", "de"));
-  //n.add_fact(n.get_node(L"", "de"), n.get_node(L"", "de"), n.get_node(L"", "de"));
+  n.add_fact(n.get_node(L"ist Eigenschaft von", "de"), n.get_node(L"ist Gegenteil von",   "de"), n.get_node(L"hat die Eigenschaft", "de"));
+  n.add_fact(n.get_node(L"ist Teil von",        "de"), n.get_node(L"ist Gegenteil von",   "de"), n.get_node(L"hat den Bestandteil", "de"));
+  n.add_fact(n.get_node(L"ist zum Beispiel",    "de"), n.get_node(L"ist Gegenteil von",   "de"), n.get_node(L"ist ein", "de"));
+  n.add_fact(n.get_node(L"hat den Bestandteil", "de"), n.get_node(L"hat die Eigenschaft", "de"), n.get_node(L"transitiv", "de"));
+  n.add_fact(n.get_node(L"hat die Eigenschaft", "de"), n.get_node(L"hat die Eigenschaft", "de"), n.get_node(L"transitiv", "de"));
+  n.add_fact(n.get_node(L"ist ein",             "de"), n.get_node(L"hat die Eigenschaft", "de"), n.get_node(L"transitiv", "de"));
 
   n.debug();
 }

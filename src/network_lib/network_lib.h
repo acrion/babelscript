@@ -28,7 +28,7 @@ namespace network
 		void debug();
 #ifdef _DEBUG
 		template<typename MapType>
-		void print_map(const MapType& m);
+		void print_map(const MapType& m, std::wstring strArrow);
 #endif
 
     const struct PredefinedNode

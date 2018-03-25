@@ -83,7 +83,7 @@ namespace network
 
     int is_connected(Node a, Node b)
     {
-      auto it = _left.find(a); if (it != _left.end() && it->second.count(b)==1) return 1;
+      auto it = _left.find(a); if (it != _left.end() && it->second.count(b)==1) return 1; // precedence over reverse (-1)
            it = _left.find(b); if (it != _left.end() && it->second.count(a)==1) return -1;
 
       return 0;
@@ -91,12 +91,12 @@ namespace network
 
     long double probability(Node a, Node b)
     {
-      int sgn = is_connected(a,b);
-      if (sgn)
+      auto itLeft = _left.find(a);
+      if (itLeft != _left.end() && itLeft->second.count(b) == 1)
       {
         Node hash;
         auto it = find_probability(a,b,hash);
-        return it == _probabilities.end() ? sgn:sgn*it->second;
+        return it == _probabilities.end() ? 1:it->second;
       }
       else
       {
@@ -165,7 +165,8 @@ namespace network
 
     typename decltype(_probabilities)::iterator find_probability(Node a, Node b, Node& hash)
     {
-      return _probabilities.find(hash=create_hash(a,b));
+      hash = create_hash(a, b);
+      return _probabilities.find(hash);
     }
   };
 }

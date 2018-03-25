@@ -8,14 +8,14 @@ using namespace network;
 	#include <iostream>
 
 	template<typename MapType>
-	void Network_lib::print_map(const MapType& m)
+	void Network_lib::print_map(const MapType& m, std::wstring strArrow)
 	{
 		typedef typename MapType::const_iterator const_iterator;
 		for (const_iterator iter = m.begin(), iend = m.end(); iter != iend; ++iter)
 		{
       if (!get_name(iter->first).empty() && iter->second.size()>0)
       {
-        std::wcout << get_name(iter->first) << L" -->";
+        std::wcout << get_name(iter->first) << L" " << strArrow;
 
         for (Node a : iter->second)
         {
@@ -30,10 +30,10 @@ using namespace network;
 	void Network_lib::debug()
 	{
     std::cout << " === left ===" << std::endl;
-    print_map(_pImpl->_left);
+    print_map(_pImpl->_left, L"-->");
 
     std::cout << std::endl << " === right ===" << std::endl;
-    print_map(_pImpl->_right);
+    print_map(_pImpl->_right, L"<--");
 	}
 #else
 	void Network_lib::debug()
