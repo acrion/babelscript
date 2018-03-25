@@ -3,28 +3,36 @@
 #include <cstdint>
 #include <map>
 #include <set>
+#include <vector>
 #include <limits.h>
 
 namespace network
 {
   class Network
-	{
-	public:
+  {
+  public:
+#ifdef _MSC_VER
+    #pragma warning( push )  
+    #pragma warning( disable : 4146 )
+#endif
     template<typename T>
-    static inline T rol(T n, unsigned int c=1)
+    static inline T rol(T n, T c=1)
     {
-      const unsigned int mask = (CHAR_BIT*sizeof(n) - 1);
+      const T mask = (CHAR_BIT*sizeof(n) - 1);
       c &= mask;
       return (n<<c) | (n >> ((-c)&mask));
     }
 
     template<typename T>
-    static inline T ror(T n, unsigned int c=1)
+    static inline T ror(T n, T c=1)
     {
-      const unsigned int mask = (CHAR_BIT*sizeof(n) - 1);
+      const T mask = (CHAR_BIT*sizeof(n) - 1);
       c &= mask;
       return (n>>c) | (n << ((-c)&mask));
     }
+#ifdef _MSC_VER
+    #pragma warning( pop )
+#endif
 
     void connect(Node a, Node b, long double probability=1)
 		{
@@ -122,7 +130,7 @@ namespace network
       return mark_hash ^ a ^ rol(b,shift_inc) ^ rol(c,2*shift_inc);
     }
 
-    Node create_hash(std::vector<Node> vec)
+    Node create_hash(const std::vector<Node>& vec)
     {
       Node result = mark_hash;
       Node shift=1;

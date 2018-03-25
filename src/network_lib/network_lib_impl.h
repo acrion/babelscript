@@ -8,9 +8,9 @@
 
 namespace network
 {
-  class Network_lib::Impl : Network
-	{
-		friend class Network_lib;
+  class NETWORK_LIB_EXPORT Network_lib::Impl : Network
+  {
+    friend class Network_lib;
 
   private:
     std::map<std::string, boost::bimap<Node, std::wstring>> _names;

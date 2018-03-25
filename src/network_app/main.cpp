@@ -14,7 +14,7 @@ int main()
   n.connect(a, b);
   n.connect(a, c);
 
-  //n.set_name(n.core.RelationTypeCategory, L"Relationstyp", "de");
+//  n.set_name(n.core.RelationTypeCategory, L"Relationstyp", "de");
 
 //  n.add_fact(n.get_node("de", ""), n.get_node("de", ""), n.get_node("de", ""));
 //  n.add_fact(n.get_node(""), n.get_node(""), n.get_node(""));

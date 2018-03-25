@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 2.8.11)
 set(CMAKE_CXX_STANDARD 14)
 project (network)
+include(GenerateExportHeader)
 
 #set(BOOST_BASE C:/T/Ophthalmic/Surgery/Branches/Development/Build/External)
 #set(BOOST_VER 1.66.0.0)

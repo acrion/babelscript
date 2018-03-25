@@ -1,10 +1,9 @@
-set(BOOST_INCLUDEDIR ${CMAKE_BINARY_DIR}/../../boost)
+set(BOOST_INCLUDEDIR Y:/ThirdParty/boost_1_66_0)
 
-message(STATUS "BOOST_INCLUDEDIR   = ${BOOST_INCLUDEDIR}")
+message(STATUS "BOOST_INCLUDEDIR 1  = ${BOOST_INCLUDEDIR}")
 
 if(NOT IS_DIRECTORY ${BOOST_INCLUDEDIR})
-     # for Buildserver (Y: points to \\macmini\stefan; Jenkins is configured to use subfolder git as workspace)
-    set(BOOST_INCLUDEDIR "Y:/git/boost")
+    set(BOOST_INCLUDEDIR "${CMAKE_BINARY_DIR}/../../boost")
 endif()
 
 set(BOOST_LIBRARYDIR ${BOOST_INCLUDEDIR}/stage/lib)
@@ -15,23 +14,24 @@ include_directories(
     ${BOOST_INCLUDEDIR}/libs/filesystem/include
     ${BOOST_INCLUDEDIR}/libs/core/include
 )
-message(STATUS "BOOST_INCLUDEDIR   = ${BOOST_INCLUDEDIR}")
+message(STATUS "BOOST_INCLUDEDIR 2  = ${BOOST_INCLUDEDIR}")
 if (MSVC) # with Visual Studio we can rely on boost auto-linking
-  #add_definitions(-DBOOST_LIB_DIAGNOSTIC)
+  add_definitions(-DBOOST_LIB_DIAGNOSTIC)
   link_directories(${BOOST_LIBRARYDIR})
 endif()
 
-add_library (network_lib
-        answer.cpp
-        answer.h
-	network_lib.cpp
-	network_lib.h
-	network_lib_impl.h
-        network.h
+add_library (network_lib SHARED
+  answer.cpp
+  answer.h
+  network_lib.cpp
+  network_lib.h
+  network_lib_impl.h
+  network.h
 )
 
+generate_export_header(network_lib)
+target_include_directories (network_lib PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} PRIVATE .)
 include_directories(${Boost_INCLUDE_DIR})
-target_include_directories (network_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(NOT MSVC) # no auto linking available, so we have to set
   list(APPEND Boost_LIBRARIES ${BOOST_LIBRARYDIR}/libboost_system.a)

@@ -2,11 +2,12 @@
 
 #include <cstdint>
 #include <string>
+#include "network_lib_export.h"
 #include "answer.h"
 
 namespace network
 {
-  class Network_lib
+  class NETWORK_LIB_EXPORT Network_lib
 	{    
   private:
     class Impl;

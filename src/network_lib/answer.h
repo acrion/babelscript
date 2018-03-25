@@ -1,12 +1,14 @@
 #pragma once
 
 #include <algorithm>
+#include <stdexcept>
+#include "network_lib_export.h"
 
 namespace network
 {
-  using Node = size_t;
+  using Node = uint64_t; // todo: make sure this is identical with size_t
 
-  struct Answer
+  struct NETWORK_LIB_EXPORT Answer
   {
   protected:
     enum class State
