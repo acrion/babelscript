@@ -148,7 +148,7 @@ Answer Network_lib::check_fact(Node source, Node relationType, Node target)
   }
   else
   {
-    return Answer::Unknown;
+    return Answer(relation);
   }
 }
 
@@ -169,13 +169,20 @@ void Network_lib::add_fact(Node source, Node relationType, Node target, long dou
 
   if (answer.is_known())
   {
-    if (answer.is_impossible())
+    if (answer.is_wrong() && probability>0.5L)
     {
       throw std::runtime_error("add_fact: this fact is known to be wrong");
+    }
+    else if (answer.is_correct() && probability<0.5L)
+    {
+      throw std::runtime_error("add_fact: this fact is known to be true");
     }
   }
   else
   {
-
+    _pImpl->create(answer.relation());
+    _pImpl->connect(source, answer.relation());
+    _pImpl->connect(answer.relation(), target);
+    _pImpl->connect(answer.relation(), relationType, probability);
   }
 }

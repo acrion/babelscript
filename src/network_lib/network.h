@@ -61,9 +61,17 @@ namespace network
         {
           _probabilities[hash] = probability;
         }
-        else
+        else if (it->second>=0.5L && probability>=0.5L)
+        {
+          it->second = std::max(it->second, probability);
+        }
+        else if (it->second <= 0.5L && probability <= 0.5L)
         {
           it->second = std::min(it->second, probability);
+        }
+        else
+        {
+          throw std::runtime_error("Network::connect: nodes have contradicting probabilities");
         }
       }
     }
