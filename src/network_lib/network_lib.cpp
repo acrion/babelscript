@@ -81,7 +81,14 @@ std::wstring Network_lib::get_name(Node node, std::string lang)
 
 std::wstring Network_lib::get_name(Node node)
 {
-  return _pImpl->get_name(node, _pImpl->_names.begin());
+  for (decltype(_pImpl->_names)::iterator lang = _pImpl->_names.begin(); lang != _pImpl->_names.end(); ++lang)
+  {
+    std::wstring result = _pImpl->get_name(node, lang);
+
+    if (!result.empty()) return result;
+  }
+
+  return L"";
 }
 
 
