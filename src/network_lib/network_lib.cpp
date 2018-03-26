@@ -47,11 +47,12 @@ Network_lib::Network_lib()
 {
   fact(core.IsA,     core.IsA, core.RelationTypeCategory);
   fact(core.Unequal, core.IsA, core.RelationTypeCategory);
+  fact(core.Causes,  core.IsA, core.RelationTypeCategory);
 }
 
 Network_lib::~Network_lib()
 {
-	delete _pImpl;
+  delete _pImpl;
 }
 
 Node Network_lib::node(std::wstring name, std::string lang)
@@ -133,9 +134,20 @@ bool Network_lib::set_name(Node node, std::wstring newName, std::string lang)
 }
 
 
-void Network_lib::connect(Node a, Node b)
+std::set<Node> Network_lib::get_sources(Node relationType, Node target)
 {
-  _pImpl->connect(a,b);
+  std::set<Node> sources;
+  
+  for (Node relation: _pImpl->get_left(target))
+  {
+    if (_pImpl->get_right(relation).count(relationType) == 1)
+    {
+      for (Node source : _pImpl->get_left(relation))
+        sources.insert(source);
+    }
+  }
+
+  return sources;
 }
 
 Answer Network_lib::check_fact(Node source, Node relationType, Node target)
@@ -143,8 +155,7 @@ Answer Network_lib::check_fact(Node source, Node relationType, Node target)
   Node relation = _pImpl->create_hash(relationType, source, target);
 
   if (   !_pImpl->is_var(source|relationType|target)
-      && _pImpl->exists(relation)
-      && check_fact(relation, core.IsA, core.RelationTypeCategory).is_correct())
+      && _pImpl->exists(relation))
   {
     return Answer(  _pImpl->probability(source, relation)
                   * _pImpl->probability(relation, target)
@@ -165,12 +176,6 @@ Node Network_lib::fact(Node source, Node relationType, Node target, long double 
     throw std::runtime_error("add_fact: source is identical to target");
   }
 
-  if (   relationType != core.IsA
-      && check_fact(relationType, core.IsA, core.RelationTypeCategory).is_wrong())
-  {
-    throw std::runtime_error("add_fact: node is known to be no relation");
-  }
-
   Answer answer = check_fact(source, relationType, target);
 
   if (answer.is_known())
@@ -186,6 +191,13 @@ Node Network_lib::fact(Node source, Node relationType, Node target, long double 
   }
   else
   {
+    if (    relationType != core.IsA // note that the initial constructor call fact(core.IsA, core.IsA, core.RelationTypeCategory) is executed as intended
+        && !_pImpl->is_var(relationType) // we don't need to create a is-a relation to the RelationTypeCategory for variables that are used in place of relations
+       )
+    {
+      fact(relationType, core.IsA, core.RelationTypeCategory);
+    }
+
     _pImpl->create(answer.relation());
     _pImpl->connect(source, answer.relation());
     _pImpl->connect(answer.relation(), target);
@@ -195,17 +207,11 @@ Node Network_lib::fact(Node source, Node relationType, Node target, long double 
   return answer.relation();
 }
 
-Node Network_lib::fact(std::vector<Node> conditions, Node relation, Node deduction, long double probability)
+Node Network_lib::condition(Node op, std::vector<Node> conditions)
 {
-  switch (conditions.size())
-  {
-  case 0: return deduction;
-  case 1: return fact(conditions[0], relation, deduction, probability);
-  default:
-    Node and_relation = _pImpl->create_hash(core.And, conditions);
-    _pImpl->create(and_relation);
-    _pImpl->connect(and_relation, core.And);
-    for (Node condition : conditions) _pImpl->connect(condition, and_relation);
-    return fact(and_relation, relation, deduction, probability);
-  }
+  Node relation = _pImpl->create_hash(op, conditions);
+  _pImpl->create(relation);
+  _pImpl->connect(relation, op);
+  for (Node condition : conditions) _pImpl->connect(condition, relation);
+  return relation;
 }

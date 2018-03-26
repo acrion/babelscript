@@ -7,15 +7,8 @@ int main()
 {
   Reasoning n;
 
-  Node a = n.node(L"one", "en");
-  Node b = n.node(L"two", "en");
-  Node c = n.node(L"three", "en");
-
-  n.connect(a, b);
-  n.connect(a, c);
-
   n.set_name(n.core.RelationTypeCategory, L"Relationstyp", "de");
-  n.set_name(n.core.Rule,                 L"=>",           "de");
+  n.set_name(n.core.Causes,               L"=>",           "de");
   n.set_name(n.core.And,                  L",",            "de");
   n.set_name(n.core.IsA,                  L"ist ein",      "de");
   n.set_name(n.core.Unequal,              L"ungleich",     "de");
@@ -34,7 +27,8 @@ int main()
     Node Y = n.var();
     Node Z = n.var();
     Node R_is_transitive = n.fact(R, n.node(L"hat die Eigenschaft", "de"), n.node(L"transitiv", "de"));
-    n.fact({ R_is_transitive, n.fact(X, R, Y), n.fact(Y, R, Z) }, n.core.Rule, n.fact(X, R, Z));
+    Node condition = n.condition(n.core.And, { R_is_transitive, n.fact(X, R, Y), n.fact(Y, R, Z) });
+    n.fact(condition, n.core.Causes, n.fact(X, R, Z));
   }
 
   try

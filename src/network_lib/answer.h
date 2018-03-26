@@ -37,7 +37,7 @@ namespace network
       , _probability(std::min(1.0L,std::max(0.0L,probability)))
       , _relation(relation)
     {
-      if (state==State::Known && (_probability > 0 || _relation==0))
+      if (state==State::Known && _probability > 0 && _relation==0)
       {
         throw std::runtime_error("Answer is known, but relation node is not set");
       }

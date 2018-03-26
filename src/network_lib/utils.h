@@ -7,7 +7,7 @@
 namespace network
 {
   using Node = uint64_t; // todo: make sure this is identical with size_t
-  using Variables = std::map<std::string, std::string>;
+  using Variables = std::map<Node, Node>;
 
   namespace utils
   {

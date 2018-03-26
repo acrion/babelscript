@@ -27,6 +27,8 @@ namespace network
 
   private:
     void evaluate(RulePos rule);
+    bool contradicts(const Variables& variables, const Variables& unequals);
+    void deduce(const Variables& variables);
 
     bool _done;
     Node _current_rule;

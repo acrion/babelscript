@@ -1,6 +1,6 @@
 #include "reasoning.h"
-#include "unification.h"
 #include "network_lib_impl.h"
+#include "unification.h"
 
 using namespace network;
 
@@ -9,24 +9,19 @@ void Reasoning::run()
   do
   {
     _done = false;
-    auto rules = _pImpl->find_left(core.Rule);
-
-    if (rules != _pImpl->right_end())
+    for (Node rule : _pImpl->get_left(core.Causes))
     {
-      for (Node rule : rules->second)
-      {
-        auto condition = _pImpl->get_left(rule);
-        auto deduction = _pImpl->get_right(rule);
+      auto deduction = _pImpl->get_right(rule);
 
-        if (condition.size()==1 && deduction.size() == 2)
-        {
-          auto d = deduction.begin();
-          if (*d == core.Rule) ++d;
+      if (deduction.size() == 2)
+      {
+        auto condition = _pImpl->get_left(rule); // normally a set of 1 (the 'and' relation)
+        auto d = deduction.begin();
+        if (*d == core.Causes) ++d;
           
-          _current_rule = rule;
-          _next.clear();
-          evaluate(RulePos({ rule, condition.end(), condition.begin(), *d }));
-        }
+        _current_rule = rule;
+        _next.clear();
+        evaluate(RulePos({ rule, condition.end(), condition.begin(), *d }));
       }
     }
   } while (_done);
@@ -34,8 +29,8 @@ void Reasoning::run()
 
 void Reasoning::evaluate(RulePos rule)
 {
-  Node condition = *rule.index; // points to the relation (normally and) that connects the conditions
-  auto current_op = _pImpl->get_right(condition);
+  Node condition = *rule.index; // points to the relation (normally 'and' or a variable) that connects the conditions
+  auto current_op = _pImpl->get_right(condition); // get the set of Nodes the relation points to, which is its type. Empty if the relation is a variable.
   if (current_op.count(core.And) == 1)
   {
     auto condition_back_link = _pImpl->get_left(condition);
@@ -55,7 +50,8 @@ void Reasoning::evaluate(RulePos rule)
   }
   else
   {
-    Unification u(condition, rule.variables, rule.unequals);
+    // here we run into for each part of a condition
+    Unification u(this, condition, rule.variables, rule.unequals);
 
     for (std::shared_ptr<Variables> match=u.Start(); match; match=u.Next())
     {
@@ -79,10 +75,46 @@ void Reasoning::evaluate(RulePos rule)
         _next.pop_back();
         evaluate(next);
       }
-      else if (false)
+      else if (!contradicts(*joined, *joined_unequals))
       {
-
+        deduce(*joined);
       }
     }
   }
+}
+
+bool Reasoning::contradicts(const Variables& variables, const Variables& unequals)
+{
+  for (auto& var: unequals)
+  {
+    Node item1 = var.first;
+    if (_pImpl->is_var(item1))
+    {
+      auto it = variables.find(item1);
+      if (it != variables.end())
+        item1 = it->second;
+      else
+        continue; // though this variable is included in the unequals, it is missing in the normal variables (meaningless unequal condition)
+    }
+
+    Node item2 = var.second;
+    if (_pImpl->is_var(item2))
+    {
+      auto it = variables.find(item2);
+      if (it != variables.end())
+        item2 = it->second;
+      else
+        continue; // though this variable is included in the unequals, it is missing in the normal variables (meaningless unequal condition)
+    }
+
+    if (item1 == item2)
+      return true; // contradiction, because item1 and item2 must be unequal
+  }
+
+  return false; // no contradiction
+}
+
+void Reasoning::deduce(const Variables& variables)
+{
+
 }
