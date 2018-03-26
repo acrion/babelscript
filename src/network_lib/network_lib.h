@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <functional>
 #include "network_lib_export.h"
 #include "answer.h"
 
@@ -21,6 +22,9 @@ namespace network
     std::wstring get_name(Node node, std::string lang);
     bool set_name(Node node, std::wstring name, std::string lang="en");
     std::set<Node> get_sources(Node relationType, Node target);
+    std::set<Node> filter(std::set<Node> source, Node target);
+    std::set<Node> filter(std::set<Node> source, Node relationType, Node target, std::set<Node>* filtered_away=nullptr);
+    std::set<Node> filter(std::set<Node> source, std::function<bool(Node nd)> f);
     Answer check_fact(Node source, Node relationType, Node target);
     Node fact(Node source, Node relationType, Node target, long double probability=1);
     Node condition(Node op, std::vector<Node> conditions);

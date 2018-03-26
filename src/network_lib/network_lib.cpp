@@ -150,6 +150,58 @@ std::set<Node> Network_lib::get_sources(Node relationType, Node target)
   return sources;
 }
 
+std::set<Node> Network_lib::filter(std::set<Node> source, Node target)
+{
+  std::set<Node> result;
+
+  for (Node nd : source)
+  {
+    if (_pImpl->get_right(nd).count(target) == 1)
+    {
+      result.insert(nd);
+    }
+  }
+
+  return result;
+}
+
+std::set<Node> Network_lib::filter(std::set<Node> source, Node relationType, Node target, std::set<Node>* filtered_away)
+{
+  std::set<Node> result;
+
+  for (Node nd : source)
+  {
+    bool match = false;
+    std::set<Node> possible_relations = _pImpl->get_right(nd);
+    for (Node relation : filter(possible_relations, relationType))
+    {
+      if (_pImpl->get_right(relation).count(target) == 1)
+      {
+        result.insert(nd);
+        match = true;
+      }
+    }
+    if (filtered_away && !match)
+    {
+      filtered_away->insert(nd);
+    }
+  }
+
+  return result;
+}
+
+std::set<Node> Network_lib::filter(std::set<Node> source, std::function<bool(Node nd)> f)
+{
+  std::set<Node> result;
+
+  for (Node nd : source)
+  {
+    if (f(nd)) result.insert(nd);
+  }
+
+  return result;
+}
+
 Answer Network_lib::check_fact(Node source, Node relationType, Node target)
 {
   Node relation = _pImpl->create_hash(relationType, source, target);
