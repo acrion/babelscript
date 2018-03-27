@@ -20,14 +20,17 @@ namespace network
     Node var();
     std::wstring get_name(Node node);
     std::wstring get_name(Node node, std::string lang);
+    std::string get_name_hex(Node node);
     bool set_name(Node node, std::wstring name, std::string lang="en");
-    std::set<Node> get_sources(Node relationType, Node target);
+    std::set<Node> get_sources(Node relationType, Node target, bool exclude_vars=false);
+    Node parse_rule(Node rule, std::set<Node>& deducations);
     std::set<Node> filter(std::set<Node> source, Node target);
     std::set<Node> filter(std::set<Node> source, Node relationType, Node target, std::set<Node>* filtered_away=nullptr);
     std::set<Node> filter(std::set<Node> source, std::function<bool(Node nd)> f);
-    Answer check_fact(Node source, Node relationType, Node target);
-    Node fact(Node source, Node relationType, Node target, long double probability=1);
-    Node condition(Node op, std::vector<Node> conditions);
+    Answer check_fact(Node source, Node relationType, const std::set<Node>& targets);
+    Node fact(Node source, Node relationType, std::set<Node> targets, long double probability=1);
+    Node condition(Node op, std::set<Node> conditions);
+    void gen_dot(Node start, std::string file_name);
 
 		void debug();
 #ifdef _DEBUG
@@ -48,5 +51,8 @@ namespace network
       Node Unequal;
       Node Contradiction;
     } core;
+
+  private:
+    void add_nodes(Node current, std::set<Node>& touched, const std::set<Node>& conditions, const std::set<Node>& deductions, std::ofstream& dot);
   };
 }

@@ -2,46 +2,40 @@
 
 #include <unification.h>
 #include "network_lib_impl.h"
-
+#include "utils.h"
 
 using namespace network;
 
-Unification::Unification(Network_lib* n, Node condition, std::shared_ptr<Variables> variables, std::shared_ptr<Variables> unequals)
+Unification::Unification(Network_lib* n, Node condition, Node parent, std::shared_ptr<Variables> variables, std::shared_ptr<Variables> unequals)
   : _n(n)
+  , _parent(parent) // if _parent can be removed, RulePos.node can also be removed!
   , _variables(variables)
   , _unequals(unequals)
 {
-  // "condition" means here one of the predicates that form a list of conditions that are connected by "and"
-  const std::set<Node> subjects = _n->_pImpl->get_left(condition); // contains the subject of a fact
-  const std::set<Node> targets  = _n->_pImpl->get_right(condition); // contains both the object of a fact and the node representing the fact
-  
-  std::set<Node> objects;
-  std::set<Node> relations = _n->filter(targets, _n->core.IsA, _n->core.RelationTypeCategory, &objects);
+  // "condition" means here one of the predicates that form a list of conditions (which are connected by "and"),
+  // so "condition" may point of core.And (or any other 
 
-  if (relations.size() > 0)
+  std::set<Node> relations = _n->filter(_n->_pImpl->get_right(condition), _n->core.IsA, _n->core.RelationTypeCategory);
+
+  if (relations.size()==1) // more than one relation for given condition makes no sense. _relation_list is empty, so Next() won't return anything
   {
-    if (relations.size() > 1)
-    {
-      throw std::runtime_error("Unification found more than one relations for given condition, which makes no sense");
-    }
-
-    Node relation = *relations.begin();
+    Node relation = *relations.begin(); // there is always only 1 relation
+    _subject = _n->parse_rule(condition, _objects);
 
     if (_n->_pImpl->is_var(relation))
     {
-      _relation_list = _n->_pImpl->get_left(_n->core.RelationTypeCategory);
-      _relation_list = _n->filter(_relation_list, [&](Node nd) { return _n->_pImpl->is_var(nd); });
+      // the relation is a variable, so fill _relation_list with all possible relations (excluding variables)
+      _relation_list = _n->get_sources(_n->core.IsA, _n->core.RelationTypeCategory, true);
       _relation_variable = relation;
     }
     else
     {
-      _relation_list.insert(relation);
+      _relation_list.insert(relation); // leaving _relation_variable==0, which denotes that this condition specifies the relation (instead of using a variable for it)
 
       if (relation == _n->core.Unequal)
       {
-        for (Node subject : subjects)
-          for (Node object : objects)
-            (*_unequals)[subject] = object;
+        for (Node object : _objects)
+          (*_unequals)[_subject] = object;
       }
     }
   }
@@ -52,29 +46,71 @@ std::shared_ptr<Variables> Unification::Start()
   if (_relation_list.size()==0)
     return std::make_shared<Variables>();
 
-  _relation_index = _relation_list.begin();
-  _fact_index     = _n->_pImpl->get_left(*_relation_index).begin(); // we know that result of get_left is valid, because node *_relation_index exists
-
   if (_relation_variable == 0 && *_relation_list.begin() == _n->core.Unequal)
     return std::make_shared<Variables>();
-  else
-    return Next();
+
+  _relation_index = _relation_list.begin();
+  _fact_index = _n->_pImpl->find_left(*_relation_index)->second.begin(); // we know that result of get_left is valid, because node *_relation_index exists
+
+  return Next();
 }
 
 std::shared_ptr<Variables> Unification::Next()
 {
-  if (_relation_variable == 0 && *_relation_list.begin() == _n->core.Unequal)
+  if (_relation_variable == 0 && _relation_list.size() > 0 && *_relation_list.begin() == _n->core.Unequal)
     return nullptr;
 
-  for (; _relation_index != _relation_list.end(); ++_relation_index)
+  while (_relation_index != _relation_list.end())
   {
+    if (_relation_variable == 0 || !_variables || utils::get(*_variables, _relation_variable, *_relation_index) == *_relation_index)
+    {
+      while (_fact_index != _n->_pImpl->find_left(*_relation_index)->second.end())
+      {
+        std::set<Node> objects;
+        Node subject = _n->parse_rule(*_fact_index, objects);
 
+        //objects = _n->filter(objects, [&](Node nd)
+        //{
+        //  return nd != _parent;
+        //});
+
+        if (   !_n->_pImpl->is_var(subject)
+            && !_n->_pImpl->is_var(*objects.begin())
+            && utils::get(*_variables, _subject, subject) == subject
+            && utils::get(*_variables, *_objects.begin(), *objects.begin()) == *objects.begin() // todo: what if more than one?
+            && (   _n->_pImpl->is_var(_subject)
+                || _subject == subject
+               )
+            && (   _n->_pImpl->is_var(*_objects.begin())
+                || *_objects.begin() == *objects.begin() // todo: what if more than one?
+               )
+          )
+        {
+          std::shared_ptr<Variables> result = std::make_shared<Variables>();
+
+          if (_variables->count(_subject)==0) (*result)[_subject] = subject;
+          if (_variables->count(*_objects.begin())==0) (*result)[*_objects.begin()] = *objects.begin(); // todo: what if more than one?
+          if (_relation_variable != 0 && _variables->count(_relation_variable)==0) (*result)[_relation_variable] = *_relation_index;
+
+          return result;
+        }
+
+        ++_fact_index;
+      }
+    }
+
+    if (++_relation_index == _relation_list.end())
+    {
+      break;
+    }
+
+    _fact_index = _n->_pImpl->find_left(*_relation_index)->second.begin(); // we know that result of get_left is valid, because node *_relation_index exists
   }
   
-  return std::make_shared<Variables>();
+  return nullptr;
 }
 
 std::shared_ptr<Variables> Unification::Unequals()
 {
-  return std::make_shared<Variables>();
+  return _unequals;
 }

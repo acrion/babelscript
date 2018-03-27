@@ -15,7 +15,6 @@ namespace network
     Node node;
     std::set<Node>::iterator end;
     std::set<Node>::iterator index;
-    Node deduction;
     std::shared_ptr<Variables> variables{ std::make_shared<Variables>() };
     std::shared_ptr<Variables> unequals{ std::make_shared<Variables>() };
   };
@@ -31,7 +30,7 @@ namespace network
     void deduce(const Variables& variables);
 
     bool _done;
-    Node _current_rule;
+    std::set<Node> _deductions;
     std::vector<RulePos> _next;
   };
 }

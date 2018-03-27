@@ -26,11 +26,13 @@ namespace network
         throw std::runtime_error("Network::connect: requested right node " + std::to_string(b) + " does not exist");
       }
 
-      leftIt->second.insert(b);
-      rightIt->second.insert(a);
-
       if (probability < 1)
       {
+        if (is_var(a | b))
+        {
+          throw std::runtime_error("Network::connect: setting probabilities for connection that include variables");
+        }
+
         Node hash;
         auto it = find_probability(a, b, hash);
 
@@ -51,6 +53,9 @@ namespace network
           throw std::runtime_error("Network::connect: nodes have contradicting probabilities");
         }
       }
+
+      leftIt->second.insert(b);
+      rightIt->second.insert(a);
     }
 
     bool exists(Node a)
@@ -124,6 +129,11 @@ namespace network
       return a > mask_node;
     }
 
+    bool is_hash(Node a)
+    {
+      return (a & mark_hash) == mark_hash;
+    }
+
     void create(Node a)
     {
       if (_left.find(a) != _left.end())
@@ -150,22 +160,39 @@ namespace network
       return mask_node & (mark_hash ^ a ^ rol(b,shift_inc) ^ rol(c,2*shift_inc));
     }
 
-    Node create_hash(const std::vector<Node>& vec)
+    Node create_hash(const std::set<Node>& vec)
     {
-      Node result = mark_hash;
-      Node shift=1;
+      Node result = mark_hash ^ rol(vec.size(), 56);
       for (Node node: vec)
       {
-        result ^= rol(node, shift);
-        shift = (shift+shift_inc) % sizeof(Node);
+        result ^= rol(node, 48);
       }
       return result & mask_node; // exclude values that denote variables
     }
 
-    Node create_hash(const Node head, const std::vector<Node>& vec)
+    Node create_hash(const Node head, const std::set<Node>& vec)
     {
-      Node shift = (1+vec.size()*shift_inc) % sizeof(Node);
-      return (create_hash(vec) ^ rol(head, shift)) & mask_node;
+      return (  create_hash(vec)
+              ^ rol(head, 32)
+             ) & mask_node;
+    }
+
+    Node create_hash(const Node head1, const Node head2, const std::set<Node>& vec)
+    {
+      return (  create_hash(vec)
+              ^ rol(head1, 32)
+              ^ rol(head2, 40)
+             ) & mask_node;
+    }
+
+    const std::map<Node, std::set<Node>> all_left()
+    {
+      return _left;
+    }
+
+    const std::map<Node, std::set<Node>> all_right()
+    {
+      return _right;
     }
 
     typename std::map<Node, std::set<Node>>::iterator find_right(Node a) { return  _left.find(a); }
@@ -180,8 +207,9 @@ namespace network
 	private:
 #endif
     static constexpr Node shift_inc = 5;
-    static constexpr Node mark_hash = 0x4000000000000000ul;
-    static constexpr Node mask_node = 0x7FFFFFFFFFFFFFFFul;
+    static constexpr Node mark_hash           = 0x4000000000000000ul;
+    static constexpr Node mask_node           = 0x7FFFFFFFFFFFFFFFul; // mask highest bit
+    static constexpr Node mask_highest_2_bits = 0x3ffffffffffffffful;
 
     std::map<Node, std::set<Node>> _left;
     std::map<Node, std::set<Node>> _right;
@@ -200,20 +228,20 @@ namespace network
     #pragma warning( push )  
     #pragma warning( disable : 4146 )
 #endif
-    template<typename T>
-    static inline T rol(T n, T c = 1)
+    static inline uint64_t rol(uint64_t n, uint64_t c = 1)
     {
-      const T mask = (CHAR_BIT * sizeof(n) - 1);
+      const uint64_t mask = 8*sizeof(n)-1;
       c &= mask;
-      return (n << c) | (n >> ((-c)&mask));
+      //uint64_t wrapped = n >> ((-c)&mask);
+      uint64_t wrapped = (n & mask_highest_2_bits) >> (((-c)&mask) - 2); // we want to wrap already at bit 61 (not 63), since mask_node clears bit 63 and we use bit 62 to denote hashes (mark_hash)
+      return ((n << c) | wrapped) & mask_highest_2_bits;
     }
 
-    template<typename T>
-    static inline T ror(T n, T c = 1)
+    static inline uint64_t ror(uint64_t n, uint64_t c = 1)
     {
-      const T mask = (CHAR_BIT * sizeof(n) - 1);
+      const uint64_t mask = 8*sizeof(n)-1;
       c &= mask;
-      return (n >> c) | (n << ((-c)&mask));
+      return ((n >> c) | (n << ((-c)&mask))) & mask_highest_2_bits;
     }
 #ifdef _MSC_VER
     #pragma warning( pop )

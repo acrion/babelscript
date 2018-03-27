@@ -12,5 +12,12 @@ namespace network
   namespace utils
   {
     std::shared_ptr<Variables> join(const Variables& v1, const Variables& v2);
+
+    template<typename T, typename U, typename V>
+    static T get(U container, V key, T return_if_not_found)
+    {
+      auto it = container.find(key);
+      return it == container.end() ? return_if_not_found : it->second;
+    }
   }
 }

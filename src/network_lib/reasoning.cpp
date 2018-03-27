@@ -11,17 +11,15 @@ void Reasoning::run()
     _done = false;
     for (Node rule : _pImpl->get_left(core.Causes))
     {
-      auto deduction = _pImpl->get_right(rule);
+      Node condition = parse_rule(rule, _deductions);
 
-      if (deduction.size() == 2)
+      if (condition && _deductions.size() > 0)
       {
-        auto condition = _pImpl->get_left(rule); // normally a set of 1 (the 'and' relation)
-        auto d = deduction.begin();
-        if (*d == core.Causes) ++d;
+        std::set<Node> conditions;
+        conditions.insert(condition);
           
-        _current_rule = rule;
         _next.clear();
-        evaluate(RulePos({ rule, condition.end(), condition.begin(), *d }));
+        evaluate(RulePos({ rule, conditions.end(), conditions.begin() }));
       }
     }
   } while (_done);
@@ -29,53 +27,49 @@ void Reasoning::run()
 
 void Reasoning::evaluate(RulePos rule)
 {
-  Node condition = *rule.index; // points to the relation (normally 'and' or a variable) that connects the conditions
+  Node condition = *rule.index; // points to the relation: normally 'and', connecting several conditions, or a the relation of a fact (which may consist of variables)
   auto current_op = _pImpl->get_right(condition); // get the set of Nodes the relation points to, which is its type. Empty if the relation is a variable.
+  
+  // condition points to
+  //    (1) the rule itself (i. e. the relaton node pointing to core.Causes), and
+  //    (2) the type of relation, which may be any relation type (i. e. any node pointing having a core.IsA relation to core.RelationTypeCategory),
+  //        but especially core.And (which makes this rule node a set of conditions)
   if (current_op.count(core.And) == 1)
   {
-    auto condition_back_link = _pImpl->get_left(condition);
+    auto condition_back_link = filter(_pImpl->get_left(condition), [&](Node nd) {return nd != rule.node; });
     if (condition_back_link.size() > 0)
     {
-      if (rule.node != _current_rule)
+      RulePos next(rule);
+      if (++next.index != next.end) // if we are on first recursion level, this will always fail, since the top list of conditions always has length 1
       {
-        RulePos next(rule);
-        if (++next.index != next.end)
-        {
-          _next.push_back(next);
-        }
+        _next.push_back(next);
       }
 
-      evaluate(RulePos({condition, condition_back_link.end(), condition_back_link.begin(), rule.deduction, rule.variables, rule.unequals}));
+      evaluate(RulePos({condition, condition_back_link.end(), condition_back_link.begin(), rule.variables, rule.unequals}));
     }
   }
   else
   {
     // here we run into for each part of a condition
-    Unification u(this, condition, rule.variables, rule.unequals);
+    Unification u(this, condition, rule.node, rule.variables, rule.unequals);
 
     for (std::shared_ptr<Variables> match=u.Start(); match; match=u.Next())
     {
       std::shared_ptr<Variables> joined          = utils::join(*rule.variables, *match);
       std::shared_ptr<Variables> joined_unequals = utils::join(*rule.unequals, *u.Unequals());
 
-      bool done = false;
-      if (rule.node != _current_rule)
+      RulePos next({rule.node, rule.end, rule.index, joined, joined_unequals});
+      if (++next.index != next.end) // if we are on first recursion level, this will always fail, since the top list of conditions always has length 1
       {
-        RulePos next({rule.node, rule.end, rule.index, rule.deduction, joined, joined_unequals});
-        if (++next.index != next.end)
-        {
-          evaluate(next);
-          done = true;
-        }
+        evaluate(next);
       }
-
-      if (!done && _next.size() > 0)
+      else if (_next.size() > 0)
       {
-        RulePos next(_next.back());
+        next = RulePos(_next.back());
         _next.pop_back();
         evaluate(next);
       }
-      else if (!contradicts(*joined, *joined_unequals))
+      else if (!contradicts(*joined, *joined_unequals) && joined->size()>0)
       {
         deduce(*joined);
       }
@@ -114,7 +108,7 @@ bool Reasoning::contradicts(const Variables& variables, const Variables& unequal
   return false; // no contradiction
 }
 
-void Reasoning::deduce(const Variables& variables)
+void Reasoning::deduce(const Variables& variables) // use _deductions!
 {
 
 }

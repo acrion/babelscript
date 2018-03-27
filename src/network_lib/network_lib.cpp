@@ -1,6 +1,8 @@
 #include "network_lib.h"
 #include "network_lib_impl.h"
 #include "boost/filesystem.hpp"
+#include <iomanip>
+#include <sstream>
 
 using namespace network;
 
@@ -45,9 +47,9 @@ Network_lib::Network_lib()
 	: _pImpl{new Impl}
   , core({ _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create()})
 {
-  fact(core.IsA,     core.IsA, core.RelationTypeCategory);
-  fact(core.Unequal, core.IsA, core.RelationTypeCategory);
-  fact(core.Causes,  core.IsA, core.RelationTypeCategory);
+  fact(core.IsA, core.IsA, { core.RelationTypeCategory });
+  fact(core.Unequal, core.IsA, { core.RelationTypeCategory });
+  fact(core.Causes, core.IsA, { core.RelationTypeCategory });
 }
 
 Network_lib::~Network_lib()
@@ -66,6 +68,9 @@ Node Network_lib::node(std::wstring name, std::string lang)
 	{
     Node newNode = _pImpl->create();
     _pImpl->_names[lang].insert(Impl::Names(newNode, name));
+#if _DEBUG
+    std::wcout << L"Node " << newNode << L" has name '" << name << L"' (" << std::wstring(lang.begin(), lang.end()) << L")" << std::endl;
+#endif
     return newNode;
 	}
 	else
@@ -97,6 +102,21 @@ std::wstring Network_lib::get_name(Node node)
   return L"";
 }
 
+std::string Network_lib::get_name_hex(Node node)
+{
+  std::wstring w_name = get_name(node);
+  std::string name(w_name.begin(), w_name.end());
+  
+  if (name.empty())
+  {
+    std::ostringstream o;
+    o << "0x" << std::uppercase << std::setfill('0') << std::setw(16) << std::hex << node;
+    name = o.str();
+  }
+
+  return name;
+}
+
 
 std::wstring Network_lib::Impl::get_name(Node node, decltype(_names)::iterator namesInLang)
 {
@@ -120,6 +140,10 @@ bool Network_lib::set_name(Node node, std::wstring newName, std::string lang)
   decltype(_pImpl->_names)::iterator namesInLang = _pImpl->_names.find(lang);
   decltype(namesInLang->second.left)::iterator name;
 
+#if _DEBUG
+  std::wcout << L"Node " << node << L" has name '" << newName << L"' (" << std::wstring(lang.begin(), lang.end()) << L")" << std::endl;
+#endif
+
   if (   namesInLang != _pImpl->_names.end()
       && (name = namesInLang->second.left.find(node)) != namesInLang->second.left.end()
      )
@@ -134,18 +158,15 @@ bool Network_lib::set_name(Node node, std::wstring newName, std::string lang)
 }
 
 
-std::set<Node> Network_lib::get_sources(Node relationType, Node target)
+std::set<Node> Network_lib::get_sources(Node relationType, Node target, bool exclude_vars)
 {
   std::set<Node> sources;
   
   for (Node relation: _pImpl->get_left(target))
-  {
     if (_pImpl->get_right(relation).count(relationType) == 1)
-    {
       for (Node source : _pImpl->get_left(relation))
-        sources.insert(source);
-    }
-  }
+        if (!exclude_vars || !_pImpl->is_var(source))
+          sources.insert(source);
 
   return sources;
 }
@@ -175,7 +196,7 @@ std::set<Node> Network_lib::filter(std::set<Node> source, Node relationType, Nod
     std::set<Node> possible_relations = _pImpl->get_right(nd);
     for (Node relation : filter(possible_relations, relationType))
     {
-      if (_pImpl->get_right(relation).count(target) == 1)
+      if (_pImpl->get_left(relation).count(target) == 1)
       {
         result.insert(nd);
         match = true;
@@ -202,18 +223,31 @@ std::set<Node> Network_lib::filter(std::set<Node> source, std::function<bool(Nod
   return result;
 }
 
-Answer Network_lib::check_fact(Node source, Node relationType, Node target)
+Answer Network_lib::check_fact(Node source, Node relationType, const std::set<Node>& targets)
 {
-  Node relation = _pImpl->create_hash(relationType, source, target);
+  bool known = false;
 
-  if (   !_pImpl->is_var(source|relationType|target)
-      && _pImpl->exists(relation))
+  Node relation = _pImpl->create_hash(relationType, source, targets);
+
+  if (_pImpl->exists(relation))
   {
-    return Answer(  _pImpl->probability(source, relation)
-                  * _pImpl->probability(relation, target)
-                  * _pImpl->probability(relation, relationType),
-                  relation
-                 );
+    const std::set<Node>& connectedFromRelationType = _pImpl->get_right(relation);
+    const std::set<Node>& connectedToRelationType = _pImpl->get_left(relation);
+
+    known = connectedFromRelationType.count(source) == 1
+      && connectedToRelationType.count(source) == 1 // source must be connected with and from <--> relation (to distinguish it from targets)
+      && [&]() { for (Node t : targets) if (connectedToRelationType.count(t) == 0) return false; return true; }() // targets must all be connected with relation
+      && [&]() { for (Node t : targets) if (connectedFromRelationType.count(t) == 1) return false; return true; }(); // no target must be connected from relation
+  }
+
+  if (known)
+  {
+    bool is_var = _pImpl->is_var(source | relationType)
+      || [&]() { for (Node t : targets) if (_pImpl->is_var(t)) return true; return false; }();
+    
+    return Answer(
+      is_var ? 0.5L : _pImpl->probability(relation, relationType), // probability
+      relation);
   }
   else
   {
@@ -221,14 +255,9 @@ Answer Network_lib::check_fact(Node source, Node relationType, Node target)
   }
 }
 
-Node Network_lib::fact(Node source, Node relationType, Node target, long double probability)
+Node Network_lib::fact(Node source, Node relationType, std::set<Node> targets, long double probability)
 {
-  if (source==target)
-  {
-    throw std::runtime_error("add_fact: source is identical to target");
-  }
-
-  Answer answer = check_fact(source, relationType, target);
+  Answer answer = check_fact(source, relationType, targets);
 
   if (answer.is_known())
   {
@@ -247,23 +276,137 @@ Node Network_lib::fact(Node source, Node relationType, Node target, long double 
         && !_pImpl->is_var(relationType) // we don't need to create a is-a relation to the RelationTypeCategory for variables that are used in place of relations
        )
     {
-      fact(relationType, core.IsA, core.RelationTypeCategory);
+      fact(relationType, core.IsA, { core.RelationTypeCategory });
     }
 
     _pImpl->create(answer.relation());
     _pImpl->connect(source, answer.relation());
-    _pImpl->connect(answer.relation(), target);
+    _pImpl->connect(answer.relation(), source);
+    for (Node t:targets) _pImpl->connect(t, answer.relation());
     _pImpl->connect(answer.relation(), relationType, probability);
   }
 
   return answer.relation();
 }
 
-Node Network_lib::condition(Node op, std::vector<Node> conditions)
+Node Network_lib::condition(Node op, std::set<Node> conditions)
 {
   Node relation = _pImpl->create_hash(op, conditions);
   _pImpl->create(relation);
   _pImpl->connect(relation, op);
   for (Node condition : conditions) _pImpl->connect(condition, relation);
   return relation;
+}
+
+
+Node Network_lib::parse_rule(Node rule, std::set<Node>& deducations)
+{
+  Node condition = 0;
+  deducations.clear();
+  for (Node nd : _pImpl->get_left(rule))
+  {
+    if (nd != core.Causes)
+    {
+      if (_pImpl->get_left(nd).count(rule) == 1)
+      {
+        if (condition)
+          return 0;
+        else
+          condition = nd;
+      }
+      else
+        deducations.insert(nd);
+    }
+  }
+
+  return condition;
+}
+
+void Network_lib::add_nodes(Node current, std::set<Node>& touched, const std::set<Node>& conditions, const std::set<Node>& deductions, std::ofstream& dot)
+{
+  if (touched.count(current) == 0)
+  {
+    touched.insert(current);
+    std::string current_name = get_name_hex(current);
+
+    if (_pImpl->is_var(current))
+    {
+      dot << "\"" << current_name << "\" [color=cornsilk2, style=filled]" << std::endl;
+    }
+    else if (conditions.find(current) != conditions.end())
+    {
+      dot << "\"" << current_name << "\" [color=lightskyblue, style=filled]" << std::endl;
+    }
+    else if (deductions.find(current) != deductions.end())
+    {
+      dot << "\"" << current_name << "\" [color=darkolivegreen2, style=filled]" << std::endl;
+    }
+
+    for (const Node& left : _pImpl->get_left(current))
+    {
+      Node hash = _pImpl->create_hash({ current,left });
+      if (touched.count(hash) == 0)
+      {
+        touched.insert(hash);
+        std::string left_name = get_name_hex(left);
+        dot << "\"" << left_name << "\" -> \"" << current_name << "\"";
+
+        if (_pImpl->find_left(left)->second.count(current) == 1)
+        {
+          dot << R"( [dir="both"])";
+        }
+
+        dot << ";" << std::endl;
+      }
+      add_nodes(left, touched, conditions, deductions, dot);
+    }
+
+    for (const Node& right : _pImpl->get_right(current))
+    {
+      Node hash = _pImpl->create_hash({ current,right });
+      if (touched.count(hash) == 0)
+      {
+        touched.insert(hash);
+        std::string right_name = get_name_hex(right);
+        dot << "\"" << current_name << "\" -> \"" << right_name << "\"";
+
+        if (_pImpl->find_right(right)->second.count(current) == 1)
+        {
+          dot << R"( [dir="both"])";
+        }
+
+        dot << ";" << std::endl;
+      }
+      add_nodes(right, touched, conditions, deductions, dot);
+    }
+  }
+}
+
+void Network_lib::gen_dot(Node start, std::string file_name)
+{
+  std::set<Node> conditions, deductions;
+  
+  for (Node rule : _pImpl->get_left(core.Causes))
+  {
+    std::set<Node> current_deductions;
+    Node condition = parse_rule(rule, current_deductions);
+
+    if (condition)
+    {
+      conditions.insert(condition);
+      for (Node deduction : current_deductions)
+      {
+        deductions.insert(deduction);
+      }
+    }
+  }
+
+  std::set<Node> touched;
+  std::ofstream dot(file_name, std::ios_base::out);
+
+  dot << "digraph graphname{" << std::endl;
+
+  add_nodes(start, touched, conditions, deductions, dot);
+  
+  dot << "}" << std::endl;
 }
