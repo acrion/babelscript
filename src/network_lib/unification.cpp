@@ -16,6 +16,12 @@ Unification::Unification(Network_lib* n, Node condition, Node parent, std::share
   // so "condition" may point of core.And (or any other 
 
   std::set<Node> relations = _n->filter(_n->_pImpl->get_right(condition), _n->core.IsA, _n->core.RelationTypeCategory);
+  
+  {
+    // exclude the subject of the condition, since it is connected bidirectional. If the subject is also a relationtype, it would be included in the relations by mistake
+    std::set<Node> left_nodes = _n->_pImpl->get_left(condition);
+    relations = _n->filter(relations, [&](Node nd) { return left_nodes.count(nd) == 0; });
+  }
 
   if (relations.size()==1) // more than one relation for given condition makes no sense. _relation_list is empty, so Next() won't return anything
   {
@@ -50,17 +56,24 @@ std::shared_ptr<Variables> Unification::Start()
     return std::make_shared<Variables>();
 
   _relation_index = _relation_list.begin();
-  _fact_index = _n->_pImpl->find_left(*_relation_index)->second.begin(); // we know that result of get_left is valid, because node *_relation_index exists
+  auto left_nodes = _n->_pImpl->find_left(*_relation_index);
+
+  if (left_nodes == _n->_pImpl->right_end())
+  {
+    return nullptr; // shouldn't happen since *_relation_index exists
+  }
+
+  _fact_index = left_nodes->second.begin();
 
   return Next();
 }
 
 std::shared_ptr<Variables> Unification::Next()
 {
-  if (_relation_variable == 0 && _relation_list.size() > 0 && *_relation_list.begin() == _n->core.Unequal)
+  if (_relation_list.size() == 0 || (_relation_variable == 0 && *_relation_list.begin() == _n->core.Unequal))
     return nullptr;
 
-  while (_relation_index != _relation_list.end())
+  while (true)
   {
     if (_relation_variable == 0 || !_variables || utils::get(*_variables, _relation_variable, *_relation_index) == *_relation_index)
     {
@@ -88,14 +101,17 @@ std::shared_ptr<Variables> Unification::Next()
         {
           std::shared_ptr<Variables> result = std::make_shared<Variables>();
 
-          if (_variables->count(_subject)==0) (*result)[_subject] = subject;
-          if (_variables->count(*_objects.begin())==0) (*result)[*_objects.begin()] = *objects.begin(); // todo: what if more than one?
+          if (_variables->count(_subject)==0          && _n->_pImpl->is_var(_subject))          (*result)[_subject]          = subject;
+          if (_variables->count(*_objects.begin())==0 && _n->_pImpl->is_var(*_objects.begin())) (*result)[*_objects.begin()] = *objects.begin(); // todo: what if more than one?
           if (_relation_variable != 0 && _variables->count(_relation_variable)==0) (*result)[_relation_variable] = *_relation_index;
 
+          ++_fact_index;
           return result;
         }
-
-        ++_fact_index;
+        else
+        {
+          ++_fact_index;
+        }
       }
     }
 

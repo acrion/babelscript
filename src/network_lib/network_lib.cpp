@@ -1,6 +1,7 @@
 #include "network_lib.h"
 #include "network_lib_impl.h"
-#include "boost/filesystem.hpp"
+#include <fstream>
+#include <boost/algorithm/string.hpp>
 #include <iomanip>
 #include <sstream>
 
@@ -102,18 +103,30 @@ std::wstring Network_lib::get_name(Node node)
   return L"";
 }
 
-std::string Network_lib::get_name_hex(Node node)
+std::string Network_lib::get_name_hex(Node node, bool prepend_num)
 {
-  std::wstring w_name = get_name(node);
-  std::string name(w_name.begin(), w_name.end());
+  std::string name = utils::str(get_name(node));
   
   if (name.empty())
   {
-    std::ostringstream o;
-    o << "0x" << std::uppercase << std::setfill('0') << std::setw(16) << std::hex << node;
-    name = o.str();
+    if (_pImpl->is_var(node))
+    {
+      name = std::to_string(static_cast<int>(node));
+    }
+    else
+    {
+      std::ostringstream o;
+      o << "0x" << std::uppercase << std::setfill('0') << std::setw(16) << std::hex << node;
+      name = o.str();
+    }
+  }
+  else if (prepend_num && !_pImpl->is_hash(node) && !_pImpl->is_var(node))
+  {
+    name  = "(" + std::to_string(node) + ") " + name;
   }
 
+  boost::replace_all(name, "\r\n", "\\n");
+  boost::replace_all(name, "\n", "\\n");
   return name;
 }
 
@@ -162,10 +175,10 @@ std::set<Node> Network_lib::get_sources(Node relationType, Node target, bool exc
 {
   std::set<Node> sources;
   
-  for (Node relation: _pImpl->get_left(target))
+  for (Node relation: _pImpl->get_right(target))
     if (_pImpl->get_right(relation).count(relationType) == 1)
       for (Node source : _pImpl->get_left(relation))
-        if (!exclude_vars || !_pImpl->is_var(source))
+        if (source!=target && (!exclude_vars || !_pImpl->is_var(source)))
           sources.insert(source);
 
   return sources;
@@ -272,9 +285,7 @@ Node Network_lib::fact(Node source, Node relationType, std::set<Node> targets, l
   }
   else
   {
-    if (    relationType != core.IsA // note that the initial constructor call fact(core.IsA, core.IsA, core.RelationTypeCategory) is executed as intended
-        && !_pImpl->is_var(relationType) // we don't need to create a is-a relation to the RelationTypeCategory for variables that are used in place of relations
-       )
+    if (relationType != core.IsA) // note that the initial constructor call fact(core.IsA, core.IsA, core.RelationTypeCategory) is executed as intended
     {
       fact(relationType, core.IsA, { core.RelationTypeCategory });
     }
@@ -284,6 +295,28 @@ Node Network_lib::fact(Node source, Node relationType, std::set<Node> targets, l
     _pImpl->connect(answer.relation(), source);
     for (Node t:targets) _pImpl->connect(t, answer.relation());
     _pImpl->connect(answer.relation(), relationType, probability);
+
+#ifdef _DEBUG
+    bool has_name = !get_name(answer.relation()).empty() || !get_name(source).empty() || !get_name(relationType).empty();
+    if (!has_name)
+      for (Node t:targets)
+        if (!get_name(t).empty())
+        {
+          has_name = true;
+          break;
+        }
+
+    if (has_name)
+    {
+      std::string targets_name;
+      for (Node t : targets)
+      {
+        if (!targets_name.empty()) targets_name += " and ";
+        targets_name += get_name_hex(t, false);
+      }
+      set_name(answer.relation(), utils::wstr(get_name_hex(answer.relation(), false) + "\n" + get_name_hex(source, false) + " " + get_name_hex(relationType, false) + " " + targets_name));
+    }
+#endif
   }
 
   return answer.relation();

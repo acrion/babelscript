@@ -29,5 +29,15 @@ namespace network
 
       return result;
     }
+
+    std::string str(std::wstring str)
+    {
+      return std::string(str.begin(), str.end());
+    }
+
+    std::wstring wstr(std::string str)
+    {
+      return std::wstring(str.begin(), str.end());
+    }
   }
 }
