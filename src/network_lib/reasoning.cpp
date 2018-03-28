@@ -11,9 +11,9 @@ void Reasoning::run()
     _done = false;
     for (Node rule : _pImpl->get_left(core.Causes))
     {
-      Node condition = parse_rule(rule, _deductions);
+      Node condition = parse_fact(rule, _deductions);
 
-      if (condition && _deductions.size() > 0)
+      if (condition && condition != core.Causes && _deductions.size() > 0)
       {
         std::set<Node> conditions;
         conditions.insert(condition);
@@ -110,5 +110,69 @@ bool Reasoning::contradicts(const Variables& variables, const Variables& unequal
 
 void Reasoning::deduce(const Variables& variables) // use _deductions!
 {
+  for (Node deduction : _deductions)
+  {
+    if (deduction == core.Contradiction)
+    {
+      throw std::runtime_error("Contradiction!");
+    }
+    
+    std::set<Node> relations = filter(deduction, core.IsA, core.RelationTypeCategory);
 
+    if (relations.size() == 1) // more than one relation for given condition makes no sense. _relation_list is empty, so Next() won't return anything
+    {
+      Node rel    = utils::get(variables, *relations.begin(), 0ull);
+
+      if (rel)
+      {
+        std::set<Node> var_targets;
+        Node var_source = parse_fact(deduction, var_targets);
+
+        if (var_targets.size() > 0)
+        {
+          Node source = utils::get(variables, var_source, 0ull);
+
+          if (source)
+          {
+            std::set<Node> targets;
+            bool done = true;
+            for (Node var_t : var_targets)
+            {
+              Node t = utils::get(variables, var_t, 0ull);
+              if (t)
+              {
+                targets.insert(t);
+              }
+              else
+              {
+                done = false;
+                break;
+              }
+            }
+
+            if (done)
+            {
+              Answer answer = check_fact(source, rel, targets);
+
+              if (answer.is_wrong())
+              {
+                throw std::runtime_error("Deduction is known to be wrong.");
+              }
+              else if (!answer.is_known())
+              {
+                try
+                {
+                  fact(source, rel, targets);
+                }
+                catch (std::exception& ex)
+                {
+                  throw std::runtime_error(std::string("Deduction cannot be added: ") + ex.what());
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }

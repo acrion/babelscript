@@ -199,8 +199,10 @@ std::set<Node> Network_lib::filter(std::set<Node> source, Node target)
   return result;
 }
 
-std::set<Node> Network_lib::filter(std::set<Node> source, Node relationType, Node target, std::set<Node>* filtered_away)
+std::set<Node> Network_lib::filter(Node fact, Node relationType, Node target)
 {
+  std::set<Node> source     = _pImpl->get_right(fact);
+  std::set<Node> left_nodes = _pImpl->get_left(fact);
   std::set<Node> result;
 
   for (Node nd : source)
@@ -209,15 +211,12 @@ std::set<Node> Network_lib::filter(std::set<Node> source, Node relationType, Nod
     std::set<Node> possible_relations = _pImpl->get_right(nd);
     for (Node relation : filter(possible_relations, relationType))
     {
-      if (_pImpl->get_left(relation).count(target) == 1)
+      if (   _pImpl->get_left(relation).count(target) == 1
+          && left_nodes.count(nd)==0) // exclude the subject of the fact, since it is connected bidirectional. If <subject relationType target> is true, the subject would be included in the result by mistake
       {
         result.insert(nd);
         match = true;
       }
-    }
-    if (filtered_away && !match)
-    {
-      filtered_away->insert(nd);
     }
   }
 
@@ -332,27 +331,24 @@ Node Network_lib::condition(Node op, std::set<Node> conditions)
 }
 
 
-Node Network_lib::parse_rule(Node rule, std::set<Node>& deducations)
+Node Network_lib::parse_fact(Node rule, std::set<Node>& subjects)
 {
-  Node condition = 0;
-  deducations.clear();
+  Node object = 0; // 0 means failure
+  subjects.clear();
   for (Node nd : _pImpl->get_left(rule))
   {
-    if (nd != core.Causes)
+    if (_pImpl->get_left(nd).count(rule) == 1)
     {
-      if (_pImpl->get_left(nd).count(rule) == 1)
-      {
-        if (condition)
-          return 0;
-        else
-          condition = nd;
-      }
+      if (object)
+        return 0; // there may be only 1 object
       else
-        deducations.insert(nd);
+        object = nd;
     }
+    else
+      subjects.insert(nd);
   }
 
-  return condition;
+  return object;
 }
 
 void Network_lib::add_nodes(Node current, std::set<Node>& touched, const std::set<Node>& conditions, const std::set<Node>& deductions, std::ofstream& dot)
@@ -422,7 +418,7 @@ void Network_lib::gen_dot(Node start, std::string file_name)
   for (Node rule : _pImpl->get_left(core.Causes))
   {
     std::set<Node> current_deductions;
-    Node condition = parse_rule(rule, current_deductions);
+    Node condition = parse_fact(rule, current_deductions);
 
     if (condition)
     {

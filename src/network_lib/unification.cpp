@@ -15,18 +15,12 @@ Unification::Unification(Network_lib* n, Node condition, Node parent, std::share
   // "condition" means here one of the predicates that form a list of conditions (which are connected by "and"),
   // so "condition" may point of core.And (or any other 
 
-  std::set<Node> relations = _n->filter(_n->_pImpl->get_right(condition), _n->core.IsA, _n->core.RelationTypeCategory);
+  std::set<Node> relations = _n->filter(condition, _n->core.IsA, _n->core.RelationTypeCategory);
   
-  {
-    // exclude the subject of the condition, since it is connected bidirectional. If the subject is also a relationtype, it would be included in the relations by mistake
-    std::set<Node> left_nodes = _n->_pImpl->get_left(condition);
-    relations = _n->filter(relations, [&](Node nd) { return left_nodes.count(nd) == 0; });
-  }
-
   if (relations.size()==1) // more than one relation for given condition makes no sense. _relation_list is empty, so Next() won't return anything
   {
     Node relation = *relations.begin(); // there is always only 1 relation
-    _subject = _n->parse_rule(condition, _objects);
+    _subject = _n->parse_fact(condition, _objects);
 
     if (_n->_pImpl->is_var(relation))
     {
@@ -80,7 +74,7 @@ std::shared_ptr<Variables> Unification::Next()
       while (_fact_index != _n->_pImpl->find_left(*_relation_index)->second.end())
       {
         std::set<Node> objects;
-        Node subject = _n->parse_rule(*_fact_index, objects);
+        Node subject = _n->parse_fact(*_fact_index, objects);
 
         //objects = _n->filter(objects, [&](Node nd)
         //{

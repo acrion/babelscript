@@ -23,9 +23,9 @@ namespace network
     std::string get_name_hex(Node node, bool prepend_num=true);
     bool set_name(Node node, std::wstring name, std::string lang="en");
     std::set<Node> get_sources(Node relationType, Node target, bool exclude_vars=false);
-    Node parse_rule(Node rule, std::set<Node>& deducations);
+    Node parse_fact(Node rule, std::set<Node>& deducations);
     std::set<Node> filter(std::set<Node> source, Node target);
-    std::set<Node> filter(std::set<Node> source, Node relationType, Node target, std::set<Node>* filtered_away=nullptr);
+    std::set<Node> filter(Node fact, Node relationType, Node target);
     std::set<Node> filter(std::set<Node> source, std::function<bool(Node nd)> f);
     Answer check_fact(Node source, Node relationType, const std::set<Node>& targets);
     Node fact(Node source, Node relationType, std::set<Node> targets, long double probability=1);
