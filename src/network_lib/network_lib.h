@@ -13,7 +13,7 @@ namespace network
   class NETWORK_LIB_EXPORT Network_lib
 	{    
   public:
-		Network_lib();
+    Network_lib(std::function<void(std::wstring)> print);
 		~Network_lib();
 
     Node node(std::wstring name, std::string lang);
@@ -31,6 +31,7 @@ namespace network
     Node fact(Node source, Node relationType, std::set<Node> targets, long double probability=1);
     Node condition(Node op, std::set<Node> conditions);
     void gen_dot(Node start, std::string file_name);
+    static const std::string get_version();
 
 		void debug();
 #ifdef _DEBUG
@@ -41,6 +42,8 @@ namespace network
     // member list
     class Impl;
     Impl* const _pImpl; // must stay at top of members list because of initialization order
+
+    std::function<void(std::wstring)> _print;
 
     const struct PredefinedNode
     {

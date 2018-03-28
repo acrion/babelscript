@@ -4,6 +4,10 @@
 
 using namespace network;
 
+Reasoning::Reasoning(std::function<void(std::wstring)> print) : Network_lib(print)
+{
+}
+
 void Reasoning::run()
 {
   do

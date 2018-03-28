@@ -7,6 +7,11 @@
 
 using namespace network;
 
+const std::string Network_lib::get_version()
+{
+  return "2.0";
+}
+
 #ifdef _DEBUG
 	#include <iostream>
 
@@ -44,8 +49,9 @@ using namespace network;
 	}
 #endif
 
-Network_lib::Network_lib()
+Network_lib::Network_lib(std::function<void(std::wstring)> print)
 	: _pImpl{new Impl}
+  , _print(print)
   , core({ _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create()})
 {
   fact(core.IsA, core.IsA, { core.RelationTypeCategory });

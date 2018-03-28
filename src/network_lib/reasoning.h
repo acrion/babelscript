@@ -22,6 +22,7 @@ namespace network
   class NETWORK_LIB_EXPORT Reasoning : public Network_lib
   {
   public:
+    Reasoning(std::function<void(std::wstring)>);
     void run();
 
   private:
