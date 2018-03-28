@@ -247,7 +247,7 @@ Answer Network_lib::check_fact(Node source, Node relationType, const std::set<No
     const std::set<Node>& connectedToRelationType = _pImpl->get_left(relation);
 
     known = connectedFromRelationType.count(source) == 1
-      && connectedToRelationType.count(source) == 1 // source must be connected with and from <--> relation (to distinguish it from targets)
+      && connectedToRelationType.count(source) == 1 // source must be connected with and from <--> relation (i. e. bidirectional, to distinguish it from targets)
       && [&]() { for (Node t : targets) if (connectedToRelationType.count(t) == 0) return false; return true; }() // targets must all be connected with relation
       && [&]() { for (Node t : targets) if (connectedFromRelationType.count(t) == 1) return false; return true; }(); // no target must be connected from relation
   }
@@ -420,7 +420,7 @@ void Network_lib::gen_dot(Node start, std::string file_name)
     std::set<Node> current_deductions;
     Node condition = parse_fact(rule, current_deductions);
 
-    if (condition)
+    if (condition && condition!=core.Causes)
     {
       conditions.insert(condition);
       for (Node deduction : current_deductions)

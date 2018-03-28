@@ -1,5 +1,3 @@
-#pragma once
-
 #include <unification.h>
 #include "network_lib_impl.h"
 #include "utils.h"

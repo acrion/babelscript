@@ -31,8 +31,8 @@ int main()
     n.fact(condition, n.core.Causes, { n.fact(X, R, {Z}) });
   }
 
-  n.fact(n.node(L"Haus", "de"), n.node(L"hat den Bestandteil", "de"), { n.node(L"Tür", "de") });
-  n.fact(n.node(L"Tür", "de"), n.node(L"hat den Bestandteil", "de"), { n.node(L"Griff", "de") });
+  n.fact(n.node(L"Haus", "de"), n.node(L"hat den Bestandteil", "de"), { n.node(L"T\xfcr", "de") });
+  n.fact(n.node(L"T\xfcr", "de"), n.node(L"hat den Bestandteil", "de"), { n.node(L"Griff", "de") });
   n.gen_dot(n.core.RelationTypeCategory, "test.dot");
 
   try
