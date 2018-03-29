@@ -1,3 +1,6 @@
+X ist ein Y => X ~ Y
+X ist eine Y => X ist ein Y
+
 "hat die Eigenschaft" ist ein ->
 "hat den Bestandteil" ist ein ->
 "ist Gegenteil von"   ist ein ->
@@ -6,9 +9,6 @@
 "ist Eigenschaft von" ist Gegenteil von "hat die Eigenschaft"
 "ist Teil von"        ist Gegenteil von "hat den Bestandteil"
 "ist zum Beispiel"    ist Gegenteil von "ist ein"
-
-X ist ein Y => X ~ Y
-X ist eine Y => X ist ein Y
 
 "hat den Bestandteil" hat die Eigenschaft transitiv
 "hat die Eigenschaft" hat die Eigenschaft transitiv

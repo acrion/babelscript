@@ -34,8 +34,13 @@ int main(int argc, char** argv)
     std::cout << std::endl;
     for (std::wstring line; std::getline(std::wcin, line) && line != exit_command; )
     {
-      interactive.process(line);
-      interactive.run();
+      if (line.empty())
+        std::wcout << "type " << exit_command << L" to exit --" << std::endl;
+      else
+      {
+        interactive.process(line);
+        interactive.run();
+      }
     }
 
 #if 0

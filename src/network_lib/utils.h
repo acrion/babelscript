@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include <memory>
+#include <vector>
 
 namespace network
 {
@@ -20,6 +21,18 @@ namespace network
     {
       auto it = container.find(key);
       return it == container.end() ? return_if_not_found : it->second;
+    }
+
+    template<typename T>
+    static std::basic_string<T> concatenate(std::vector<std::basic_string<T>> list, T separator)
+    {
+      std::basic_string<T> connected;
+      for (std::basic_string<T> t : list)
+      {
+        if (!connected.empty()) connected += separator;
+        connected += t;
+      }
+      return connected;
     }
   }
 }
