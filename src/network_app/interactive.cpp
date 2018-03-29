@@ -53,6 +53,12 @@ void Interactive::process(std::wstring line)
     escaped_list_separator<wchar_t>(L"\\", L" \t", L"\""));
 
   decltype(tok)::iterator it = tok.begin();
+
+  if (it == tok.end())
+  {
+    return; // empty line
+  }
+
   if (*it == L".lang")
   {
     if (++it == tok.end()) throw std::runtime_error("Command .lang: Missing language identifier");
@@ -207,6 +213,18 @@ network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& t
       }
     }
   };
+
+  if (tokens.size() == 1)
+  {
+    if (*tokens.begin() == _n->get_name(_n->core.Contradiction))
+    {
+      return _n->core.Contradiction;
+    }
+    else
+    {
+      throw std::runtime_error(utils::str(L"Fact '" + *tokens.begin() + L"' consists of only 1 token, which is only allowed for contradiction '" + _n->get_name(_n->core.Contradiction) + L"'"));
+    }
+  }
 
   std::vector<C> combined;
   bool done_all=true;

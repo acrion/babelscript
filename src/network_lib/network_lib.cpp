@@ -78,7 +78,7 @@ Node Network_lib::node(std::wstring name, std::string lang)
     Node newNode = _pImpl->create();
     _pImpl->_names[lang].insert(Impl::Names(newNode, name));
 #if _DEBUG
-    std::wcout << L"Node " << newNode << L" has name '" << name << L"' (" << std::wstring(lang.begin(), lang.end()) << L")" << std::endl;
+    //std::wcout << L"Node " << newNode << L" has name '" << name << L"' (" << std::wstring(lang.begin(), lang.end()) << L")" << std::endl;
 #endif
     return newNode;
 	}
@@ -176,7 +176,7 @@ bool Network_lib::set_name(Node node, std::wstring newName, std::string lang)
   decltype(namesInLang->second.left)::iterator name;
 
 #if _DEBUG
-  std::wcout << L"Node " << node << L" has name '" << newName << L"' (" << std::wstring(lang.begin(), lang.end()) << L")" << std::endl;
+  //std::wcout << L"Node " << node << L" has name '" << newName << L"' (" << std::wstring(lang.begin(), lang.end()) << L")" << std::endl;
 #endif
 
   if (   namesInLang != _pImpl->_names.end()
