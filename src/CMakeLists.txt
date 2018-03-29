@@ -3,16 +3,28 @@ set(CMAKE_CXX_STANDARD 14)
 project (network)
 include(GenerateExportHeader)
 
-#set(BOOST_BASE C:/T/Ophthalmic/Surgery/Branches/Development/Build/External)
-#set(BOOST_VER 1.66.0.0)
+set(BOOST_INCLUDEDIR Y:/ThirdParty/boost_1_66_0)
 
-#link_directories(             ${BOOST_BASE}/boost_filesystem-vc140.${BOOST_VER}/lib/native) 
-#link_directories(             ${BOOST_BASE}/boost_system-vc140.${BOOST_VER}/lib/native)
-#list(APPEND CMAKE_PREFIX_PATH ${BOOST_BASE}/boost.${BOOST_VER}/lib/native/include)
+message(STATUS "BOOST_INCLUDEDIR 1  = ${BOOST_INCLUDEDIR}")
 
-#find_package( boost REQUIRED)
+if(NOT IS_DIRECTORY ${BOOST_INCLUDEDIR})
+    set(BOOST_INCLUDEDIR "${CMAKE_BINARY_DIR}/../../boost")
+endif()
 
-# stuff for boost that must be done prior creating the target (because of link_directories)
+set(BOOST_LIBRARYDIR ${BOOST_INCLUDEDIR}/stage/lib)
+set( Boost_USE_STATIC_LIBS ON )
+include_directories(
+    ${BOOST_INCLUDEDIR}
+    ${BOOST_INCLUDEDIR}/libs/dll/include
+    ${BOOST_INCLUDEDIR}/libs/filesystem/include
+    ${BOOST_INCLUDEDIR}/libs/core/include
+)
+message(STATUS "BOOST_INCLUDEDIR 2  = ${BOOST_INCLUDEDIR}")
+if (MSVC) # with Visual Studio we can rely on boost auto-linking
+  add_definitions(-DBOOST_LIB_DIAGNOSTIC)
+  link_directories(${BOOST_LIBRARYDIR})
+endif()
+
 
 # set compiler flags
 if (WIN32)

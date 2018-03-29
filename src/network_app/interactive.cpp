@@ -2,6 +2,7 @@
 #include "reasoning.h"
 #include "utils.h"
 #include <boost/tokenizer.hpp>
+#include <boost/bimap.hpp>
 #include <iostream>
 
 using namespace babelscript_console;
@@ -18,10 +19,10 @@ public:
     }))
   {}
 
-  network::Node process_fact(const std::vector<std::wstring>& tokens, const std::vector<std::vector<std::wstring>>& relations);
+  network::Node process_fact(const std::vector<std::wstring>& tokens, const std::map<std::vector<std::wstring>, Node>& relations, boost::bimap<std::wstring, Node>& variables);
+  static bool is_var(std::wstring token);
 
   Reasoning* const _n;
-  std::map<std::wstring, Node> _var;
   std::string _lang{"en"};
 };
 
@@ -52,15 +53,7 @@ void Interactive::process(std::wstring line)
     escaped_list_separator<wchar_t>(L"\\", L" \t", L"\""));
 
   decltype(tok)::iterator it = tok.begin();
-  if (*it == L".name")
-  {
-    if (++it == tok.end()) throw std::runtime_error("Command .name: Missing variable name and its value");
-    auto var = _pImpl->_var.find(*it);
-    if (var==_pImpl->_var.end()) throw std::runtime_error("Command .name: Unknown variable '"+utils::str(*it)+"'");
-    if (++it == tok.end()) throw std::runtime_error("Command .name: Missing value for variable "+utils::str(var->first));
-    _pImpl->_n->set_name(var->second, *it, _pImpl->_lang);
-  }
-  else if (*it == L".lang")
+  if (*it == L".lang")
   {
     if (++it == tok.end()) throw std::runtime_error("Command .lang: Missing language identifier");
     _pImpl->_lang = utils::str(*it);
@@ -72,10 +65,11 @@ void Interactive::process(std::wstring line)
   }
   else
   {
+    boost::bimap<std::wstring, network::Node> variables;
     std::vector<std::wstring> tokens;
     bool is_rule=false;
     std::wstring assigns_to_var;
-    std::wstring first_var = is_var(*it) ? L"":*it;
+    std::wstring first_var = Impl::is_var(*it) ? L"":*it;
     for (; it != tok.end(); ++it)
     {
       tokens.push_back(*it);
@@ -93,7 +87,7 @@ void Interactive::process(std::wstring line)
       }
     }
 
-    std::vector<std::vector<std::wstring>> relations;
+    std::map<std::vector<std::wstring>, network::Node> relations;
     for (network::Node relation : _pImpl->_n->get_sources(_pImpl->_n->core.IsA, _pImpl->_n->core.RelationTypeCategory, true))
     {
       std::wstring name = _pImpl->_n->get_name(relation, _pImpl->_lang);
@@ -103,8 +97,8 @@ void Interactive::process(std::wstring line)
           escaped_list_separator<wchar_t>(L"\\", L" \t", L"\""));
 
         std::vector<std::wstring> list;
-        for (decltype(tok)::iterator it = t.begin(); it!=t.end(); ++it) list.push_back(*it);
-        relations.push_back(list);
+        for (decltype(tok)::iterator to = t.begin(); it!=t.end(); ++it) list.push_back(*to);
+        relations[list] = relation;
       }
     }
 
@@ -115,20 +109,110 @@ void Interactive::process(std::wstring line)
     }
     else
     {
-      fact = _pImpl->process_fact(tokens, relations);
+      fact = _pImpl->process_fact(tokens, relations, variables);
     }
 
     if (!assigns_to_var.empty())
     {
-      _pImpl->_var[assigns_to_var] = fact;
       _pImpl->_n->set_name(fact, assigns_to_var, _pImpl->_lang);
     }
   }
 }
 
-network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, const std::vector<std::vector<std::wstring>>& relations)
+network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, const std::map<std::vector<std::wstring>, network::Node>& relations, boost::bimap<std::wstring, network::Node>& variables)
 {
-    return 0;
+  struct C
+  {
+    network::Node node;
+    std::wstring token;
+
+    operator network::Node()
+    {
+      return node ? node:_n->node(token, _lang);
+    }
+  };
+
+  std::vector<C> combined;
+  bool done_all=true;
+  network::Node result=0;
+
+  for (int i=0; i<tokens.size(); ++i)
+  {
+    std::wstring token = tokens[i];
+
+    if (is_var(token))
+    {
+      auto var = variables.left.find(token);
+      if (var==variables.left.end())
+      {
+        Node node = _n->var();
+        variables.left.insert(boost::bimap<std::wstring, network::Node>::left_value_type(token, node));
+      }
+      else
+      {
+        combined.push_back({var->second});
+      }
+    }
+    else
+    {
+      int len=1;
+      bool done=false;
+      for (; len <= tokens.size()-i && !is_var(tokens[i]); ++len)
+      {
+        std::vector<std::wstring> test;
+        test.insert(test.end(), tokens.begin()+i, tokens.begin()+i+len);
+        auto relation = relations.find(test);
+        if (relation != relations.end())
+        {
+          combined.push_back({relation->second});
+          done = true;
+          break;
+        }
+        else
+        {
+          std::wstring connected;
+          for (std::wstring t : test)
+          {
+            if (!connected.empty()) connected += L" ";
+            connected += t;
+          }
+
+          network::Node node = _n->get_node(connected, _lang);
+          if (node)
+          {
+            combined.push_back({node});
+            done = true;
+            break;
+          }
+        }
+      }
+
+      if (done)
+      {
+        i += len-1;
+      }
+      else
+      {
+        combined.push_back({0,token});
+        done_all = false;
+      }
+    }
+  }
+
+  if (combined.size()<3) throw std::runtime_error("A fact must consist of at least 3 tokens.");
+
+  if (done_all || combined.size()==3)
+  {
+    std::set<Node> objects;
+    for (int i=2; i<combined.size(); ++i) objects.insert(combined[i]);
+    result = _n->fact(combined[0], combined[1], objects);
+  }
+  else
+  {
+
+  }
+
+  return result;
 }
 
 void Interactive::run()
@@ -137,7 +221,7 @@ void Interactive::run()
 }
 
 
-bool Interactive::is_var(std::wstring token)
+bool Interactive::Impl::is_var(std::wstring token)
 {
   if (token.size()==1)
     return true;

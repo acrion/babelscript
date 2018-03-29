@@ -139,6 +139,20 @@ std::string Network_lib::get_name_hex(Node node, bool prepend_num)
 }
 
 
+Node Network_lib::get_node(std::wstring name, std::string lang)
+{
+  auto names_in_lang = _pImpl->_names.find(lang);
+  if (names_in_lang == _pImpl->_names.end())
+  {
+    return 0;
+  }
+  else
+  {
+    auto nd = names_in_lang->second.right.find(name);
+    return nd != names_in_lang->second.right.end() ? nd->second : 0;
+  }
+}
+
 std::wstring Network_lib::Impl::get_name(Node node, decltype(_names)::iterator namesInLang)
 {
   decltype(namesInLang->second.left)::iterator name;

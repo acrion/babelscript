@@ -20,6 +20,7 @@ namespace network
     Node var();
     std::wstring get_name(Node node);
     std::wstring get_name(Node node, std::string lang);
+    Node get_node(std::wstring name, std::string lang);
     std::string get_name_hex(Node node, bool prepend_num=true);
     bool set_name(Node node, std::wstring name, std::string lang="en");
     std::set<Node> get_sources(Node relationType, Node target, bool exclude_vars=false);

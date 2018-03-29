@@ -13,7 +13,6 @@ namespace babelscript_console
     void process(std::wstring line);
     void run();
     static std::string get_version();
-    static bool is_var(std::wstring token);
 
   private:
     class Impl;

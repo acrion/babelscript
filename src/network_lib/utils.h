@@ -1,5 +1,5 @@
 #pragma once
-
+#include "network_lib_export.h"
 #include <string>
 #include <map>
 #include <memory>
@@ -12,8 +12,8 @@ namespace network
   namespace utils
   {
     std::shared_ptr<Variables> join(const Variables& v1, const Variables& v2);
-    std::string str(std::wstring str);
-    std::wstring wstr(std::string str);
+    std::string NETWORK_LIB_EXPORT str(std::wstring str);
+    std::wstring NETWORK_LIB_EXPORT wstr(std::string str);
 
     template<typename T, typename U, typename V>
     static T get(U container, V key, T return_if_not_found)
