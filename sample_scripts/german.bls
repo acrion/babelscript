@@ -1,18 +1,18 @@
-"hat die Eigenschaft" ist ein R
-"hat den Bestandteil" ist ein R
-"ist Gegenteil von"   ist ein R
-"ist eine"            ist ein R
+"hat die Eigenschaft" ist ein ->
+"hat den Bestandteil" ist ein ->
+"ist Gegenteil von"   ist ein ->
+"ist eine"            ist ein ->
 
 "ist Eigenschaft von" ist Gegenteil von "hat die Eigenschaft"
 "ist Teil von"        ist Gegenteil von "hat den Bestandteil"
 "ist zum Beispiel"    ist Gegenteil von "ist ein"
 
-X ist ein Y => X E Y
+X ist ein Y => X ~ Y
 X ist eine Y => X ist ein Y
 
 "hat den Bestandteil" hat die Eigenschaft transitiv
 "hat die Eigenschaft" hat die Eigenschaft transitiv
-E                     hat die Eigenschaft transitiv
+~                     hat die Eigenschaft transitiv
 
 R hat die Eigenschaft transitiv, X R Y, Y R Z => X R Z
 X hat die Eigenschaft E, E ist ein K          => X hat die Eigenschaft K
@@ -35,8 +35,8 @@ X ist ein Ding                                => X hat die Eigenschaft Gewicht
 X hat den Bestandteil Y, X != Ding            => X ist ein Ding
 X hat den Bestandteil Y, Y != Ding            => X ist ein Ding
 
-erzeugt ist ein R
-benötigt ist ein R
+erzeugt ist ein ->
+benötigt ist ein ->
 
 "wird benötigt von" ist Gegenteil von benötigt
 "wird erzeugt von" ist Gegenteil von erzeugt

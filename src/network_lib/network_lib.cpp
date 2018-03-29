@@ -49,6 +49,8 @@ const std::string Network_lib::get_version()
 	}
 #endif
 
+#define LOG
+
 Network_lib::Network_lib(std::function<void(std::wstring)> print)
 	: _pImpl{new Impl}
   , _print(print)
