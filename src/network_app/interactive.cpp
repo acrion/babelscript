@@ -121,15 +121,33 @@ void Interactive::process(std::wstring line)
 
 network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, const std::map<std::vector<std::wstring>, network::Node>& relations, boost::bimap<std::wstring, network::Node>& variables)
 {
-  struct C
+  class C
   {
-    network::Node node;
-    std::wstring token;
+  public:
+    C(Interactive::Impl* enclosing, network::Node node, std::wstring token=L"")
+      : _enclosing(enclosing)
+      , _node(node)
+      , _token(token)
+    {
+    }
+    network::Node _node{ 0 };
+    std::wstring _token;
 
     operator network::Node()
     {
-      return node ? node:_n->node(token, _lang);
+      if (_node)
+      {
+        if (_token.empty())
+          throw std::logic_error("Internal error: empty token in process_fact::C");
+        else
+          return _node = _enclosing->_n->node(_token, _enclosing->_lang);
+      }
+      else
+        return _node;
     }
+
+  private:
+    Interactive::Impl* _enclosing{ nullptr };
   };
 
   std::vector<C> combined;
@@ -150,7 +168,7 @@ network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& t
       }
       else
       {
-        combined.push_back({var->second});
+        combined.push_back(C(this,var->second));
       }
     }
     else
@@ -164,7 +182,7 @@ network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& t
         auto relation = relations.find(test);
         if (relation != relations.end())
         {
-          combined.push_back({relation->second});
+          combined.push_back(C(this,relation->second));
           done = true;
           break;
         }
@@ -180,7 +198,7 @@ network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& t
           network::Node node = _n->get_node(connected, _lang);
           if (node)
           {
-            combined.push_back({node});
+            combined.push_back(C(this,node));
             done = true;
             break;
           }
@@ -193,7 +211,7 @@ network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& t
       }
       else
       {
-        combined.push_back({0,token});
+        combined.push_back(C(this,0,token));
         done_all = false;
       }
     }
