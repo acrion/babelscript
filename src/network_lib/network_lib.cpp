@@ -353,21 +353,24 @@ Node Network_lib::condition(Node op, std::set<Node> conditions)
 }
 
 
-Node Network_lib::parse_fact(Node rule, std::set<Node>& subjects)
+Node Network_lib::parse_fact(Node rule, std::set<Node>& objects, Node parent)
 {
   Node object = 0; // 0 means failure
-  subjects.clear();
+  objects.clear();
   for (Node nd : _pImpl->get_left(rule))
   {
-    if (_pImpl->get_left(nd).count(rule) == 1)
+    if (nd != parent)
     {
-      if (object)
-        return 0; // there may be only 1 object
+      if (_pImpl->get_left(nd).count(rule) == 1)
+      {
+        if (object)
+          return 0; // there may be only 1 object
+        else
+          object = nd;
+      }
       else
-        object = nd;
+        objects.insert(nd);
     }
-    else
-      subjects.insert(nd);
   }
 
   return object;

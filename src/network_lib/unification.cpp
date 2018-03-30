@@ -18,7 +18,7 @@ Unification::Unification(Network_lib* n, Node condition, Node parent, std::share
   if (relations.size()==1) // more than one relation for given condition makes no sense. _relation_list is empty, so Next() won't return anything
   {
     Node relation = *relations.begin(); // there is always only 1 relation
-    _subject = _n->parse_fact(condition, _objects);
+    _subject = _n->parse_fact(condition, _objects, _parent);
 
     if (_n->_pImpl->is_var(relation))
     {
@@ -72,7 +72,7 @@ std::shared_ptr<Variables> Unification::Next()
       while (_fact_index != _n->_pImpl->find_left(*_relation_index)->second.end())
       {
         std::set<Node> objects;
-        Node subject = _n->parse_fact(*_fact_index, objects);
+        Node subject = _n->parse_fact(*_fact_index, objects, *_relation_index);
 
         //objects = _n->filter(objects, [&](Node nd)
         //{

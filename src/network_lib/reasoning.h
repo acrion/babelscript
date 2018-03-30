@@ -28,7 +28,7 @@ namespace network
   private:
     void evaluate(RulePos rule);
     bool contradicts(const Variables& variables, const Variables& unequals);
-    void deduce(const Variables& variables);
+    void deduce(const Variables& variables, Node parent);
 
     bool _done;
     std::set<Node> _deductions;

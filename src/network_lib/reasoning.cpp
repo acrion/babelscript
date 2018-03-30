@@ -75,7 +75,7 @@ void Reasoning::evaluate(RulePos rule)
       }
       else if (!contradicts(*joined, *joined_unequals) && joined->size()>0)
       {
-        deduce(*joined);
+        deduce(*joined, rule.node);
       }
     }
   }
@@ -112,7 +112,7 @@ bool Reasoning::contradicts(const Variables& variables, const Variables& unequal
   return false; // no contradiction
 }
 
-void Reasoning::deduce(const Variables& variables) // use _deductions!
+void Reasoning::deduce(const Variables& variables, Node parent) // use _deductions!
 {
   for (Node deduction : _deductions)
   {
@@ -125,16 +125,20 @@ void Reasoning::deduce(const Variables& variables) // use _deductions!
 
     if (relations.size() == 1) // more than one relation for given condition makes no sense. _relation_list is empty, so Next() won't return anything
     {
-      Node rel    = utils::get(variables, *relations.begin(), 0ull);
+      Node rel = _pImpl->is_var(*relations.begin())
+        ? utils::get(variables, *relations.begin(), 0ull)
+        : *relations.begin();
 
       if (rel)
       {
         std::set<Node> var_targets;
-        Node var_source = parse_fact(deduction, var_targets);
+        Node var_source = parse_fact(deduction, var_targets, parent);
 
         if (var_targets.size() > 0)
         {
-          Node source = utils::get(variables, var_source, 0ull);
+          Node source = _pImpl->is_var(var_source)
+            ? utils::get(variables, var_source, 0ull)
+            : var_source;
 
           if (source)
           {
@@ -142,7 +146,10 @@ void Reasoning::deduce(const Variables& variables) // use _deductions!
             bool done = true;
             for (Node var_t : var_targets)
             {
-              Node t = utils::get(variables, var_t, 0ull);
+              Node t = _pImpl->is_var(var_t)
+                ? utils::get(variables, var_t, 0ull)
+                : var_t;
+
               if (t)
               {
                 targets.insert(t);
@@ -167,6 +174,7 @@ void Reasoning::deduce(const Variables& variables) // use _deductions!
                 try
                 {
                   fact(source, rel, targets);
+                  _done = true;
                 }
                 catch (std::exception& ex)
                 {
