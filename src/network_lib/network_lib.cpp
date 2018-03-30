@@ -417,13 +417,14 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
   std::set<Node> objects;
   Node subject = parse_fact(fact, objects, parent);
 
-  if (subject == 0)
+  bool is_condition = _pImpl->get_right(fact).count(core.And) == 1; // if fact is a condition node (having relation type core.And), there is no subject
+  if (subject == 0 && !is_condition)
   {
     result = L"?";
     return;
   }
 
-  std::wstring subject_name = subject ? get_name(subject, lang) : L"?";
+  std::wstring subject_name = subject ? get_name(subject, lang) : (is_condition ? L"":L"?");
   if (subject_name.empty())
   {
     format_fact(subject_name, lang, subject, fact);
