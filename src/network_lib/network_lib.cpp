@@ -424,19 +424,24 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
     return;
   }
 
-  std::wstring subject_name = subject ? get_name(subject, lang) : (is_condition ? L"":L"?");
-  if (subject_name.empty())
-  {
-    format_fact(subject_name, lang, subject, fact);
-    subject_name = L"(" + subject_name + L")";
-  }
+  std::wstring subject_name, relation_name;
 
-  Node relation = parse_relation(fact);
-  std::wstring relation_name = relation ? get_name(relation, lang) : L"?";
-  if (relation_name.empty())
+  if (!is_condition || subject)
   {
-    format_fact(relation_name, lang, relation, fact);
-    relation_name = L"(" + relation_name + L")";
+    subject_name = subject ? get_name(subject, lang) : (is_condition ? L"" : L"?");
+    if (subject_name.empty())
+    {
+      format_fact(subject_name, lang, subject, fact);
+      subject_name = L"(" + subject_name + L")";
+    }
+
+    Node relation = parse_relation(fact);
+    relation_name = relation ? get_name(relation, lang) : L"?";
+    if (relation_name.empty())
+    {
+      format_fact(relation_name, lang, relation, fact);
+      relation_name = L"(" + relation_name + L")";
+    }
   }
 
   std::wstring objects_name;
@@ -456,6 +461,7 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
   result = subject_name + L"  " + relation_name + L"  " + objects_name;
   boost::replace_all(result, L"\r\n", L" --- ");
   boost::replace_all(result, L"\n", L" --- ");
+  boost::trim(result);
 }
 
 void Network_lib::add_nodes(Node current, std::set<Node>& touched, const std::set<Node>& conditions, const std::set<Node>& deductions, std::ofstream& dot)
