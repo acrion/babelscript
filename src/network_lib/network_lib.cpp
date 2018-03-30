@@ -66,50 +66,62 @@ Network_lib::~Network_lib()
   delete _pImpl;
 }
 
-Node Network_lib::node(std::wstring name, std::string lang)
-{
-	decltype(_pImpl->_names)::iterator namesInLang = _pImpl->_names.find(lang);
-	decltype(namesInLang->second.right)::iterator node;
-
-	if (   namesInLang == _pImpl->_names.end()
-	    || (node = namesInLang->second.right.find(name)) == namesInLang->second.right.end()
-	   )
-	{
-    Node newNode = _pImpl->create();
-    _pImpl->_names[lang].insert(Impl::Names(newNode, name));
-#if _DEBUG
-    //std::wcout << L"Node " << newNode << L" has name '" << name << L"' (" << std::wstring(lang.begin(), lang.end()) << L")" << std::endl;
-#endif
-    return newNode;
-	}
-	else
-	{
-		return node->second;
-	}
-}
-
 Node Network_lib::var()
 {
   return _pImpl->var();
 }
 
-std::wstring Network_lib::get_name(Node node, std::string lang)
-{
-  return _pImpl->get_name(node, _pImpl->_names.find(lang));
-}
 
-
-std::wstring Network_lib::get_name(Node node)
+void Network_lib::set_name(Node node, std::wstring newName, std::string lang)
 {
-  for (decltype(_pImpl->_names)::iterator lang = _pImpl->_names.begin(); lang != _pImpl->_names.end(); ++lang)
+  if (lang.empty()) lang = _lang;
+#if _DEBUG
+  //std::wcout << L"Node " << node << L" has name '" << newName << L"' (" << std::wstring(lang.begin(), lang.end()) << L")" << std::endl;
+#endif
+
+  auto& nodes_of_name = _pImpl->_node_of_name[lang];
+  auto it = nodes_of_name.find(newName);
+  if (it != nodes_of_name.end())
   {
-    std::wstring result = _pImpl->get_name(node, lang);
-
-    if (!result.empty()) return result;
+    if (it->second != node)
+    {
+      nodes_of_name.erase(it); // since this name belongs to different nodes, remove it from _node_of_name (in case it has not been already removed)
+    }
+  }
+  else
+  {
+    nodes_of_name[newName] = node;
   }
 
-  return L"";
+  _pImpl->_name_of_node[lang][node] = newName; // overwrite any previous name (different strategy than with _node_of_name)
 }
+
+
+Node Network_lib::node(std::wstring name, std::string lang)
+{
+  if (lang.empty()) lang = _lang;
+  auto& node_of_name = _pImpl->_node_of_name[lang];
+  auto it = node_of_name.find(name);
+  if (it == node_of_name.end())
+  {
+    Node new_node = _pImpl->create();
+    set_name(new_node, name, lang);
+    return new_node;
+  }
+  else
+  {
+    return it->second;
+  }
+}
+
+std::wstring Network_lib::get_name(Node node, std::string lang)
+{
+  if (lang.empty()) lang = _lang;
+  auto& name_of_node = _pImpl->_name_of_node[lang];
+  auto it = name_of_node.find(node);
+  return it == name_of_node.end() ? L"":it->second;
+}
+
 
 std::string Network_lib::get_name_hex(Node node, bool prepend_num)
 {
@@ -141,60 +153,41 @@ std::string Network_lib::get_name_hex(Node node, bool prepend_num)
 
 Node Network_lib::get_node(std::wstring name, std::string lang)
 {
-  auto names_in_lang = _pImpl->_names.find(lang);
-  if (names_in_lang == _pImpl->_names.end())
+  if (lang.empty()) lang = _lang;
+  auto node_of_name = _pImpl->_node_of_name.find(lang);
+  if (node_of_name == _pImpl->_node_of_name.end())
   {
     return 0;
   }
   else
   {
-    auto nd = names_in_lang->second.right.find(name);
-    return nd != names_in_lang->second.right.end() ? nd->second : 0;
-  }
-}
-
-std::wstring Network_lib::Impl::get_name(Node node, decltype(_names)::iterator namesInLang)
-{
-  decltype(namesInLang->second.left)::iterator name;
-
-  if (   namesInLang != _names.end()
-      && (name = namesInLang->second.left.find(node)) != namesInLang->second.left.end()
-     )
-  {
-    return name->second;
-  }
-  else
-  {
-    return L"";
-  }
-}
-
-
-bool Network_lib::set_name(Node node, std::wstring newName, std::string lang)
-{
-  decltype(_pImpl->_names)::iterator namesInLang = _pImpl->_names.find(lang);
-  decltype(namesInLang->second.left)::iterator name;
-
-#if _DEBUG
-  //std::wcout << L"Node " << node << L" has name '" << newName << L"' (" << std::wstring(lang.begin(), lang.end()) << L")" << std::endl;
-#endif
-
-  if (   namesInLang != _pImpl->_names.end()
-      && (name = namesInLang->second.left.find(node)) != namesInLang->second.left.end()
-     )
-  {
-    return name->second == newName;
-  }
-  else
-  {
-    _pImpl->_names[lang].insert(Impl::Names(node, newName));
-    if (get_name(node, lang) != newName)
+    auto it = node_of_name->second.find(name);
+    if (it == node_of_name->second.end())
     {
-      int crazy = 0;
+      return 0;
     }
-    return true;
+    else
+    {
+      return it->second;
+    }
   }
 }
+
+//std::wstring Network_lib::Impl::get_name(Node node, decltype(_names)::iterator namesInLang)
+//{
+//  decltype(namesInLang->second.left)::iterator name;
+//
+//  if (   namesInLang != _names.end()
+//      && (name = namesInLang->second.left.find(node)) != namesInLang->second.left.end()
+//     )
+//  {
+//    return name->second;
+//  }
+//  else
+//  {
+//    return L"";
+//  }
+//}
 
 
 std::set<Node> Network_lib::get_sources(Node relationType, Node target, bool exclude_vars)
@@ -396,15 +389,24 @@ Node Network_lib::parse_fact(Node rule, std::set<Node>& objects, Node parent)
 Node Network_lib::parse_relation(Node rule)
 {
   Node relation = 0; // 0 means failure
+  Node subject = 0;
   for (Node nd : _pImpl->get_right(rule))
   {
     if (check_fact(nd, core.IsA, { core.RelationTypeCategory }).is_correct())
     {
-      if (relation)
+      if (_pImpl->get_right(nd).count(rule) == 1) // in case nd is the subject of the rule, it may be also a relation, but not the one of the current rule so exclude it by checking for bidirectional connection
+        subject = nd; // the rule has a subject that is a relation. We don't know yet, if it is a rule that has same subject and predicate.
+      else if (relation)
         return 0; // there may be only 1 relation
       else
         relation = nd;
     }
+  }
+
+  if (relation == 0)
+  {
+    // Since we exclude setting relation to the subject of the rule, now that we have a rule without a relation, it must be a rule where subject and relation are identical.
+    relation = subject;
   }
 
   return relation;

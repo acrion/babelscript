@@ -2,7 +2,7 @@
 
 #include <string>
 #include <cstdint>
-#include <boost/bimap.hpp>
+#include <map>
 #include "network_lib.h"
 #include "network.h"
 
@@ -13,10 +13,11 @@ namespace network
     friend class Network_lib;
 
   private:
-    std::map<std::string, boost::bimap<Node, std::wstring>> _names;
-    using Names = boost::bimap<Node, std::wstring>::value_type;
+    // cannot use boost:bitmap because we have to support nodes having the same name (within one language). In this case, _node_of_name has no entries for all of these names.
+    std::map<std::string, std::map<Node, std::wstring>> _name_of_node; // key is language identifier
+    std::map<std::string, std::map<std::wstring, Node>> _node_of_name; // key is language identifier
 
   protected:
-    std::wstring get_name(Node node, decltype(_names)::iterator namesInLang);
+    //std::wstring get_name(Node node, decltype(_name_of_node)::iterator namesInLang);
   };
 }

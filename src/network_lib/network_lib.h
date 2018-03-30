@@ -16,14 +16,15 @@ namespace network
     Network_lib(std::function<void(std::wstring)> print);
 		~Network_lib();
 
-    void set_lang(std::string lang) { _lang = lang; }
-    Node node(std::wstring name, std::string lang);
     Node var();
-    std::wstring get_name(Node node);
-    std::wstring get_name(Node node, std::string lang);
-    Node get_node(std::wstring name, std::string lang);
+
+    void set_lang(std::string lang) { _lang = lang; }
+    Node node(std::wstring name, std::string lang="");
+    std::wstring get_name(Node node, std::string lang="");
+    Node get_node(std::wstring name, std::string lang="");
     std::string get_name_hex(Node node, bool prepend_num=true);
-    bool set_name(Node node, std::wstring name, std::string lang="en");
+    void set_name(Node node, std::wstring name, std::string lang="");
+
     std::set<Node> get_sources(Node relationType, Node target, bool exclude_vars=false);
     Node parse_fact(Node rule, std::set<Node>& deducations, Node parent=0);
     Node parse_relation(Node rule);

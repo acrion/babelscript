@@ -250,6 +250,12 @@ network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& t
         Node node = _n->var();
         _n->set_name(node, token, _lang);
         variables.left.insert(boost::bimap<std::wstring, network::Node>::left_value_type(token, node));
+
+        if (variables.left.find(token) == variables.left.end())
+        {
+          throw std::runtime_error(utils::str(L"Variable " + token + L" has been set to a different node."));
+        }
+
         combined.push_back(C(this, node, token));
       }
       else
