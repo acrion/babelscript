@@ -3,6 +3,7 @@
 #include "utils.h"
 #include <boost/tokenizer.hpp>
 #include <boost/bimap.hpp>
+#include <boost/algorithm/string.hpp>
 #include <iostream>
 
 using namespace babelscript_console;
@@ -76,16 +77,44 @@ void Interactive::process(std::wstring line)
   {
     boost::bimap<std::wstring, network::Node> variables;
     std::vector<std::wstring> tokens;
+    const std::wstring And = _pImpl->_n->get_name(_pImpl->_n->core.And, _pImpl->_lang);
+    const std::wstring Causes = _pImpl->_n->get_name(_pImpl->_n->core.Causes, _pImpl->_lang);
     bool is_rule=false;
     std::wstring assigns_to_var;
     std::wstring first_var = Impl::is_var(*it) ? L"":*it;
     for (; it != tok.end(); ++it)
     {
-      tokens.push_back(*it);
-      if (*it == _pImpl->_n->get_name(_pImpl->_n->core.Causes, _pImpl->_lang))
+      if (it->empty()) continue;
+
+      std::wstring current;
+      
+      if (boost::algorithm::starts_with(*it, And))
+      {
+        current = it->substr(And.size());
+        tokens.push_back(And);
+        tokens.push_back(current);
+      }
+
+      if (boost::algorithm::ends_with(*it, And))
+      {
+        if (current.empty())
+        {
+          current = it->substr(0, it->size() - And.size());
+          tokens.push_back(current);
+        }
+        tokens.push_back(And);
+      }
+
+      if (current.empty())
+      {
+        current = *it;
+        tokens.push_back(current);
+      }
+
+      if (current == Causes)
       {
         if (is_rule)
-          throw std::runtime_error("Line contains two times " + utils::str(_pImpl->_n->get_name(_pImpl->_n->core.Causes)));
+          throw std::runtime_error("Line contains two times " + utils::str(_pImpl->_n->get_name(_pImpl->_n->core.Causes))); // this is just a parser restriction to distinguish between condition and deduction, might be useful to support it
         else
           is_rule = true;
       }
@@ -116,10 +145,6 @@ void Interactive::process(std::wstring line)
     if (is_rule)
     {
       std::vector<decltype(tokens)> conditions, deductions;
-      
-      const std::wstring And = _pImpl->_n->get_name(_pImpl->_n->core.And);
-      const std::wstring Causes = _pImpl->_n->get_name(_pImpl->_n->core.Causes);
-
       bool is_deduction = false;
       
       for (int i = 0; i < tokens.size(); ++i)
