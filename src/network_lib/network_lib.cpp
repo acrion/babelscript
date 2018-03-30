@@ -355,25 +355,90 @@ Node Network_lib::condition(Node op, std::set<Node> conditions)
 
 Node Network_lib::parse_fact(Node rule, std::set<Node>& objects, Node parent)
 {
-  Node object = 0; // 0 means failure
+  Node subject = 0; // 0 means failure
   objects.clear();
   for (Node nd : _pImpl->get_left(rule))
   {
-    if (nd != parent)
+    if (_pImpl->get_left(nd).count(rule) == 1)
     {
-      if (_pImpl->get_left(nd).count(rule) == 1)
+      if (_pImpl->get_right(nd).count(core.Causes) == 0)
       {
-        if (object)
-          return 0; // there may be only 1 object
+        if (nd == parent)
+        {
+          int debug = 0;
+        }
+        
+        if (subject)
+          return 0; // there may be only 1 subject
         else
-          object = nd;
+          subject = nd;
       }
-      else
-        objects.insert(nd);
+    }
+    else
+    {
+      if (nd == parent)
+      {
+        int debug = 0;
+      }
+      
+      objects.insert(nd);
     }
   }
 
-  return object;
+  return subject;
+}
+
+Node Network_lib::parse_relation(Node rule)
+{
+  Node relation = 0; // 0 means failure
+  for (Node nd : _pImpl->get_right(rule))
+  {
+    if (_pImpl->get_right(nd).count(rule) == 0)
+    {
+      if (relation)
+        return 0; // there may be only 1 relation
+      else
+        relation = nd;
+    }
+  }
+
+  return relation;
+}
+
+void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact, Node parent)
+{
+  std::set<Node> objects;
+  Node subject = parse_fact(fact, objects, parent);
+  Node relation = parse_relation(fact);
+
+  std::wstring subject_name = subject ? get_name(subject, lang) : L"?";
+  if (subject_name.empty())
+  {
+    format_fact(subject_name, lang, subject, fact);
+    subject_name = L"(" + subject_name + L")";
+  }
+
+  std::wstring relation_name = relation ? get_name(relation, lang) : L"?";
+  if (relation_name.empty())
+  {
+    format_fact(relation_name, lang, relation, fact);
+    relation_name = L"(" + relation_name + L")";
+  }
+
+  std::wstring objects_name;
+  for (Node object : objects)
+  {
+    if (!objects_name.empty()) objects_name += get_name(core.And, lang) + L" ";
+    std::wstring object_name = object ? get_name(object, lang) : L"?";
+    if (object_name.empty())
+    {
+      format_fact(object_name, lang, object, fact);
+      object_name = L"(" + object_name + L")";
+    }
+    objects_name += object_name;
+  }
+
+  result = subject_name + L" " + relation_name + L" " + objects_name;
 }
 
 void Network_lib::add_nodes(Node current, std::set<Node>& touched, const std::set<Node>& conditions, const std::set<Node>& deductions, std::ofstream& dot)

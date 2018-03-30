@@ -16,6 +16,7 @@ namespace network
     Network_lib(std::function<void(std::wstring)> print);
 		~Network_lib();
 
+    void set_lang(std::string lang) { _lang = lang; }
     Node node(std::wstring name, std::string lang);
     Node var();
     std::wstring get_name(Node node);
@@ -25,6 +26,8 @@ namespace network
     bool set_name(Node node, std::wstring name, std::string lang="en");
     std::set<Node> get_sources(Node relationType, Node target, bool exclude_vars=false);
     Node parse_fact(Node rule, std::set<Node>& deducations, Node parent=0);
+    Node parse_relation(Node rule);
+    void format_fact(std::wstring& result, std::string lang, Node fact, Node parent=0);
     std::set<Node> filter(std::set<Node> source, Node target);
     std::set<Node> filter(Node fact, Node relationType, Node target);
     std::set<Node> filter(std::set<Node> source, std::function<bool(Node nd)> f);
@@ -55,6 +58,9 @@ namespace network
       Node Unequal;
       Node Contradiction;
     } core;
+
+  protected:
+    std::string _lang{ "en" };
 
   private:
     void add_nodes(Node current, std::set<Node>& touched, const std::set<Node>& conditions, const std::set<Node>& deductions, std::ofstream& dot);

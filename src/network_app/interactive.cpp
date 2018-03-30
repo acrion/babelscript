@@ -17,7 +17,9 @@ public:
     {
       std::wcout << str << std::endl;
     }))
-  {}
+  {
+    _n->set_lang(_lang);
+  }
 
   network::Node process_fact(const std::vector<std::wstring>& tokens, const std::map<std::vector<std::wstring>, Node>& relations, boost::bimap<std::wstring, Node>& variables);
   static bool is_var(std::wstring token);
@@ -63,6 +65,7 @@ void Interactive::process(std::wstring line)
   {
     if (++it == tok.end()) throw std::runtime_error("Command .lang: Missing language identifier");
     _pImpl->_lang = utils::str(*it);
+    _pImpl->_n->set_lang(_pImpl->_lang);
   }
   else if (*it == L".dot")
   {

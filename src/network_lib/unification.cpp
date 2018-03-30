@@ -6,16 +6,15 @@ using namespace network;
 
 Unification::Unification(Network_lib* n, Node condition, Node parent, std::shared_ptr<Variables> variables, std::shared_ptr<Variables> unequals)
   : _n(n)
-  , _parent(parent) // if _parent can be removed, RulePos.node can also be removed!
+  , _parent(parent)
   , _variables(variables)
   , _unequals(unequals)
 {
-  // "condition" means here one of the predicates that form a list of conditions (which are connected by "and"),
-  // so "condition" may point of core.And (or any other 
+  // "condition" means here one of the predicates that form a list of conditions (which are connected by "and")
 
   std::set<Node> relations = _n->filter(condition, _n->core.IsA, _n->core.RelationTypeCategory);
-  
-  if (relations.size()==1) // more than one relation for given condition makes no sense. _relation_list is empty, so Next() won't return anything
+
+  if (relations.size() == 1) // more than one relation for given condition makes no sense. _relation_list is empty, so Next() won't return anything
   {
     Node relation = *relations.begin(); // there is always only 1 relation
     _subject = _n->parse_fact(condition, _objects, _parent);
@@ -37,27 +36,31 @@ Unification::Unification(Network_lib* n, Node condition, Node parent, std::share
       }
     }
   }
-}
-
-std::shared_ptr<Variables> Unification::Start()
-{
-  if (_relation_list.size()==0)
-    return std::make_shared<Variables>();
-
-  if (_relation_variable == 0 && *_relation_list.begin() == _n->core.Unequal)
-    return std::make_shared<Variables>();
 
   _relation_index = _relation_list.begin();
-  auto left_nodes = _n->_pImpl->find_left(*_relation_index);
+}
 
-  if (left_nodes == _n->_pImpl->right_end())
+bool Unification::increment_fact_index()
+{
+  do
   {
-    return nullptr; // shouldn't happen since *_relation_index exists
-  }
+    if (!_initialized) // first call after construction. Condition _fact_index == decltype(_facts_of_current_relation->second)::iterator() causes _DEBUG_ERROR("map/set iterators incompatible") if false
+    {
+      _initialized = true;
+      _facts_of_current_relation = _n->_pImpl->find_left(*_relation_index);
 
-  _fact_index = left_nodes->second.begin();
+      if (_facts_of_current_relation == _n->_pImpl->right_end())
+        return false; // there is a relation without any facts that use it (might happen we it has been explicitely defined via fact(r, core.IsA, core.RelationType))
+      else
+        _fact_index = _facts_of_current_relation->second.begin(); // used to iterate over all facts the have relation type *_relation_index
+    }
+    else if (++_fact_index == _facts_of_current_relation->second.end()) // increment and return false if we reached the end, so _relation_index will be incremented
+    {
+      return false;
+    }
+  } while (_n->_pImpl->get_left(*_fact_index).count(*_relation_index) == 1); // skip nodes that represent not relations of type *_relation_index, but relations having *_relation_index as subject (using bidirectional connection to the subject)
 
-  return Next();
+  return true;
 }
 
 std::shared_ptr<Variables> Unification::Next()
@@ -65,19 +68,16 @@ std::shared_ptr<Variables> Unification::Next()
   if (_relation_list.size() == 0 || (_relation_variable == 0 && *_relation_list.begin() == _n->core.Unequal))
     return nullptr;
 
-  while (true)
+  do
   {
-    if (_relation_variable == 0 || !_variables || utils::get(*_variables, _relation_variable, *_relation_index) == *_relation_index)
+    if (   _relation_variable == 0
+        || !_variables
+        || utils::get(*_variables, _relation_variable, *_relation_index) == *_relation_index)
     {
-      while (_fact_index != _n->_pImpl->find_left(*_relation_index)->second.end())
+      while (increment_fact_index())
       {
         std::set<Node> objects;
-        Node subject = _n->parse_fact(*_fact_index, objects, *_relation_index);
-
-        //objects = _n->filter(objects, [&](Node nd)
-        //{
-        //  return nd != _parent;
-        //});
+        Node subject = _n->parse_fact(*_fact_index, objects, *_relation_index); // todo: use _parent instead of *_relation_index!? or both?!
 
         if (   !_n->_pImpl->is_var(subject)
             && !_n->_pImpl->is_var(*objects.begin())
@@ -97,23 +97,11 @@ std::shared_ptr<Variables> Unification::Next()
           if (_variables->count(*_objects.begin())==0 && _n->_pImpl->is_var(*_objects.begin())) (*result)[*_objects.begin()] = *objects.begin(); // todo: what if more than one?
           if (_relation_variable != 0 && _variables->count(_relation_variable)==0) (*result)[_relation_variable] = *_relation_index;
 
-          ++_fact_index;
           return result;
-        }
-        else
-        {
-          ++_fact_index;
         }
       }
     }
-
-    if (++_relation_index == _relation_list.end())
-    {
-      break;
-    }
-
-    _fact_index = _n->_pImpl->find_left(*_relation_index)->second.begin(); // we know that result of get_left is valid, because node *_relation_index exists
-  }
+  } while (++_relation_index != _relation_list.end());
   
   return nullptr;
 }

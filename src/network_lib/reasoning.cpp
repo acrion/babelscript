@@ -57,7 +57,7 @@ void Reasoning::evaluate(RulePos rule)
     // here we run into for each part of a condition
     Unification u(this, condition, rule.node, rule.variables, rule.unequals);
 
-    for (std::shared_ptr<Variables> match=u.Start(); match; match=u.Next())
+    while (std::shared_ptr<Variables> match=u.Next())
     {
       std::shared_ptr<Variables> joined          = utils::join(*rule.variables, *match);
       std::shared_ptr<Variables> joined_unequals = utils::join(*rule.unequals, *u.Unequals());
@@ -173,7 +173,13 @@ void Reasoning::deduce(const Variables& variables, Node parent) // use _deductio
               {
                 try
                 {
-                  fact(source, rel, targets);
+                  Node d = fact(source, rel, targets);
+                  if (_print)
+                  {
+                    std::wstring output;
+                    format_fact(output, _lang, d, parent);
+                    _print(output);
+                  }
                   _done = true;
                 }
                 catch (std::exception& ex)

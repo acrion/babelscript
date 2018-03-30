@@ -1,7 +1,10 @@
 #pragma once
 
 #include "network_lib.h"
+#include "utils.h"
 #include <memory>
+#include <map>
+#include <set>
 
 namespace network
 {
@@ -9,7 +12,6 @@ namespace network
   {
   public:
     Unification(Network_lib* n, Node condition, Node parent, std::shared_ptr<Variables> variables, std::shared_ptr<Variables> unequals);
-    std::shared_ptr<Variables> Start();
     std::shared_ptr<Variables> Next();
     std::shared_ptr<Variables> Unequals();
 
@@ -20,9 +22,14 @@ namespace network
     std::shared_ptr<Variables> _unequals;
     std::set<Node> _relation_list;
     Node _relation_variable{ 0 };
-    std::set<Node>::iterator _fact_index;
+    std::set<Node>::iterator _fact_index{ decltype(_facts_of_current_relation->second)::iterator() };
     std::set<Node>::iterator _relation_index;
     Node _subject;
     std::set<Node> _objects;
+
+  private:
+    bool increment_fact_index();
+    std::map<Node, std::set<Node>>::iterator _facts_of_current_relation;
+    bool _initialized{ false };
   };
 }
