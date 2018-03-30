@@ -161,7 +161,7 @@ void Interactive::process(std::wstring line)
         deduction_list.insert(_pImpl->process_fact(deduction, relations, variables));
       }
 
-      _pImpl->_n->fact(combined_condition, _pImpl->_n->core.Causes, deduction_list);
+      fact = _pImpl->_n->fact(combined_condition, _pImpl->_n->core.Causes, deduction_list);
     }
     else
     {
@@ -172,6 +172,11 @@ void Interactive::process(std::wstring line)
     {
       _pImpl->_n->set_name(fact, assigns_to_var, _pImpl->_lang);
     }
+
+    std::wstring output;
+    _pImpl->_n->gen_dot(fact, "debug.dot");
+    _pImpl->_n->format_fact(output, _pImpl->_lang, fact);
+    std::wcout << L"> " << output << std::endl;
   }
 }
 
@@ -243,6 +248,7 @@ network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& t
       if (var==variables.left.end())
       {
         Node node = _n->var();
+        _n->set_name(node, token, _lang);
         variables.left.insert(boost::bimap<std::wstring, network::Node>::left_value_type(token, node));
         combined.push_back(C(this, node, token));
       }

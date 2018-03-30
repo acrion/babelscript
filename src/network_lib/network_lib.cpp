@@ -188,6 +188,10 @@ bool Network_lib::set_name(Node node, std::wstring newName, std::string lang)
   else
   {
     _pImpl->_names[lang].insert(Impl::Names(node, newName));
+    if (get_name(node, lang) != newName)
+    {
+      int crazy = 0;
+    }
     return true;
   }
 }
@@ -317,27 +321,28 @@ Node Network_lib::fact(Node source, Node relationType, std::set<Node> targets, l
     for (Node t:targets) _pImpl->connect(t, answer.relation());
     _pImpl->connect(answer.relation(), relationType, probability);
 
-#ifdef _DEBUG
-    bool has_name = !get_name(answer.relation()).empty() || !get_name(source).empty() || !get_name(relationType).empty();
-    if (!has_name)
-      for (Node t:targets)
-        if (!get_name(t).empty())
-        {
-          has_name = true;
-          break;
-        }
-
-    if (has_name)
-    {
-      std::string targets_name;
-      for (Node t : targets)
-      {
-        if (!targets_name.empty()) targets_name += " and ";
-        targets_name += get_name_hex(t, false);
-      }
-      set_name(answer.relation(), utils::wstr(get_name_hex(answer.relation(), false) + "\n" + get_name_hex(source, false) + " " + get_name_hex(relationType, false) + " " + targets_name));
-    }
-#endif
+//#ifdef _DEBUG
+//    // TODO: what to do in productive mode when we want to generate a dot file later?
+//    bool has_name = !get_name(answer.relation()).empty() || !get_name(source).empty() || !get_name(relationType).empty();
+//    if (!has_name)
+//      for (Node t:targets)
+//        if (!get_name(t).empty())
+//        {
+//          has_name = true;
+//          break;
+//        }
+//
+//    if (has_name)
+//    {
+//      std::string targets_name;
+//      for (Node t : targets)
+//      {
+//        if (!targets_name.empty()) targets_name += " and ";
+//        targets_name += get_name_hex(t, false);
+//      }
+//      set_name(answer.relation(), utils::wstr(get_name_hex(answer.relation(), false) + "\n" + get_name_hex(source, false) + " " + get_name_hex(relationType, false) + " " + targets_name));
+//    }
+//#endif
   }
 
   return answer.relation();
@@ -361,7 +366,7 @@ Node Network_lib::parse_fact(Node rule, std::set<Node>& objects, Node parent)
   {
     if (_pImpl->get_left(nd).count(rule) == 1)
     {
-      if (_pImpl->get_right(nd).count(core.Causes) == 0)
+      if (_pImpl->get_right(nd).count(core.Causes) == 0) // TODO: this might be not sufficient if rule is a sub-condition!?
       {
         if (nd == parent)
         {
@@ -393,7 +398,7 @@ Node Network_lib::parse_relation(Node rule)
   Node relation = 0; // 0 means failure
   for (Node nd : _pImpl->get_right(rule))
   {
-    if (_pImpl->get_right(nd).count(rule) == 0)
+    if (check_fact(nd, core.IsA, { core.RelationTypeCategory }).is_correct())
     {
       if (relation)
         return 0; // there may be only 1 relation
@@ -409,7 +414,12 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
 {
   std::set<Node> objects;
   Node subject = parse_fact(fact, objects, parent);
-  Node relation = parse_relation(fact);
+
+  if (subject == 0)
+  {
+    result = L"?";
+    return;
+  }
 
   std::wstring subject_name = subject ? get_name(subject, lang) : L"?";
   if (subject_name.empty())
@@ -418,6 +428,7 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
     subject_name = L"(" + subject_name + L")";
   }
 
+  Node relation = parse_relation(fact);
   std::wstring relation_name = relation ? get_name(relation, lang) : L"?";
   if (relation_name.empty())
   {
@@ -437,8 +448,11 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
     }
     objects_name += object_name;
   }
+  if (objects_name.empty()) objects_name = L"?";
 
-  result = subject_name + L" " + relation_name + L" " + objects_name;
+  result = subject_name + L"  " + relation_name + L"  " + objects_name;
+  boost::replace_all(result, L"\r\n", L" --- ");
+  boost::replace_all(result, L"\n", L" --- ");
 }
 
 void Network_lib::add_nodes(Node current, std::set<Node>& touched, const std::set<Node>& conditions, const std::set<Node>& deductions, std::ofstream& dot)

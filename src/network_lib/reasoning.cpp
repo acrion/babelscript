@@ -178,7 +178,7 @@ void Reasoning::deduce(const Variables& variables, Node parent) // use _deductio
                   {
                     std::wstring output;
                     format_fact(output, _lang, d, parent);
-                    _print(output);
+                    _print(L" => " + output);
                   }
                   _done = true;
                 }
