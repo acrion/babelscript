@@ -152,12 +152,12 @@ namespace network
 
     Node create_hash(Node a, Node b)
     {
-      return mask_node & (mark_hash ^ a ^ rol(b,shift_inc));
+      return mask_node & (mark_hash ^ mod(a) ^ rol(mod(b),shift_inc));
     }
 
     Node create_hash(Node a, Node b, Node c)
     {
-      return mask_node & (mark_hash ^ a ^ rol(b,shift_inc) ^ rol(c,2*shift_inc));
+      return mask_node & (mark_hash ^ mod(a) ^ rol(mod(b),shift_inc) ^ rol(mod(c),2*shift_inc));
     }
 
     Node create_hash(const std::set<Node>& vec)
@@ -165,7 +165,7 @@ namespace network
       Node result = mark_hash ^ rol(vec.size(), 56);
       for (Node node: vec)
       {
-        result ^= rol(node, 48);
+        result ^= mod(rol(node, 48));
       }
       return result & mask_node; // exclude values that denote variables
     }
@@ -173,15 +173,15 @@ namespace network
     Node create_hash(const Node head, const std::set<Node>& vec)
     {
       return (  create_hash(vec)
-              ^ rol(head, 32)
+              ^ rol(mod(head), 32)
              ) & mask_node;
     }
 
     Node create_hash(const Node head1, const Node head2, const std::set<Node>& vec)
     {
       return (  create_hash(vec)
-              ^ rol(head1, 32)
-              ^ rol(head2, 40)
+              ^ rol(mod(head1), 32)
+              ^ rol(mod(head2), 40)
              ) & mask_node;
     }
 
@@ -241,10 +241,17 @@ namespace network
     {
       const uint64_t mask = 8*sizeof(n)-1;
       c &= mask;
-      return ((n >> c) | (n << ((-c)&mask))) & mask_highest_2_bits;
+      return (n >> c) | (n << ((-c)&mask));
     }
 #ifdef _MSC_VER
     #pragma warning( pop )
 #endif
+
+    static uint64_t mod(uint64_t n)
+    {
+      // We generate nodes both by counting counting up and down (for vars) from 0, which increases probability of hash collisions.
+      // So, make a clear different between those two categories.
+      return n > mask_node ? ror(n, 32) : n;
+    }
   };
 }
