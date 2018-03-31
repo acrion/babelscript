@@ -273,12 +273,7 @@ Answer Network_lib::check_fact(Node source, Node relationType, const std::set<No
 
   if (known)
   {
-    bool is_var = _pImpl->is_var(source | relationType)
-      || [&]() { for (Node t : targets) if (_pImpl->is_var(t)) return true; return false; }();
-    
-    return Answer(
-      is_var ? 0.5L : _pImpl->probability(relation, relationType), // probability
-      relation);
+    return Answer(_pImpl->probability(relation, relationType), relation);
   }
   else
   {
@@ -355,6 +350,7 @@ Node Network_lib::parse_fact(Node rule, std::set<Node>& objects, Node parent)
 {
   Node subject = 0; // 0 means failure
   objects.clear();
+  bool empty_subject = false;
   for (Node nd : _pImpl->get_left(rule))
   {
     if (_pImpl->get_left(nd).count(rule) == 1)
@@ -367,7 +363,7 @@ Node Network_lib::parse_fact(Node rule, std::set<Node>& objects, Node parent)
         }
         
         if (subject)
-          return 0; // there may be only 1 subject
+          empty_subject = true; // there may be only 1 subject
         else
           subject = nd;
       }
@@ -383,7 +379,7 @@ Node Network_lib::parse_fact(Node rule, std::set<Node>& objects, Node parent)
     }
   }
 
-  return subject;
+  return empty_subject ? 0:subject;
 }
 
 Node Network_lib::parse_relation(Node rule)
