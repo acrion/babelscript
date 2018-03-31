@@ -63,14 +63,6 @@ namespace network
       return _left.find(a) != _left.end();
     }
 
-    //int is_connected(Node a, Node b)
-    //{
-    //  auto it = _left.find(a); if (it != _left.end() && it->second.count(b) == 1) return 1; // precedence over reverse (-1)
-    //  it = _left.find(b); if (it != _left.end() && it->second.count(a) == 1) return -1;
-
-    //  return 0;
-    //}
-
     long double probability(Node a, Node b)
     {
       if (is_var(a|b))

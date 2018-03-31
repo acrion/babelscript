@@ -21,57 +21,14 @@ namespace network
     Node _relation{0};
 
   public:
-    Answer(State state, long double probability, Node relation=0)
-      : state(state)
-      , _probability(std::min(1.0L,std::max(0.0L,probability)))
-      , _relation(relation)
-    {
-      if (state==State::Known && (_probability > 0 || _relation==0))
-      {
-        throw std::runtime_error("Answer is known, but relation node is not set");
-      }
-    }
+    Answer(State state, long double probability, Node relation = 0);
+    Answer(long double probability, Node relation);
+    Answer(Node relation);
 
-    Answer(long double probability, Node relation)
-      : state(State::Known)
-      , _probability(std::min(1.0L,std::max(0.0L,probability)))
-      , _relation(relation)
-    {
-      if (state==State::Known && _probability > 0 && _relation==0)
-      {
-        throw std::runtime_error("Answer is known, but relation node is not set");
-      }
-    }
-
-    Answer(Node relation)
-      : state(State::Unknown)
-      , _relation(relation)
-    {
-    }
-
-    Node relation()
-    {
-      return _relation;
-    }
-
-    bool is_known()
-    {
-      return state==State::Known;
-    }
-
-    bool is_correct()
-    {
-      return state==State::Known && _probability > 0.5L;
-    }
-
-    bool is_wrong()
-    {
-      return state==State::Known && _probability < 0.5L;
-    }
-
-    bool is_impossible()
-    {
-      return state==State::Known && _probability == 0;
-    }
+    Node relation();
+    bool is_known();
+    bool is_correct();
+    bool is_wrong();
+    bool is_impossible();
   };
 }

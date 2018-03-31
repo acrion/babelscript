@@ -38,12 +38,6 @@ namespace network
     void gen_dot(Node start, std::string file_name, int max_depth);
     static const std::string get_version();
 
-		void debug();
-#ifdef _DEBUG
-		template<typename MapType>
-		void print_map(const MapType& m, std::wstring strArrow);
-#endif
-
     // member list
     class Impl;
     Impl* const _pImpl; // must stay at top of members list because of initialization order

@@ -12,44 +12,6 @@ const std::string Network_lib::get_version()
   return "2.0";
 }
 
-#ifdef _DEBUG
-	#include <iostream>
-
-	template<typename MapType>
-	void Network_lib::print_map(const MapType& m, std::wstring strArrow)
-	{
-		typedef typename MapType::const_iterator const_iterator;
-		for (const_iterator iter = m.begin(), iend = m.end(); iter != iend; ++iter)
-		{
-      if (!get_name(iter->first).empty() && iter->second.size()>0)
-      {
-        std::wcout << get_name(iter->first) << L" " << strArrow;
-
-        for (Node a : iter->second)
-        {
-          std::wcout << L" " << get_name(a);
-        }
-
-        std::wcout << std::endl;
-      }
-		}
-	}
-
-	void Network_lib::debug()
-	{
-    std::cout << " === left ===" << std::endl;
-    print_map(_pImpl->_left, L"-->");
-
-    std::cout << std::endl << " === right ===" << std::endl;
-    print_map(_pImpl->_right, L"<--");
-	}
-#else
-	void Network_lib::debug()
-	{
-	}
-#endif
-
-#define LOG
 
 Network_lib::Network_lib(std::function<void(std::wstring)> print)
 	: _pImpl{new Impl}
@@ -138,9 +100,6 @@ std::string Network_lib::get_name_hex(Node node, bool prepend_num)
       std::wstring output;
       format_fact(output, _lang, node);
       name = utils::str(output);
-      //std::ostringstream o;
-      //o << "0x" << std::uppercase << std::setfill('0') << std::setw(16) << std::hex << node;
-      //name = o.str();
     }
   }
   else if (prepend_num && !_pImpl->is_hash(node) && !_pImpl->is_var(node))
@@ -175,23 +134,6 @@ Node Network_lib::get_node(std::wstring name, std::string lang)
     }
   }
 }
-
-//std::wstring Network_lib::Impl::get_name(Node node, decltype(_names)::iterator namesInLang)
-//{
-//  decltype(namesInLang->second.left)::iterator name;
-//
-//  if (   namesInLang != _names.end()
-//      && (name = namesInLang->second.left.find(node)) != namesInLang->second.left.end()
-//     )
-//  {
-//    return name->second;
-//  }
-//  else
-//  {
-//    return L"";
-//  }
-//}
-
 
 std::set<Node> Network_lib::get_sources(Node relationType, Node target, bool exclude_vars)
 {
@@ -306,34 +248,20 @@ Node Network_lib::fact(Node source, Node relationType, std::set<Node> targets, l
       fact(relationType, core.IsA, { core.RelationTypeCategory });
     }
 
-    _pImpl->create(answer.relation()); // todo: check_fact can return KNOWN though answer.relation exists, which will cause a crash at this very line
+    if (_pImpl->exists(answer.relation()))
+    {
+      // check_fact can return KNOWN though answer.relation exists, which should not happen. Indicates corrupt database or hash collision.
+      assert(false);
+    }
+    else
+    {
+      _pImpl->create(answer.relation());
+    }
+
     _pImpl->connect(source, answer.relation());
     _pImpl->connect(answer.relation(), source);
     for (Node t:targets) _pImpl->connect(t, answer.relation());
     _pImpl->connect(answer.relation(), relationType, probability);
-
-//#ifdef _DEBUG
-//    // TODO: what to do in productive mode when we want to generate a dot file later?
-//    bool has_name = !get_name(answer.relation()).empty() || !get_name(source).empty() || !get_name(relationType).empty();
-//    if (!has_name)
-//      for (Node t:targets)
-//        if (!get_name(t).empty())
-//        {
-//          has_name = true;
-//          break;
-//        }
-//
-//    if (has_name)
-//    {
-//      std::string targets_name;
-//      for (Node t : targets)
-//      {
-//        if (!targets_name.empty()) targets_name += " and ";
-//        targets_name += get_name_hex(t, false);
-//      }
-//      set_name(answer.relation(), utils::wstr(get_name_hex(answer.relation(), false) + "\n" + get_name_hex(source, false) + " " + get_name_hex(relationType, false) + " " + targets_name));
-//    }
-//#endif
   }
 
   return answer.relation();
@@ -360,10 +288,7 @@ Node Network_lib::parse_fact(Node rule, std::set<Node>& objects, Node parent)
     {
       if (_pImpl->get_right(nd).count(core.Causes) == 0) // TODO: this might be not sufficient if rule is a sub-condition!?
       {
-        if (nd == parent)
-        {
-          int debug = 0;
-        }
+        assert(nd != parent); // indicates corrupt database
         
         if (subject)
           empty_subject = true; // there may be only 1 subject
@@ -373,11 +298,7 @@ Node Network_lib::parse_fact(Node rule, std::set<Node>& objects, Node parent)
     }
     else
     {
-      if (nd == parent)
-      {
-        int debug = 0;
-      }
-      
+      assert(nd != parent); // indicates corrupt database
       objects.insert(nd);
     }
   }
