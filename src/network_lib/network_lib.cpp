@@ -135,9 +135,12 @@ std::string Network_lib::get_name_hex(Node node, bool prepend_num)
     }
     else
     {
-      std::ostringstream o;
-      o << "0x" << std::uppercase << std::setfill('0') << std::setw(16) << std::hex << node;
-      name = o.str();
+      std::wstring output;
+      format_fact(output, _lang, node);
+      name = utils::str(output);
+      //std::ostringstream o;
+      //o << "0x" << std::uppercase << std::setfill('0') << std::setw(16) << std::hex << node;
+      //name = o.str();
     }
   }
   else if (prepend_num && !_pImpl->is_hash(node) && !_pImpl->is_var(node))
@@ -303,7 +306,7 @@ Node Network_lib::fact(Node source, Node relationType, std::set<Node> targets, l
       fact(relationType, core.IsA, { core.RelationTypeCategory });
     }
 
-    _pImpl->create(answer.relation());
+    _pImpl->create(answer.relation()); // todo: check_fact can return KNOWN though answer.relation exists, which will cause a crash at this very line
     _pImpl->connect(source, answer.relation());
     _pImpl->connect(answer.relation(), source);
     for (Node t:targets) _pImpl->connect(t, answer.relation());
@@ -408,7 +411,7 @@ Node Network_lib::parse_relation(Node rule)
   return relation;
 }
 
-void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact, Node parent)
+void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact, const Variables& variables, Node parent)
 {
   std::set<Node> objects;
   Node subject = parse_fact(fact, objects, parent);
@@ -424,18 +427,20 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
 
   if (!is_condition || subject)
   {
+    subject = utils::get(variables, subject);
     subject_name = subject ? get_name(subject, lang) : (is_condition ? L"" : L"?");
     if (subject_name.empty())
     {
-      format_fact(subject_name, lang, subject, fact);
+      format_fact(subject_name, lang, subject, variables, fact);
       subject_name = L"(" + subject_name + L")";
     }
 
     Node relation = parse_relation(fact);
+    relation = utils::get(variables, relation);
     relation_name = relation ? get_name(relation, lang) : L"?";
     if (relation_name.empty())
     {
-      format_fact(relation_name, lang, relation, fact);
+      format_fact(relation_name, lang, relation, variables, fact);
       relation_name = L"(" + relation_name + L")";
     }
   }
@@ -443,11 +448,12 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
   std::wstring objects_name;
   for (Node object : objects)
   {
+    object = utils::get(variables, object);
     if (!objects_name.empty()) objects_name += get_name(core.And, lang) + L" ";
     std::wstring object_name = object ? get_name(object, lang) : L"?";
     if (object_name.empty())
     {
-      format_fact(object_name, lang, object, fact);
+      format_fact(object_name, lang, object, variables, fact);
       object_name = L"(" + object_name + L")";
     }
     objects_name += object_name;
@@ -460,9 +466,9 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
   boost::trim(result);
 }
 
-void Network_lib::add_nodes(Node current, std::set<Node>& touched, const std::set<Node>& conditions, const std::set<Node>& deductions, std::ofstream& dot)
+void Network_lib::add_nodes(Node current, std::set<Node>& touched, const std::set<Node>& conditions, const std::set<Node>& deductions, std::ofstream& dot, int max_depth)
 {
-  if (touched.count(current) == 0)
+  if (--max_depth > 0 && touched.count(current) == 0)
   {
     touched.insert(current);
     std::string current_name = get_name_hex(current);
@@ -496,7 +502,7 @@ void Network_lib::add_nodes(Node current, std::set<Node>& touched, const std::se
 
         dot << ";" << std::endl;
       }
-      add_nodes(left, touched, conditions, deductions, dot);
+      add_nodes(left, touched, conditions, deductions, dot, max_depth);
     }
 
     for (const Node& right : _pImpl->get_right(current))
@@ -515,12 +521,12 @@ void Network_lib::add_nodes(Node current, std::set<Node>& touched, const std::se
 
         dot << ";" << std::endl;
       }
-      add_nodes(right, touched, conditions, deductions, dot);
+      add_nodes(right, touched, conditions, deductions, dot, max_depth);
     }
   }
 }
 
-void Network_lib::gen_dot(Node start, std::string file_name)
+void Network_lib::gen_dot(Node start, std::string file_name, int max_depth)
 {
   std::set<Node> conditions, deductions;
   
@@ -544,7 +550,7 @@ void Network_lib::gen_dot(Node start, std::string file_name)
 
   dot << "digraph graphname{" << std::endl;
 
-  add_nodes(start, touched, conditions, deductions, dot);
+  add_nodes(start, touched, conditions, deductions, dot, max_depth);
   
   dot << "}" << std::endl;
 }

@@ -23,6 +23,13 @@ namespace network
       return it == container.end() ? return_if_not_found : it->second;
     }
 
+    template<typename T, typename U>
+    static T get(U container, T key)
+    {
+      auto it = container.find(key);
+      return it == container.end() ? key : it->second;
+    }
+
     template<typename T>
     static std::basic_string<T> concatenate(std::vector<std::basic_string<T>> list, T separator)
     {

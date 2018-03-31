@@ -28,14 +28,14 @@ namespace network
     std::set<Node> get_sources(Node relationType, Node target, bool exclude_vars=false);
     Node parse_fact(Node rule, std::set<Node>& deducations, Node parent=0);
     Node parse_relation(Node rule);
-    void format_fact(std::wstring& result, std::string lang, Node fact, Node parent=0);
+    void format_fact(std::wstring& result, std::string lang, Node fact, const Variables& variables = {}, Node parent = 0);
     std::set<Node> filter(std::set<Node> source, Node target);
     std::set<Node> filter(Node fact, Node relationType, Node target);
     std::set<Node> filter(std::set<Node> source, std::function<bool(Node nd)> f);
     Answer check_fact(Node source, Node relationType, const std::set<Node>& targets);
     Node fact(Node source, Node relationType, std::set<Node> targets, long double probability=1);
     Node condition(Node op, std::set<Node> conditions);
-    void gen_dot(Node start, std::string file_name);
+    void gen_dot(Node start, std::string file_name, int max_depth);
     static const std::string get_version();
 
 		void debug();
@@ -64,6 +64,6 @@ namespace network
     std::string _lang{ "en" };
 
   private:
-    void add_nodes(Node current, std::set<Node>& touched, const std::set<Node>& conditions, const std::set<Node>& deductions, std::ofstream& dot);
+    void add_nodes(Node current, std::set<Node>& touched, const std::set<Node>& conditions, const std::set<Node>& deductions, std::ofstream& dot, int max_depth);
   };
 }

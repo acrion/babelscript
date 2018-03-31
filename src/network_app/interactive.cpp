@@ -52,156 +52,169 @@ std::string Interactive::get_version()
 
 void Interactive::process(std::wstring line)
 {
-  tokenizer<escaped_list_separator<wchar_t>,std::wstring::const_iterator, std::wstring > tok(line,
-    escaped_list_separator<wchar_t>(L"\\", L" \t", L"\""));
+  try
+  {
+    tokenizer<escaped_list_separator<wchar_t>, std::wstring::const_iterator, std::wstring > tok(line,
+      escaped_list_separator<wchar_t>(L"\\", L" \t", L"\""));
 
-  decltype(tok)::iterator it = tok.begin();
+    decltype(tok)::iterator it = tok.begin();
 
-  if (it == tok.end())
-  {
-    return; // empty line
-  }
-
-  if (*it == L".lang")
-  {
-    if (++it == tok.end()) throw std::runtime_error("Command .lang: Missing language identifier");
-    _pImpl->_lang = utils::str(*it);
-    _pImpl->_n->set_lang(_pImpl->_lang);
-  }
-  else if (*it == L".dot")
-  {
-    if (++it == tok.end()) throw std::runtime_error("Command .dot: Missing output file name");
-    _pImpl->_n->gen_dot(_pImpl->_n->core.RelationTypeCategory, utils::str(*it));
-  }
-  else
-  {
-    boost::bimap<std::wstring, network::Node> variables;
-    std::vector<std::wstring> tokens;
-    const std::wstring And = _pImpl->_n->get_name(_pImpl->_n->core.And, _pImpl->_lang);
-    const std::wstring Causes = _pImpl->_n->get_name(_pImpl->_n->core.Causes, _pImpl->_lang);
-    bool is_rule=false;
-    std::wstring assigns_to_var;
-    std::wstring first_var = Impl::is_var(*it) ? L"":*it;
-    for (; it != tok.end(); ++it)
+    if (it == tok.end())
     {
-      if (it->empty()) continue;
-
-      std::wstring current;
-      
-      if (boost::algorithm::starts_with(*it, And))
-      {
-        current = it->substr(And.size());
-        tokens.push_back(And);
-        tokens.push_back(current);
-      }
-
-      if (boost::algorithm::ends_with(*it, And))
-      {
-        if (current.empty())
-        {
-          current = it->substr(0, it->size() - And.size());
-          tokens.push_back(current);
-        }
-        tokens.push_back(And);
-      }
-
-      if (current.empty())
-      {
-        current = *it;
-        tokens.push_back(current);
-      }
-
-      if (current == Causes)
-      {
-        if (is_rule)
-          throw std::runtime_error("Line contains two times " + utils::str(_pImpl->_n->get_name(_pImpl->_n->core.Causes))); // this is just a parser restriction to distinguish between condition and deduction, might be useful to support it
-        else
-          is_rule = true;
-      }
-      else if (tokens.size()==2 && *it==L"=" && !first_var.empty())
-      {
-        assigns_to_var = first_var;
-        tokens.clear();
-      }
+      return; // empty line
     }
 
-    // tokenize relation names to single words to prepare comparing them with the tokens (see process_fact)
-    std::map<std::vector<std::wstring>, network::Node> relations;
-    for (network::Node relation : _pImpl->_n->get_sources(_pImpl->_n->core.IsA, _pImpl->_n->core.RelationTypeCategory, true))
+    if (*it == L".lang")
     {
-      std::wstring name = _pImpl->_n->get_name(relation, _pImpl->_lang);
-      if (!name.empty())
-      {
-        tokenizer<escaped_list_separator<wchar_t>,std::wstring::const_iterator, std::wstring > t(name,
-          escaped_list_separator<wchar_t>(L"\\", L" \t", L"\""));
-
-        std::vector<std::wstring> list;
-        for (decltype(tok)::iterator to = t.begin(); it!=t.end(); ++it) list.push_back(*to);
-        relations[list] = relation;
-      }
+      if (++it == tok.end()) throw std::runtime_error("Command .lang: Missing language identifier");
+      _pImpl->_lang = utils::str(*it);
+      _pImpl->_n->set_lang(_pImpl->_lang);
     }
-
-    network::Node fact=0;
-    if (is_rule)
+    else if (*it == L".dot")
     {
-      std::vector<decltype(tokens)> conditions, deductions;
-      bool is_deduction = false;
-      
-      for (int i = 0; i < tokens.size(); ++i)
-      {
-        decltype(tokens) tokens_for_fact;
-        while (i < tokens.size() && tokens[i] != And && tokens[i] != Causes)
-          tokens_for_fact.push_back(tokens[i++]);
-
-        if (tokens_for_fact.size() == 0)
-        {
-          throw std::runtime_error("Found empty condition or deduction in " + utils::str(line));
-        }
-
-        if (is_deduction)
-          deductions.emplace_back(tokens_for_fact);
-        else
-          conditions.emplace_back(tokens_for_fact);
-
-        if (i<tokens.size() && tokens[i] == Causes) is_deduction = true;
-      }
-
-      if (conditions.size() == 0) throw std::runtime_error("Found rule without condition in " + utils::str(line));
-      if (deductions.size() == 0) throw std::runtime_error("Found rule without condition in " + utils::str(line));
-
-      std::set<network::Node> condition_nodes;
-      for (auto condition : conditions)
-      {
-        condition_nodes.insert(_pImpl->process_fact(condition, relations, variables));
-      }
-
-      network::Node combined_condition = conditions.size() == 1
-        ? *condition_nodes.begin()
-        : _pImpl->_n->condition(_pImpl->_n->core.And, condition_nodes);
-
-      std::set<network::Node> deduction_list;
-
-      for (auto deduction : deductions)
-      {
-        deduction_list.insert(_pImpl->process_fact(deduction, relations, variables));
-      }
-
-      fact = _pImpl->_n->fact(combined_condition, _pImpl->_n->core.Causes, deduction_list);
+      if (++it == tok.end()) throw std::runtime_error("Command .dot: Missing node name to visualize");
+      std::wstring name = *it;
+      Node nd = _pImpl->_n->get_node(name);
+      if (nd == 0) throw std::runtime_error("Command .dot: Unknown node '" + utils::str(name) + "'");
+      if (++it == tok.end()) throw std::runtime_error("Command .dot: Missing maximum depth");
+      int max_depth = std::atoi(utils::str(*it).c_str());
+      if (max_depth < 2) throw std::runtime_error("Command .dot: Maximum depth must be greater than 1");
+      _pImpl->_n->gen_dot(nd, utils::str(name) + ".dot", max_depth);
     }
     else
     {
-      fact = _pImpl->process_fact(tokens, relations, variables);
-    }
+      boost::bimap<std::wstring, network::Node> variables;
+      std::vector<std::wstring> tokens;
+      const std::wstring And = _pImpl->_n->get_name(_pImpl->_n->core.And, _pImpl->_lang);
+      const std::wstring Causes = _pImpl->_n->get_name(_pImpl->_n->core.Causes, _pImpl->_lang);
+      bool is_rule = false;
+      std::wstring assigns_to_var;
+      std::wstring first_var = Impl::is_var(*it) ? L"" : *it;
+      for (; it != tok.end(); ++it)
+      {
+        if (it->empty()) continue;
 
-    if (!assigns_to_var.empty())
-    {
-      _pImpl->_n->set_name(fact, assigns_to_var, _pImpl->_lang);
-    }
+        std::wstring current;
 
-    std::wstring output;
-    _pImpl->_n->gen_dot(fact, "debug.dot");
-    _pImpl->_n->format_fact(output, _pImpl->_lang, fact);
-    std::wcout << L"> " << output << std::endl;
+        if (boost::algorithm::starts_with(*it, And))
+        {
+          current = it->substr(And.size());
+          tokens.push_back(And);
+          tokens.push_back(current);
+        }
+
+        if (boost::algorithm::ends_with(*it, And))
+        {
+          if (current.empty())
+          {
+            current = it->substr(0, it->size() - And.size());
+            tokens.push_back(current);
+          }
+          tokens.push_back(And);
+        }
+
+        if (current.empty())
+        {
+          current = *it;
+          tokens.push_back(current);
+        }
+
+        if (current == Causes)
+        {
+          if (is_rule)
+            throw std::runtime_error("Line contains two times " + utils::str(_pImpl->_n->get_name(_pImpl->_n->core.Causes))); // this is just a parser restriction to distinguish between condition and deduction, might be useful to support it
+          else
+            is_rule = true;
+        }
+        else if (tokens.size() == 2 && *it == L"=" && !first_var.empty())
+        {
+          assigns_to_var = first_var;
+          tokens.clear();
+        }
+      }
+
+      // tokenize relation names to single words to prepare comparing them with the tokens (see process_fact)
+      std::map<std::vector<std::wstring>, network::Node> relations;
+      for (network::Node relation : _pImpl->_n->get_sources(_pImpl->_n->core.IsA, _pImpl->_n->core.RelationTypeCategory, true))
+      {
+        std::wstring name = _pImpl->_n->get_name(relation, _pImpl->_lang);
+        if (!name.empty())
+        {
+          tokenizer<escaped_list_separator<wchar_t>, std::wstring::const_iterator, std::wstring > t(name,
+            escaped_list_separator<wchar_t>(L"\\", L" \t", L"\""));
+
+          std::vector<std::wstring> list;
+          for (decltype(tok)::iterator to = t.begin(); it != t.end(); ++it) list.push_back(*to);
+          relations[list] = relation;
+        }
+      }
+
+      network::Node fact = 0;
+      if (is_rule)
+      {
+        std::vector<decltype(tokens)> conditions, deductions;
+        bool is_deduction = false;
+
+        for (int i = 0; i < tokens.size(); ++i)
+        {
+          decltype(tokens) tokens_for_fact;
+          while (i < tokens.size() && tokens[i] != And && tokens[i] != Causes)
+            tokens_for_fact.push_back(tokens[i++]);
+
+          if (tokens_for_fact.size() == 0)
+          {
+            throw std::runtime_error("Found empty condition or deduction in " + utils::str(line));
+          }
+
+          if (is_deduction)
+            deductions.emplace_back(tokens_for_fact);
+          else
+            conditions.emplace_back(tokens_for_fact);
+
+          if (i < tokens.size() && tokens[i] == Causes) is_deduction = true;
+        }
+
+        if (conditions.size() == 0) throw std::runtime_error("Found rule without condition in " + utils::str(line));
+        if (deductions.size() == 0) throw std::runtime_error("Found rule without condition in " + utils::str(line));
+
+        std::set<network::Node> condition_nodes;
+        for (auto condition : conditions)
+        {
+          condition_nodes.insert(_pImpl->process_fact(condition, relations, variables));
+        }
+
+        network::Node combined_condition = conditions.size() == 1
+          ? *condition_nodes.begin()
+          : _pImpl->_n->condition(_pImpl->_n->core.And, condition_nodes);
+
+        std::set<network::Node> deduction_list;
+
+        for (auto deduction : deductions)
+        {
+          deduction_list.insert(_pImpl->process_fact(deduction, relations, variables));
+        }
+
+        fact = _pImpl->_n->fact(combined_condition, _pImpl->_n->core.Causes, deduction_list);
+      }
+      else
+      {
+        fact = _pImpl->process_fact(tokens, relations, variables);
+      }
+
+      if (!assigns_to_var.empty())
+      {
+        _pImpl->_n->set_name(fact, assigns_to_var, _pImpl->_lang);
+      }
+
+      std::wstring output;
+      //_pImpl->_n->gen_dot(fact, "debug.dot");
+      _pImpl->_n->format_fact(output, _pImpl->_lang, fact);
+      std::wcout << L"> " << output << std::endl;
+    }
+  }
+  catch (std::exception& ex)
+  {
+    throw std::runtime_error("Error parsing line \"" + utils::str(line) + "\": " + ex.what());
   }
 }
 
@@ -342,6 +355,12 @@ network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& t
     temp.emplace_back(C::grab(combined, i, combined.size() - 3));
     temp.emplace_back(C::grab(combined, i, combined.size() - 2));
     temp.emplace_back(C::grab(combined, i, combined.size() - 1));
+
+    if (i != combined.size())
+    {
+      throw std::runtime_error(utils::str(L"cannot match fact or condition (use quotation marks?): " + temp[0]._token + L"  " + temp[1]._token + L"  " + temp[2]._token + L" ..."));
+    }
+
     combined = std::move(temp);
   }
 

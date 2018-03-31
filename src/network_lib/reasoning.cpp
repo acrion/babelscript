@@ -22,6 +22,7 @@ void Reasoning::run()
         std::set<Node> conditions;
         conditions.insert(condition);
           
+        _current_condition = condition;
         _next.clear();
         evaluate(RulePos({ rule, conditions.end(), conditions.begin() }));
       }
@@ -176,9 +177,10 @@ void Reasoning::deduce(const Variables& variables, Node parent) // use _deductio
                   Node d = fact(source, rel, targets);
                   if (_print)
                   {
-                    std::wstring output;
-                    format_fact(output, _lang, d, parent);
-                    _print(L" => " + output);
+                    std::wstring input,output;
+                    format_fact(input, _lang, _current_condition, variables, parent);
+                    format_fact(output, _lang, d, {}, parent);
+                    _print(output + L" <= " + input);
                   }
                   _done = true;
                 }

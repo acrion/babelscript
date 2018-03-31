@@ -31,6 +31,7 @@ namespace network
     void deduce(const Variables& variables, Node parent);
 
     bool _done;
+    Node _current_condition{ 0 };
     std::set<Node> _deductions;
     std::vector<RulePos> _next;
   };
