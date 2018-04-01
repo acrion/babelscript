@@ -243,19 +243,22 @@ Node Network_lib::fact(Node source, Node relationType, std::set<Node> targets, l
   }
   else
   {
+    if (targets.count(relationType) == 1)
+    {
+      // 1 13 13
+      // ~ is for example is for example <= (~  is opposite of  is for example), (is for example  ~  ->)
+      throw std::runtime_error("add_fact: facts with same relation type and object are not supported.");
+    }
+    
     if (relationType != core.IsA) // note that the initial constructor call fact(core.IsA, core.IsA, core.RelationTypeCategory) is executed as intended
     {
       fact(relationType, core.IsA, { core.RelationTypeCategory });
     }
 
-    bool dbg = false;
-    
     if (_pImpl->exists(answer.relation()))
     {
       // check_fact can return KNOWN though answer.relation exists, which should not happen. Indicates corrupt database or hash collision.
-      //assert(false);
-      gen_dot(answer.relation(), "1.dot", 3);
-      dbg = true;
+      assert(false);
     }
     else
     {
@@ -266,13 +269,6 @@ Node Network_lib::fact(Node source, Node relationType, std::set<Node> targets, l
     _pImpl->connect(answer.relation(), source);
     for (Node t:targets) _pImpl->connect(t, answer.relation());
     _pImpl->connect(answer.relation(), relationType, probability);
-
-    if (dbg)
-    {
-      // 1 13 13
-      // ~ is for example is for example <= (~  is opposite of  is for example), (is for example  ~  ->)
-      gen_dot(answer.relation(), "2.dot", 3);
-    }
   }
 
   return answer.relation();

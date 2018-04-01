@@ -170,7 +170,8 @@ void Reasoning::deduce(const Variables& variables, Node parent) // use _deductio
               {
                 throw std::runtime_error("Deduction is known to be wrong.");
               }
-              else if (!answer.is_known())
+              else if (!answer.is_known()
+                && targets.count(rel) == 0) // ignore deductions with same relation and target type as we do not support these
               {
                 try
                 {
