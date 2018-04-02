@@ -19,6 +19,6 @@ namespace babelscript_console
     class Impl;
     Impl* const _pImpl; // must stay at top of members list because of initialization order
 
-    network::Network_lib* _n{ nullptr };
+    network::Network_lib* _n{ nullptr };    
   };
 }

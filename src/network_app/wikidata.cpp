@@ -1,8 +1,10 @@
 #include "wikidata.h"
+#include "read_async.h"
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
 #include <iostream>
 #include <fstream>
+#include <mutex>
 
 using namespace babelscript_console;
 using namespace network;
@@ -24,7 +26,7 @@ Wikidata::Wikidata(network::Network_lib* n)
  _n->set_name(_n->core.RelationTypeCategory, L"Q18616576", "wikidata"); // Wikidata property
   
   
- // core.IsA is used for both P31 and P279, so we cannot use set_name for it. Maybe we should ignore P31 and use set_name(_n->core.IsA, L"P279", "wikidata") ?
+ // core.IsA is used for both P31 and P279 - we cannot use set_name for both. Maybe we should ignore P31 and use set_name(_n->core.IsA, L"P279", "wikidata") ?
  {
     Node X =_n->var();
     Node Y =_n->var();
@@ -51,4 +53,12 @@ Wikidata::~Wikidata()
 void Wikidata::import_json(fs::path file_name)
 {
   _n->_print(L"Importing file " + file_name.wstring());
+
+  ReadAsync read_async(file_name);
+
+  std::wstring line;
+  while (read_async.get_line(line))
+  {
+    std::wcout << line << std::endl;
+  }
 }

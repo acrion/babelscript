@@ -1,0 +1,22 @@
+#pragma once
+
+#include <boost/filesystem.hpp>
+#include <string>
+
+namespace babelscript_console
+{
+  namespace fs = boost::filesystem;
+  
+  class ReadAsync
+  {
+  public:
+    ReadAsync(fs::path file_name);
+    ~ReadAsync();
+    bool get_line(std::wstring& line);
+    std::string error_text();
+
+  private:
+    class Impl;
+    Impl* const _pImpl; // must stay at top of members list because of initialization order
+  };
+}
