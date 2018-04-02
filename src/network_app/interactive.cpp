@@ -1,5 +1,6 @@
 #include "interactive.h"
 #include "reasoning.h"
+#include "wikidata.h"
 #include "utils.h"
 #include <boost/tokenizer.hpp>
 #include <boost/bimap.hpp>
@@ -19,14 +20,13 @@ public:
       std::wcout << str << std::endl;
     }))
   {
-    _n->set_lang(_lang);
+    _n->set_lang("en");
   }
 
   network::Node process_fact(const std::vector<std::wstring>& tokens, const std::map<std::vector<std::wstring>, Node>& relations, boost::bimap<std::wstring, Node>& variables);
   static bool is_var(std::wstring token);
 
   Reasoning* const _n;
-  std::string _lang{"en"};
 };
 
 Interactive::Interactive()
@@ -67,8 +67,13 @@ void Interactive::process(std::wstring line)
     if (*it == L".lang")
     {
       if (++it == tok.end()) throw std::runtime_error("Command .lang: Missing language identifier");
-      _pImpl->_lang = utils::str(*it);
-      _pImpl->_n->set_lang(_pImpl->_lang);
+      _pImpl->_n->set_lang(utils::str(*it));
+    }
+    if (*it == L".wikidata")
+    {
+      if (++it == tok.end()) throw std::runtime_error("Command .wikidata: Missing json file name");
+      Wikidata wikidata(_pImpl->_n);
+      wikidata.import_json(*it);
     }
     else if (*it == L".dot")
     {
@@ -85,8 +90,8 @@ void Interactive::process(std::wstring line)
     {
       boost::bimap<std::wstring, network::Node> variables;
       std::vector<std::wstring> tokens;
-      const std::wstring And = _pImpl->_n->get_name(_pImpl->_n->core.And, _pImpl->_lang);
-      const std::wstring Causes = _pImpl->_n->get_name(_pImpl->_n->core.Causes, _pImpl->_lang);
+      const std::wstring And = _pImpl->_n->get_name(_pImpl->_n->core.And, _pImpl->_n->lang());
+      const std::wstring Causes = _pImpl->_n->get_name(_pImpl->_n->core.Causes, _pImpl->_n->lang());
       bool is_rule = false;
       std::wstring assigns_to_var;
       std::wstring first_var = Impl::is_var(*it) ? L"" : *it;
@@ -137,7 +142,7 @@ void Interactive::process(std::wstring line)
       std::map<std::vector<std::wstring>, network::Node> relations;
       for (network::Node relation : _pImpl->_n->get_sources(_pImpl->_n->core.IsA, _pImpl->_n->core.RelationTypeCategory, true))
       {
-        std::wstring name = _pImpl->_n->get_name(relation, _pImpl->_lang);
+        std::wstring name = _pImpl->_n->get_name(relation, _pImpl->_n->lang());
         if (!name.empty())
         {
           tokenizer<escaped_list_separator<wchar_t>, std::wstring::const_iterator, std::wstring > t(name,
@@ -203,12 +208,12 @@ void Interactive::process(std::wstring line)
 
       if (!assigns_to_var.empty())
       {
-        _pImpl->_n->set_name(fact, assigns_to_var, _pImpl->_lang);
+        _pImpl->_n->set_name(fact, assigns_to_var, _pImpl->_n->lang());
       }
 
       std::wstring output;
       //_pImpl->_n->gen_dot(fact, "debug.dot");
-      _pImpl->_n->format_fact(output, _pImpl->_lang, fact);
+      _pImpl->_n->format_fact(output, _pImpl->_n->lang(), fact);
       std::wcout << L"> " << output << std::endl;
     }
   }
@@ -255,7 +260,7 @@ network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& t
         if (_token.empty())
           throw std::logic_error("Internal error: empty token in process_fact::C");
         else
-          return _node = _enclosing->_n->node(_token, _enclosing->_lang);
+          return _node = _enclosing->_n->node(_token, _enclosing->_n->lang());
       }
     }
   };
@@ -286,7 +291,7 @@ network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& t
       if (var==variables.left.end())
       {
         Node node = _n->var();
-        _n->set_name(node, token, _lang);
+        _n->set_name(node, token, _n->lang());
         variables.left.insert(boost::bimap<std::wstring, network::Node>::left_value_type(token, node));
 
         if (variables.left.find(token) == variables.left.end())
@@ -323,7 +328,7 @@ network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& t
         else
         {
           std::wstring connected = utils::concatenate(test, L' ');
-          network::Node node = _n->get_node(connected, _lang);
+          network::Node node = _n->get_node(connected, _n->lang());
           if (node)
           {
             combined.push_back(C(this,node,connected));
