@@ -4,30 +4,72 @@
 
 using namespace network;
 
-Reasoning::Reasoning(std::function<void(std::wstring)> print) : Network_lib(print)
+Reasoning::Reasoning(std::function<void(std::wstring, bool)> print)
+  : Network_lib(print)
 {
 }
 
-void Reasoning::run()
+//#define PARALLEL_REASONING
+
+void Reasoning::run(bool print_deductions)
 {
+  _print_deductions = print_deductions;
+  _skipped = 0;
+  
   do
   {
+    std::vector<std::thread> threads;
+
     _done = false;
     for (Node rule : _pImpl->get_left(core.Causes))
     {
-      Node condition = parse_fact(rule, _deductions);
+#ifndef PARALLEL_REASONING
+      apply_rule(rule, 0);
+#else
+      size_t i = 0;
+      for (i = 0; i < threads.size(); ++i)
+        if (!(_running & 1ull << i))
+          break;
 
-      if (condition && condition != core.Causes && _deductions.size() > 0)
+      _running = _running | 1ull << i;
+      std::thread t(&Reasoning::apply_rule, this, rule, i);
+      if (i < threads.size())
       {
-        std::unordered_set<Node> conditions;
-        conditions.insert(condition);
-          
-        _current_condition = condition;
-        _next.clear();
-        evaluate(RulePos({ rule, conditions.end(), conditions.begin() }));
+        if (threads[i].joinable()) threads[i].join();
+        threads[i] = std::move(t);
       }
+      else
+      {
+        threads.emplace_back(std::move(t));
+        print(L"Running " + std::to_wstring(threads.size()) + L" threads for applying rules...", true);
+      }
+#endif
     }
+
+    for (std::thread& t : threads)
+      if (t.joinable()) t.join();
+
   } while (_done);
+
+  _stop_watch.stop();
+  if (_skipped > 0) print(L" (skipped " + std::to_wstring(_skipped) + L" deductions)", true);
+}
+
+void Reasoning::apply_rule(const network::Node &rule, size_t thread_index)
+{
+  Node condition = parse_fact(rule, _deductions);
+
+  if (condition && condition != core.Causes && _deductions.size() > 0)
+  {
+    std::unordered_set<Node> conditions;
+    conditions.insert(condition);
+
+    _current_condition = condition;
+    _next.clear();
+    evaluate(RulePos({ rule, conditions.end(), conditions.begin() }));
+  }
+
+  _running = _running & ~(1ull << thread_index);
 }
 
 void Reasoning::evaluate(RulePos rule)
@@ -176,13 +218,40 @@ void Reasoning::deduce(const Variables& variables, Node parent) // use _deductio
                 try
                 {
                   Node d = fact(source, rel, targets);
-                  if (_print)
+
+                  bool do_print = _print_deductions;
+                  if (!do_print)
                   {
+                    if (_stop_watch.is_running())
+                    {
+                      if (_stop_watch.duration() >= 1000)
+                      {
+                        do_print = true;
+                        _stop_watch.start();
+                      }
+                      else
+                      {
+                        ++_skipped;
+                      }
+                    }
+                    else
+                    {
+                      do_print = true;
+                      _stop_watch.start();
+                    }
+                  }
+                  
+                  if (do_print)
+                  {
+                    if (_skipped > 0) print(L" (skipped " + std::to_wstring(_skipped) + L" deductions)", true);
+                    _skipped = 0;
+                    _stop_watch.start();
                     std::wstring input,output;
                     format_fact(input, _lang, _current_condition, variables, parent);
                     format_fact(output, _lang, d, {}, parent);
-                    _print(output + L" <= " + input);
+                    print(output + L" <= " + input, true);
                   }
+
                   _done = true;
                 }
                 catch (std::exception& ex)

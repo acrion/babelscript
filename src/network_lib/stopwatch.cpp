@@ -1,7 +1,7 @@
 #include "stopwatch.h"
 #include <chrono>
 
-using namespace babelscript_console;
+using namespace network;
 namespace chrono = std::chrono;
 
 class StopWatch::CImpl
@@ -14,8 +14,6 @@ public:
 StopWatch::StopWatch()
   : _pImpl(new CImpl)
 {
-  _pImpl->m_start = chrono::high_resolution_clock::now();
-  _pImpl->m_stop = chrono::time_point<chrono::steady_clock>::min();
 }
 
 StopWatch::StopWatch(const StopWatch& stopWatch)
@@ -32,6 +30,12 @@ StopWatch::~StopWatch()
 bool StopWatch::is_running()
 {
   return _pImpl->m_stop == chrono::time_point<chrono::steady_clock>::min();
+}
+
+void StopWatch::start()
+{
+  _pImpl->m_start = chrono::high_resolution_clock::now();
+  _pImpl->m_stop = chrono::time_point<chrono::steady_clock>::min();
 }
 
 void StopWatch::stop()

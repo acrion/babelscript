@@ -1,10 +1,11 @@
 #pragma once
 
 #include "network_lib.h"
+#include "network_lib_export.h"
 
-namespace babelscript_console
+namespace network
 {
-  class StopWatch
+  class NETWORK_LIB_EXPORT StopWatch
   {
   public:
     StopWatch();
@@ -12,6 +13,7 @@ namespace babelscript_console
     StopWatch(const StopWatch& stopWatch);
     bool is_running();
     void stop();
+    void start();
     uint64_t duration();
 
   private:

@@ -229,9 +229,9 @@ namespace network
 	private:
 #endif
     static constexpr Node shift_inc = 5;
-    static constexpr Node mark_hash           = 0x4000000000000000ul;
-    static constexpr Node mask_node           = 0x7FFFFFFFFFFFFFFFul; // mask highest bit
-    static constexpr Node mask_highest_2_bits = 0x3ffffffffffffffful;
+    static constexpr Node mark_hash           = 0x4000000000000000ull;
+    static constexpr Node mask_node           = 0x7FFFFFFFFFFFFFFFull; // mask highest bit
+    static constexpr Node mask_highest_2_bits = 0x3fffffffffffffffull;
 
     std::map<Node, std::unordered_set<Node>> _left;
     std::map<Node, std::unordered_set<Node>> _right;

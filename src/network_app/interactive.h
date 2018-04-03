@@ -11,7 +11,7 @@ namespace babelscript_console
     Interactive();
     ~Interactive();
     void process(std::wstring line);
-    void run();
+    void run(bool print_deductions);
     static std::string get_version();
 
   private:

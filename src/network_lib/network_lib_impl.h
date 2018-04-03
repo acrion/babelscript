@@ -20,5 +20,6 @@ namespace network
 
     std::mutex _mtx_name_of_node;
     std::mutex _mtx_node_of_name;
+    std::mutex _mtx_print;
   };
 }

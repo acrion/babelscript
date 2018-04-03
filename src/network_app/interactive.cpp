@@ -16,7 +16,7 @@ using boost::escaped_list_separator;
 class Interactive::Impl
 {
 public:
-  Impl() : _n(new Reasoning([](std::wstring str)
+  Impl() : _n(new Reasoning([](std::wstring str, bool)
     {
       std::wcout << str << std::endl;
     }))
@@ -95,19 +95,25 @@ void Interactive::process(std::wstring line)
         if (cmd.size()<2) throw std::runtime_error("Command .wikidata: Missing json file name");
 
         std::wofstream log("wikidata.log");
-        _pImpl->_n->set_print([&](std::wstring str)
+        _pImpl->_n->set_print([&](std::wstring str, bool o)
         {
           log << str << std::endl;
+
+          if (o)
+          {
+            std::wcout << str << std::endl;
+          }
         });
 
         Wikidata wikidata(_pImpl->_n);
         StopWatch watch;
+        watch.start();
         wikidata.import_json(cmd[1]);
-        _pImpl->_n->_print(L" Time needed for importing: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s");
-        run();
-        _pImpl->_n->_print(L" Total time: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s");
+        _pImpl->_n->print(L" Time needed for importing: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s", true);
+        run(false);
+        _pImpl->_n->print(L" Total time: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s", true);
         
-        _pImpl->_n->set_print([](std::wstring str)
+        _pImpl->_n->set_print([](std::wstring str, bool)
         {
           std::wcout << str << std::endl;
         });
@@ -255,7 +261,7 @@ void Interactive::process(std::wstring line)
       std::wstring output;
       //_pImpl->_n->gen_dot(fact, "debug.dot", 5);
       _pImpl->_n->format_fact(output, _pImpl->_n->lang(), fact);
-      _pImpl->_n->_print(L"> " + output);
+      _pImpl->_n->print(L"> " + output, false);
     }
   }
   catch (std::exception& ex)
@@ -417,9 +423,9 @@ network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& t
   return result;
 }
 
-void Interactive::run()
+void Interactive::run(bool print_deductions)
 {
-  _pImpl->_n->run();
+  _pImpl->_n->run(print_deductions);
 }
 
 

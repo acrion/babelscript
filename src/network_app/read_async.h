@@ -10,7 +10,7 @@ namespace babelscript_console
   class ReadAsync
   {
   public:
-    ReadAsync(fs::path file_name, size_t sufficient_size=10);
+    ReadAsync(fs::path file_name, size_t sufficient_size=2);
     ~ReadAsync();
     bool get_line(std::wstring& line);
     std::string error_text();

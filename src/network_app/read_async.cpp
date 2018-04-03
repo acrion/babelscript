@@ -23,7 +23,7 @@ public:
   void read_thread(fs::path file_name);
   void put_line(const std::wstring& line);
 
-  size_t _sufficient_size{ 10 };
+  size_t _sufficient_size;
   std::thread _t;
   std::queue<std::wstring> _lines;
   std::atomic<bool> _EOF{ false };

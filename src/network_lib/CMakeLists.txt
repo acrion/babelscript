@@ -7,6 +7,8 @@ add_library (network_lib SHARED
   network.h
   reasoning.cpp
   reasoning.h
+  stopwatch.cpp
+  stopwatch.h 
   unification.cpp
   unification.h
   utils.cpp

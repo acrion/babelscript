@@ -13,7 +13,7 @@ const std::string Network_lib::get_version()
 }
 
 
-Network_lib::Network_lib(std::function<void(std::wstring)> print)
+Network_lib::Network_lib(std::function<void(std::wstring,bool)> print)
 	: _pImpl{new Impl}
   , _print(print)
   , core({ _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create()})
@@ -502,4 +502,11 @@ void Network_lib::gen_dot(Node start, std::string file_name, int max_depth)
   add_nodes(start, touched, conditions, deductions, dot, max_depth);
   
   dot << "}" << std::endl;
+}
+
+
+void Network_lib::print(std::wstring msg, bool o)
+{
+  std::lock_guard<std::mutex> lock(_pImpl->_mtx_print);
+  _print(msg, o);
 }

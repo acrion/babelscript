@@ -16,9 +16,12 @@ namespace babelscript_console
     void import_json(fs::path file_name);
 
   private:
+    void process_command(const std::wstring& line, const size_t thread_index);
+
     class Impl;
     Impl* const _pImpl; // must stay at top of members list because of initialization order
 
-    network::Network_lib* _n{ nullptr };    
+    network::Network_lib* _n{ nullptr };
+    size_t _running{ 0 };
   };
 }
