@@ -21,7 +21,7 @@ namespace network
     void set_lang(std::string lang) { _lang = lang; }
     std::string lang() { return _lang; }
     Node node(std::wstring name, std::string lang="");
-    std::wstring get_name(Node node, std::string lang="");
+    std::wstring get_name(Node node, std::string lang="", bool fallback=false);
     Node get_node(std::wstring name, std::string lang="");
     std::string get_name_hex(Node node, bool prepend_num=true);
     void set_name(Node node, std::wstring name, std::string lang="");

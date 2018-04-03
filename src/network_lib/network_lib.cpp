@@ -63,12 +63,29 @@ Node Network_lib::node(std::wstring name, std::string lang)
   }
 }
 
-std::wstring Network_lib::get_name(Node node, std::string lang)
+std::wstring Network_lib::get_name(Node node, std::string lang, bool fallback)
 {
   if (lang.empty()) lang = _lang;
   auto& name_of_node = _pImpl->_name_of_node[lang];
   auto it = name_of_node.find(node);
-  return it == name_of_node.end() ? L"":it->second;
+  if (it == name_of_node.end())
+  {
+    if (fallback)
+    {
+      for (auto l : _pImpl->_name_of_node)
+      {
+        auto it2 = l.second.find(node);
+        if (it2 != l.second.end())
+          return it2->second;
+      }
+    }
+
+    return L"";
+  }
+  else
+  {
+    return it->second;
+  }
 }
 
 
@@ -343,7 +360,7 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
   if (!is_condition || subject)
   {
     subject = utils::get(variables, subject);
-    subject_name = subject ? get_name(subject, lang) : (is_condition ? L"" : L"?");
+    subject_name = subject ? get_name(subject, lang, true) : (is_condition ? L"" : L"?");
     if (subject_name.empty())
     {
       format_fact(subject_name, lang, subject, variables, fact);
@@ -352,7 +369,7 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
 
     Node relation = parse_relation(fact);
     relation = utils::get(variables, relation);
-    relation_name = relation ? get_name(relation, lang) : L"?";
+    relation_name = relation ? get_name(relation, lang, true) : L"?";
     if (relation_name.empty())
     {
       format_fact(relation_name, lang, relation, variables, fact);
@@ -364,8 +381,8 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
   for (Node object : objects)
   {
     object = utils::get(variables, object);
-    if (!objects_name.empty()) objects_name += get_name(core.And, lang) + L" ";
-    std::wstring object_name = object ? get_name(object, lang) : L"?";
+    if (!objects_name.empty()) objects_name += get_name(core.And, lang, true) + L" ";
+    std::wstring object_name = object ? get_name(object, lang, true) : L"?";
     if (object_name.empty())
     {
       format_fact(object_name, lang, object, variables, fact);
