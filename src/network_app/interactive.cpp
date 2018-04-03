@@ -55,41 +55,65 @@ void Interactive::process(std::wstring line)
 {
   try
   {
+    if (boost::starts_with(line, "#")) return; // comment
+    
     tokenizer<escaped_list_separator<wchar_t>, std::wstring::const_iterator, std::wstring > tok(line,
       escaped_list_separator<wchar_t>(L"\\", L" \t", L"\""));
 
     decltype(tok)::iterator it = tok.begin();
+
+    while (it!=tok.end() && it->empty()) ++it;
 
     if (it == tok.end())
     {
       return; // empty line
     }
 
-    if (*it == L".lang")
+    if ((*it)[0] == L'.')
     {
-      if (++it == tok.end()) throw std::runtime_error("Command .lang: Missing language identifier");
-      _pImpl->_n->set_lang(utils::str(*it));
-    }
-    if (*it == L".wikidata")
-    {
-      if (++it == tok.end()) throw std::runtime_error("Command .wikidata: Missing json file name");
-      Wikidata wikidata(_pImpl->_n);
-      StopWatch watch;
-      wikidata.import_json(*it);
-      std::cout << " Time needed for importing: " << static_cast<double>(watch.duration()) / 1000 << "s" << std::endl;
-      run();
-      std::cout << " Total time: " << static_cast<double>(watch.duration()) / 1000 << "s" << std::endl;
-    }
-    else if (*it == L".dot")
-    {
-      if (++it == tok.end()) throw std::runtime_error("Command .dot: Missing node name to visualize");
-      std::wstring name = *it;
-      Node nd = _pImpl->_n->get_node(name);
-      if (nd == 0) throw std::runtime_error("Command .dot: Unknown node '" + utils::str(name) + "'");
-      if (++it == tok.end()) throw std::runtime_error("Command .dot: Missing maximum depth");
-      int max_depth = std::atoi(utils::str(*it).c_str());
-      if (max_depth < 2) throw std::runtime_error("Command .dot: Maximum depth must be greater than 1");
-      _pImpl->_n->gen_dot(nd, utils::str(name) + ".dot", max_depth);
+      std::vector<std::wstring> cmd;
+      while (it != tok.end())
+      {
+        if (!it->empty()) cmd.push_back(*it);
+        ++it;
+      }
+      
+      if (cmd[0] == L".lang")
+      {
+        if (cmd.size()<2) throw std::runtime_error("Command .lang: Missing language identifier");
+        _pImpl->_n->set_lang(utils::str(cmd[1]));
+      }
+      else if (cmd[0] == L".name")
+      {
+        if (cmd.size() == 1) throw std::runtime_error("Command .name: Missing current name. Usage: .name <current name in " + _pImpl->_n->lang() + "> <language identifier> <name in that language>");
+        if (cmd.size() == 2) throw std::runtime_error("Command .name: Missing language identifier. Usage: .name <current name in " + _pImpl->_n->lang() + "> <language identifier> <name in that language>");
+        if (cmd.size() == 3) throw std::runtime_error("Command .name: Missing " + utils::str(cmd[2]) + " name of " + utils::str(cmd[1]) + ". Usage: .name <current name in " + _pImpl->_n->lang() + "> <language identifier> <name in that language>");
+        _pImpl->_n->set_name(_pImpl->_n->node(cmd[1]), cmd[3], utils::str(cmd[2]));
+      }
+      else if (cmd[0] == L".wikidata")
+      {
+        if (cmd.size()<2) throw std::runtime_error("Command .wikidata: Missing json file name");
+        Wikidata wikidata(_pImpl->_n);
+        StopWatch watch;
+        wikidata.import_json(cmd[1]);
+        std::cout << " Time needed for importing: " << static_cast<double>(watch.duration()) / 1000 << "s" << std::endl;
+        run();
+        std::cout << " Total time: " << static_cast<double>(watch.duration()) / 1000 << "s" << std::endl;
+      }
+      else if (cmd[0] == L".dot")
+      {
+        if (cmd.size()==1) throw std::runtime_error("Command .dot: Missing node name to visualize");
+        Node nd = _pImpl->_n->get_node(cmd[1]);
+        if (nd == 0) throw std::runtime_error("Command .dot: Unknown node '" + utils::str(cmd[1]) + "'");
+        if (cmd.size()<3) throw std::runtime_error("Command .dot: Missing maximum depth");
+        int max_depth = std::atoi(utils::str(cmd[2]).c_str());
+        if (max_depth < 2) throw std::runtime_error("Command .dot: Maximum depth must be greater than 1");
+        _pImpl->_n->gen_dot(nd, utils::str(cmd[1]) + ".dot", max_depth);
+      }
+      else
+      {
+        throw std::runtime_error(utils::str(L"Unknown command " + cmd[0]));
+      }
     }
     else
     {
@@ -217,7 +241,7 @@ void Interactive::process(std::wstring line)
       }
 
       std::wstring output;
-      //_pImpl->_n->gen_dot(fact, "debug.dot");
+      //_pImpl->_n->gen_dot(fact, "debug.dot", 5);
       _pImpl->_n->format_fact(output, _pImpl->_n->lang(), fact);
       std::wcout << L"> " << output << std::endl;
     }
