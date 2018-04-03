@@ -84,8 +84,7 @@ void Wikidata::import_json(fs::path file_name)
       if (language == "en" || language=="de")
       {
         _n->set_name(current, value, language);
-
-        std::wcout << id << L": " << utils::wstr(language) << L": " << value << std::endl;
+        _n->_print(id + L": " + utils::wstr(language) + L": " + value);
       }
     }
 
@@ -128,7 +127,7 @@ void Wikidata::import_json(fs::path file_name)
             }
             catch (std::exception& ex)
             {
-              std::cout << ex.what();
+              _n->_print(utils::wstr(ex.what()));
             }
           }
           else
