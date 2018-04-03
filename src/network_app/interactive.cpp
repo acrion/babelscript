@@ -93,12 +93,24 @@ void Interactive::process(std::wstring line)
       else if (cmd[0] == L".wikidata")
       {
         if (cmd.size()<2) throw std::runtime_error("Command .wikidata: Missing json file name");
+
+        std::wofstream log("wikidata.log");
+        _pImpl->_n->set_print([&](std::wstring str)
+        {
+          log << str << std::endl;
+        });
+
         Wikidata wikidata(_pImpl->_n);
         StopWatch watch;
         wikidata.import_json(cmd[1]);
         _pImpl->_n->_print(L" Time needed for importing: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s");
         run();
         _pImpl->_n->_print(L" Total time: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s");
+        
+        _pImpl->_n->set_print([](std::wstring str)
+        {
+          std::wcout << str << std::endl;
+        });
       }
       else if (cmd[0] == L".dot")
       {

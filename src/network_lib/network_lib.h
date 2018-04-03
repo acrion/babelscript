@@ -19,6 +19,7 @@ namespace network
     Node var();
 
     void set_lang(std::string lang) { _lang = lang; }
+    void set_print(std::function<void(std::wstring)> print) { _print = print; }
     std::string lang() { return _lang; }
     Node node(std::wstring name, std::string lang="");
     std::wstring get_name(Node node, std::string lang="", bool fallback=false);
@@ -29,7 +30,7 @@ namespace network
     std::unordered_set<Node> get_sources(Node relationType, Node target, bool exclude_vars=false);
     Node parse_fact(Node rule, std::unordered_set<Node>& deducations, Node parent=0);
     Node parse_relation(Node rule);
-    void format_fact(std::wstring& result, std::string lang, Node fact, const Variables& variables = {}, Node parent = 0);
+    void format_fact(std::wstring& result, std::string lang, Node fact, const Variables& variables = {}, Node parent = 0, std::shared_ptr<std::unordered_set<Node>> history=nullptr);
     std::unordered_set<Node> filter(std::unordered_set<Node> source, Node target);
     std::unordered_set<Node> filter(Node fact, Node relationType, Node target);
     std::unordered_set<Node> filter(std::unordered_set<Node> source, std::function<bool(Node nd)> f);

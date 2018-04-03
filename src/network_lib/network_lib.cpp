@@ -343,8 +343,16 @@ Node Network_lib::parse_relation(Node rule)
   return relation;
 }
 
-void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact, const Variables& variables, Node parent)
+void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact, const Variables& variables, Node parent, std::shared_ptr<std::unordered_set<Node>> history)
 {
+  if (!history) history = std::make_shared<std::unordered_set<Node>>();
+
+  if (history->find(fact) != history->end())
+  {
+    result = L"?";
+    return;
+  }
+  
   std::unordered_set<Node> objects;
   Node subject = parse_fact(fact, objects, parent);
 
@@ -355,6 +363,7 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
     return;
   }
 
+  history->insert(fact);
   std::wstring subject_name, relation_name;
 
   if (!is_condition || subject)
@@ -363,7 +372,7 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
     subject_name = subject ? get_name(subject, lang, true) : (is_condition ? L"" : L"?");
     if (subject_name.empty())
     {
-      format_fact(subject_name, lang, subject, variables, fact);
+      format_fact(subject_name, lang, subject, variables, fact, history);
       subject_name = L"(" + subject_name + L")";
     }
 
@@ -372,7 +381,7 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
     relation_name = relation ? get_name(relation, lang, true) : L"?";
     if (relation_name.empty())
     {
-      format_fact(relation_name, lang, relation, variables, fact);
+      format_fact(relation_name, lang, relation, variables, fact, history);
       relation_name = L"(" + relation_name + L")";
     }
   }
@@ -385,7 +394,7 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
     std::wstring object_name = object ? get_name(object, lang, true) : L"?";
     if (object_name.empty())
     {
-      format_fact(object_name, lang, object, variables, fact);
+      format_fact(object_name, lang, object, variables, fact, history);
       object_name = L"(" + object_name + L")";
     }
     objects_name += object_name;
