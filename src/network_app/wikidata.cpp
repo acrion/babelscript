@@ -87,5 +87,63 @@ void Wikidata::import_json(fs::path file_name)
         std::wcout << id << L": " << utils::wstr(language) << L": " << value << std::endl;
       }
     }
+
+    size_t property0;
+    static const std::wstring property_tag(LR"(":[{"mainsnak":{"snaktype":"value","property":")");
+    while ((property0 = line.find(property_tag, id1 + 1)) != std::wstring::npos)
+    {
+      size_t property1 = line.find(L"\"", property0 + property_tag.size());
+      std::wstring property = line.substr(property0 + property_tag.size(), property1 - property0 - property_tag.size());
+
+      static const std::wstring numeric_id_tag(LR"(","datavalue":{"value":{"entity-type":"item","numeric-id":)");
+
+      if (line.substr(property1, numeric_id_tag.size()) == numeric_id_tag)
+      {
+        id0 = property1 + numeric_id_tag.size();
+
+        bool success = true;
+        while (line[++id0] != L',')
+        {
+          if (line[id0] < L'0' || line[id0]>L'9')
+          {
+            success = false;
+            break;
+          }
+        }
+
+        if (success)
+        {
+          static const std::wstring object_tag(LR"("id":")");
+          if (line.substr(id0+1, object_tag.size())==object_tag)
+          {
+            id0 += object_tag.size() + 1;
+            id1 = line.find(L"\"", id0);
+            std::wstring object = line.substr(id0, id1 - id0);
+            std::wcout << L" ---> " << property << L" " << object << std::endl;
+
+            try
+            {
+              _n->fact(current, _n->node(property, "wikidata"), { _n->node(object, "wikidata" ) });
+            }
+            catch (std::exception& ex)
+            {
+              std::cout << ex.what();
+            }
+          }
+          else
+          {
+            id1 = id0 + object_tag.size() + 1;
+          }
+        }
+        else
+        {
+          id1 = property1 + numeric_id_tag.size();
+        }
+      }
+      else
+      {
+        id1 += property_tag.size();
+      }
+    }
   }
 }
