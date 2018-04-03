@@ -139,9 +139,9 @@ Node Network_lib::get_node(std::wstring name, std::string lang)
   }
 }
 
-std::set<Node> Network_lib::get_sources(Node relationType, Node target, bool exclude_vars)
+std::unordered_set<Node> Network_lib::get_sources(Node relationType, Node target, bool exclude_vars)
 {
-  std::set<Node> sources;
+  std::unordered_set<Node> sources;
   
   for (Node relation: _pImpl->get_right(target))
     if (_pImpl->get_right(relation).count(relationType) == 1)
@@ -152,9 +152,9 @@ std::set<Node> Network_lib::get_sources(Node relationType, Node target, bool exc
   return sources;
 }
 
-std::set<Node> Network_lib::filter(std::set<Node> source, Node target)
+std::unordered_set<Node> Network_lib::filter(std::unordered_set<Node> source, Node target)
 {
-  std::set<Node> result;
+  std::unordered_set<Node> result;
 
   for (Node nd : source)
   {
@@ -167,16 +167,16 @@ std::set<Node> Network_lib::filter(std::set<Node> source, Node target)
   return result;
 }
 
-std::set<Node> Network_lib::filter(Node fact, Node relationType, Node target)
+std::unordered_set<Node> Network_lib::filter(Node fact, Node relationType, Node target)
 {
-  std::set<Node> source     = _pImpl->get_right(fact);
-  std::set<Node> left_nodes = _pImpl->get_left(fact);
-  std::set<Node> result;
+  std::unordered_set<Node> source     = _pImpl->get_right(fact);
+  std::unordered_set<Node> left_nodes = _pImpl->get_left(fact);
+  std::unordered_set<Node> result;
 
   for (Node nd : source)
   {
     bool match = false;
-    std::set<Node> possible_relations = _pImpl->get_right(nd);
+    std::unordered_set<Node> possible_relations = _pImpl->get_right(nd);
     for (Node relation : filter(possible_relations, relationType))
     {
       if (   _pImpl->get_left(relation).count(target) == 1
@@ -191,9 +191,9 @@ std::set<Node> Network_lib::filter(Node fact, Node relationType, Node target)
   return result;
 }
 
-std::set<Node> Network_lib::filter(std::set<Node> source, std::function<bool(Node nd)> f)
+std::unordered_set<Node> Network_lib::filter(std::unordered_set<Node> source, std::function<bool(Node nd)> f)
 {
-  std::set<Node> result;
+  std::unordered_set<Node> result;
 
   for (Node nd : source)
   {
@@ -203,7 +203,7 @@ std::set<Node> Network_lib::filter(std::set<Node> source, std::function<bool(Nod
   return result;
 }
 
-Answer Network_lib::check_fact(Node source, Node relationType, const std::set<Node>& targets)
+Answer Network_lib::check_fact(Node source, Node relationType, const std::unordered_set<Node>& targets)
 {
   bool known = false;
 
@@ -211,8 +211,8 @@ Answer Network_lib::check_fact(Node source, Node relationType, const std::set<No
 
   if (_pImpl->exists(relation))
   {
-    const std::set<Node>& connectedFromRelationType = _pImpl->get_right(relation);
-    const std::set<Node>& connectedToRelationType = _pImpl->get_left(relation);
+    const std::unordered_set<Node>& connectedFromRelationType = _pImpl->get_right(relation);
+    const std::unordered_set<Node>& connectedToRelationType = _pImpl->get_left(relation);
 
     known = connectedFromRelationType.count(source) == 1
       && connectedToRelationType.count(source) == 1 // source must be connected with and from <--> relation (i. e. bidirectional, to distinguish it from targets)
@@ -230,7 +230,7 @@ Answer Network_lib::check_fact(Node source, Node relationType, const std::set<No
   }
 }
 
-Node Network_lib::fact(Node source, Node relationType, std::set<Node> targets, long double probability)
+Node Network_lib::fact(Node source, Node relationType, std::unordered_set<Node> targets, long double probability)
 {
   Answer answer = check_fact(source, relationType, targets);
 
@@ -278,7 +278,7 @@ Node Network_lib::fact(Node source, Node relationType, std::set<Node> targets, l
   return answer.relation();
 }
 
-Node Network_lib::condition(Node op, std::set<Node> conditions)
+Node Network_lib::condition(Node op, std::unordered_set<Node> conditions)
 {
   Node relation = _pImpl->create_hash(op, conditions);
   _pImpl->create(relation);
@@ -288,7 +288,7 @@ Node Network_lib::condition(Node op, std::set<Node> conditions)
 }
 
 
-Node Network_lib::parse_fact(Node rule, std::set<Node>& objects, Node parent)
+Node Network_lib::parse_fact(Node rule, std::unordered_set<Node>& objects, Node parent)
 {
   Node subject = 0; // 0 means failure
   objects.clear();
@@ -345,7 +345,7 @@ Node Network_lib::parse_relation(Node rule)
 
 void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact, const Variables& variables, Node parent)
 {
-  std::set<Node> objects;
+  std::unordered_set<Node> objects;
   Node subject = parse_fact(fact, objects, parent);
 
   bool is_condition = _pImpl->get_right(fact).count(core.And) == 1; // if fact is a condition node (having relation type core.And), there is no subject
@@ -398,7 +398,7 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
   boost::trim(result);
 }
 
-void Network_lib::add_nodes(Node current, std::set<Node>& touched, const std::set<Node>& conditions, const std::set<Node>& deductions, std::ofstream& dot, int max_depth)
+void Network_lib::add_nodes(Node current, std::unordered_set<Node>& touched, const std::unordered_set<Node>& conditions, const std::unordered_set<Node>& deductions, std::ofstream& dot, int max_depth)
 {
   if (--max_depth > 0 && touched.count(current) == 0)
   {
@@ -460,11 +460,11 @@ void Network_lib::add_nodes(Node current, std::set<Node>& touched, const std::se
 
 void Network_lib::gen_dot(Node start, std::string file_name, int max_depth)
 {
-  std::set<Node> conditions, deductions;
+  std::unordered_set<Node> conditions, deductions;
   
   for (Node rule : _pImpl->get_left(core.Causes))
   {
-    std::set<Node> current_deductions;
+    std::unordered_set<Node> current_deductions;
     Node condition = parse_fact(rule, current_deductions);
 
     if (condition && condition!=core.Causes)
@@ -477,7 +477,7 @@ void Network_lib::gen_dot(Node start, std::string file_name, int max_depth)
     }
   }
 
-  std::set<Node> touched;
+  std::unordered_set<Node> touched;
   std::ofstream dot(file_name, std::ios_base::out);
 
   dot << "digraph graphname{" << std::endl;

@@ -19,7 +19,7 @@ void Reasoning::run()
 
       if (condition && condition != core.Causes && _deductions.size() > 0)
       {
-        std::set<Node> conditions;
+        std::unordered_set<Node> conditions;
         conditions.insert(condition);
           
         _current_condition = condition;
@@ -122,7 +122,7 @@ void Reasoning::deduce(const Variables& variables, Node parent) // use _deductio
       throw std::runtime_error("Contradiction!");
     }
     
-    std::set<Node> relations = filter(deduction, core.IsA, core.RelationTypeCategory);
+    std::unordered_set<Node> relations = filter(deduction, core.IsA, core.RelationTypeCategory);
 
     if (relations.size() == 1) // more than one relation for given condition makes no sense. _relation_list is empty, so Next() won't return anything
     {
@@ -132,7 +132,7 @@ void Reasoning::deduce(const Variables& variables, Node parent) // use _deductio
 
       if (rel)
       {
-        std::set<Node> var_targets;
+        std::unordered_set<Node> var_targets;
         Node var_source = parse_fact(deduction, var_targets, parent);
 
         if (var_targets.size() > 0)
@@ -143,7 +143,7 @@ void Reasoning::deduce(const Variables& variables, Node parent) // use _deductio
 
           if (source)
           {
-            std::set<Node> targets;
+            std::unordered_set<Node> targets;
             bool done = true;
             for (Node var_t : var_targets)
             {

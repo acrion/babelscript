@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include <map>
-#include <set>
+#include <unordered_set>
 #include <vector>
 #include <limits.h>
 
@@ -93,8 +93,8 @@ namespace network
         throw std::logic_error("Network::var: Exceeded maximum number of " + std::to_string(_last-1) + " nodes.");
       }
 
-      _left[_last] = std::set<Node>();
-      _right[_last] = std::set<Node>();
+      _left[_last] = std::unordered_set<Node>();
+      _right[_last] = std::unordered_set<Node>();
       return _last;
     }
 
@@ -110,8 +110,8 @@ namespace network
         throw std::logic_error("Network::var: Exceeded maximum number of " + std::to_string(std::numeric_limits<Node>::max() - _last_var) + " variables.");
       }
 
-       _left[_last_var] = std::set<Node>();
-      _right[_last_var] = std::set<Node>();
+       _left[_last_var] = std::unordered_set<Node>();
+      _right[_last_var] = std::unordered_set<Node>();
 
       return _last_var;
     }
@@ -138,8 +138,8 @@ namespace network
         throw std::runtime_error("Network::create: requested node " + std::to_string(a) + " conflicts with variable values");
       }
 
-      _left[a] = std::set<Node>();
-      _right[a] = std::set<Node>();
+      _left[a] = std::unordered_set<Node>();
+      _right[a] = std::unordered_set<Node>();
     }
 
     Node create_hash(Node a, Node b)
@@ -152,7 +152,7 @@ namespace network
       return mask_node & (mark_hash ^ mod(a) ^ rol(mod(b),shift_inc) ^ rol(mod(c),2*shift_inc));
     }
 
-    Node create_hash(const std::set<Node>& vec)
+    Node create_hash(const std::unordered_set<Node>& vec)
     {
       Node result = mark_hash ^ rol(vec.size(), 56);
       for (Node node: vec)
@@ -162,14 +162,14 @@ namespace network
       return result & mask_node; // exclude values that denote variables
     }
 
-    Node create_hash(const Node head, const std::set<Node>& vec)
+    Node create_hash(const Node head, const std::unordered_set<Node>& vec)
     {
       return (  create_hash(vec)
               ^ rol(mod(head), 32)
              ) & mask_node;
     }
 
-    Node create_hash(const Node head1, const Node head2, const std::set<Node>& vec)
+    Node create_hash(const Node head1, const Node head2, const std::unordered_set<Node>& vec)
     {
       return (  create_hash(vec)
               ^ rol(mod(head1), 32)
@@ -177,23 +177,23 @@ namespace network
              ) & mask_node;
     }
 
-    const std::map<Node, std::set<Node>> all_left()
+    const std::map<Node, std::unordered_set<Node>> all_left()
     {
       return _left;
     }
 
-    const std::map<Node, std::set<Node>> all_right()
+    const std::map<Node, std::unordered_set<Node>> all_right()
     {
       return _right;
     }
 
-    typename std::map<Node, std::set<Node>>::iterator find_right(Node a) { return  _left.find(a); }
-    typename std::map<Node, std::set<Node>>::iterator find_left(Node b)  { return _right.find(b); }
-    typename std::map<Node, std::set<Node>>::iterator  left_end()     { return  _left.end();	 }
-    typename std::map<Node, std::set<Node>>::iterator right_end()     { return _right.end();   }
+    typename std::map<Node, std::unordered_set<Node>>::iterator find_right(Node a) { return  _left.find(a); }
+    typename std::map<Node, std::unordered_set<Node>>::iterator find_left(Node b)  { return _right.find(b); }
+    typename std::map<Node, std::unordered_set<Node>>::iterator  left_end()     { return  _left.end();	 }
+    typename std::map<Node, std::unordered_set<Node>>::iterator right_end()     { return _right.end();   }
 
-    const std::set<Node>& get_left(Node b)  { auto it = _right.find(b); return it == _right.end() ? _empty : it->second; }
-    const std::set<Node>& get_right(Node b) { auto it = _left.find(b);  return it == _left.end() ? _empty : it->second;  }
+    const std::unordered_set<Node>& get_left(Node b)  { auto it = _right.find(b); return it == _right.end() ? _empty : it->second; }
+    const std::unordered_set<Node>& get_right(Node b) { auto it = _left.find(b);  return it == _left.end() ? _empty : it->second;  }
 
 #ifndef _DEBUG
 	private:
@@ -203,10 +203,10 @@ namespace network
     static constexpr Node mask_node           = 0x7FFFFFFFFFFFFFFFul; // mask highest bit
     static constexpr Node mask_highest_2_bits = 0x3ffffffffffffffful;
 
-    std::map<Node, std::set<Node>> _left;
-    std::map<Node, std::set<Node>> _right;
+    std::map<Node, std::unordered_set<Node>> _left;
+    std::map<Node, std::unordered_set<Node>> _right;
     std::map<Node, long double> _probabilities;
-    const std::set<Node> _empty;
+    const std::unordered_set<Node> _empty;
     Node _last{ Node() };
     Node _last_var{ Node() };
 

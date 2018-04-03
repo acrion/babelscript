@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <set>
+#include <unordered_set>
 #include <memory>
 
 namespace network
@@ -13,8 +13,8 @@ namespace network
   struct RulePos
   {
     Node node;
-    std::set<Node>::iterator end;
-    std::set<Node>::iterator index;
+    std::unordered_set<Node>::iterator end;
+    std::unordered_set<Node>::iterator index;
     std::shared_ptr<Variables> variables{ std::make_shared<Variables>() };
     std::shared_ptr<Variables> unequals{ std::make_shared<Variables>() };
   };
@@ -32,7 +32,7 @@ namespace network
 
     bool _done;
     Node _current_condition{ 0 };
-    std::set<Node> _deductions;
+    std::unordered_set<Node> _deductions;
     std::vector<RulePos> _next;
   };
 }

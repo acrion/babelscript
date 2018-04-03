@@ -187,7 +187,7 @@ void Interactive::process(std::wstring line)
         if (conditions.size() == 0) throw std::runtime_error("Found rule without condition in " + utils::str(line));
         if (deductions.size() == 0) throw std::runtime_error("Found rule without condition in " + utils::str(line));
 
-        std::set<network::Node> condition_nodes;
+        std::unordered_set<network::Node> condition_nodes;
         for (auto condition : conditions)
         {
           condition_nodes.insert(_pImpl->process_fact(condition, relations, variables));
@@ -197,7 +197,7 @@ void Interactive::process(std::wstring line)
           ? *condition_nodes.begin()
           : _pImpl->_n->condition(_pImpl->_n->core.And, condition_nodes);
 
-        std::set<network::Node> deduction_list;
+        std::unordered_set<network::Node> deduction_list;
 
         for (auto deduction : deductions)
         {
@@ -374,7 +374,7 @@ network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& t
     combined = std::move(temp);
   }
 
-  std::set<Node> objects;
+  std::unordered_set<Node> objects;
   for (int i=2; i<combined.size(); ++i) objects.insert(combined[i]);
   result = _n->fact(combined[0], combined[1], objects);
 
