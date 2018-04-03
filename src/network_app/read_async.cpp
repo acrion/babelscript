@@ -15,6 +15,11 @@ public:
   {
   }
 
+  ~Impl()
+  {
+    if (_t.joinable()) _t.join();
+  }
+
   void read_thread(fs::path file_name);
   void put_line(const std::wstring& line);
 
@@ -48,7 +53,7 @@ std::string ReadAsync::error_text()
 bool ReadAsync::get_line(std::wstring& line)
 {
   std::unique_lock<std::mutex> lock(_pImpl->_mtx);
-  _pImpl->_cv.wait(lock, [&]{ return _pImpl->_lines.size() > 0; });
+  _pImpl->_cv.wait(lock, [&]{ return _pImpl->_lines.size() > 0 || _pImpl->_EOF; });
 
   if (_pImpl->_EOF)
   {
@@ -97,6 +102,7 @@ void ReadAsync::Impl::read_thread(fs::path file_name)
     std::lock_guard<std::mutex> lck(_mtx);
     _error_text = std::string("Could not open file '") + file_name.string() + "'";
     _EOF = true;
+    _cv.notify_one();
     return;
   }
 
@@ -104,4 +110,8 @@ void ReadAsync::Impl::read_thread(fs::path file_name)
   {
     put_line(line);
   }
+
+  std::lock_guard<std::mutex> lck(_mtx);
+  _EOF = true;
+  _cv.notify_one();
 }

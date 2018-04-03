@@ -1,6 +1,7 @@
 #include "interactive.h"
 #include "reasoning.h"
 #include "wikidata.h"
+#include "stopwatch.h"
 #include "utils.h"
 #include <boost/tokenizer.hpp>
 #include <boost/bimap.hpp>
@@ -73,7 +74,11 @@ void Interactive::process(std::wstring line)
     {
       if (++it == tok.end()) throw std::runtime_error("Command .wikidata: Missing json file name");
       Wikidata wikidata(_pImpl->_n);
+      StopWatch watch;
       wikidata.import_json(*it);
+      std::cout << " Time needed for importing: " << static_cast<double>(watch.duration()) / 1000 << "s" << std::endl;
+      run();
+      std::cout << " Total time: " << static_cast<double>(watch.duration()) / 1000 << "s" << std::endl;
     }
     else if (*it == L".dot")
     {
@@ -219,7 +224,7 @@ void Interactive::process(std::wstring line)
   }
   catch (std::exception& ex)
   {
-    throw std::runtime_error("Error parsing line \"" + utils::str(line) + "\": " + ex.what());
+    throw std::runtime_error("Error in line \"" + utils::str(line) + "\": " + ex.what());
   }
 }
 

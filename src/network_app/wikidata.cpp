@@ -119,7 +119,7 @@ void Wikidata::import_json(fs::path file_name)
             id0 += object_tag.size() + 1;
             id1 = line.find(L"\"", id0);
             std::wstring object = line.substr(id0, id1 - id0);
-            std::wcout << L" ---> " << property << L" " << object << std::endl;
+            //std::wcout << L" ---> " << property << L" " << object << std::endl;
 
             try
             {
@@ -145,5 +145,10 @@ void Wikidata::import_json(fs::path file_name)
         id1 += property_tag.size();
       }
     }
+  }
+
+  if (!read_async.error_text().empty())
+  {
+    throw std::runtime_error(read_async.error_text());
   }
 }
