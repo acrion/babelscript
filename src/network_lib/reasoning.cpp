@@ -1,6 +1,7 @@
 #include "reasoning.h"
 #include "network_lib_impl.h"
 #include "unification.h"
+#include <thread>
 
 using namespace network;
 

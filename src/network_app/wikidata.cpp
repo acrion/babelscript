@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <mutex>
+#include <thread>
 
 using namespace babelscript_console;
 using namespace network;

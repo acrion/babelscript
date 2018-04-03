@@ -15,8 +15,8 @@ const std::string Network_lib::get_version()
 
 Network_lib::Network_lib(std::function<void(std::wstring,bool)> print)
 	: _pImpl{new Impl}
-  , _print(print)
   , core({ _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create()})
+  , _print(print)
 {
   fact(core.IsA, core.IsA, { core.RelationTypeCategory });
   fact(core.Unequal, core.IsA, { core.RelationTypeCategory });
