@@ -41,6 +41,8 @@ void Network_lib::set_name(Node node, std::wstring name, std::string lang)
   //std::wcout << L"Node " << node << L" has name '" << name << L"' (" << std::wstring(lang.begin(), lang.end()) << L")" << std::endl;
 #endif
 
+  std::lock_guard<std::mutex> lock(_pImpl->_mtx_name_of_node);
+  std::lock_guard<std::mutex> lock2(_pImpl->_mtx_node_of_name);
   _pImpl->_node_of_name[lang][name] = node;
   _pImpl->_name_of_node[lang][node] = name;
 }
@@ -49,43 +51,48 @@ void Network_lib::set_name(Node node, std::wstring name, std::string lang)
 Node Network_lib::node(std::wstring name, std::string lang)
 {
   if (lang.empty()) lang = _lang;
-  auto& node_of_name = _pImpl->_node_of_name[lang];
-  auto it = node_of_name.find(name);
-  if (it == node_of_name.end())
+
   {
-    Node new_node = _pImpl->create();
-    set_name(new_node, name, lang);
-    return new_node;
+    std::lock_guard<std::mutex> lock(_pImpl->_mtx_node_of_name);
+    auto& node_of_name = _pImpl->_node_of_name[lang];
+    auto it = node_of_name.find(name);
+    if (it != node_of_name.end())
+    {
+      return it->second;
+    }
   }
-  else
-  {
-    return it->second;
-  }
+
+  Node new_node = _pImpl->create();
+  set_name(new_node, name, lang);
+  return new_node;
 }
 
 std::wstring Network_lib::get_name(Node node, std::string lang, bool fallback)
 {
   if (lang.empty()) lang = _lang;
-  auto& name_of_node = _pImpl->_name_of_node[lang];
-  auto it = name_of_node.find(node);
-  if (it == name_of_node.end())
+  
   {
-    if (fallback)
+    std::lock_guard<std::mutex> lock(_pImpl->_mtx_name_of_node);
+    auto& name_of_node = _pImpl->_name_of_node[lang];
+    auto it = name_of_node.find(node);
+    if (it != name_of_node.end())
     {
-      for (auto l : _pImpl->_name_of_node)
-      {
-        auto it2 = l.second.find(node);
-        if (it2 != l.second.end())
-          return it2->second;
-      }
+      return it->second;
     }
+  }
 
-    return L"";
-  }
-  else
+  if (fallback)
   {
-    return it->second;
+    std::lock_guard<std::mutex> lock(_pImpl->_mtx_name_of_node);
+    for (auto l : _pImpl->_name_of_node)
+    {
+      auto it2 = l.second.find(node);
+      if (it2 != l.second.end())
+        return it2->second;
+    }
   }
+
+  return L"";
 }
 
 
@@ -120,6 +127,7 @@ std::string Network_lib::get_name_hex(Node node, bool prepend_num)
 Node Network_lib::get_node(std::wstring name, std::string lang)
 {
   if (lang.empty()) lang = _lang;
+  std::lock_guard<std::mutex> lock(_pImpl->_mtx_node_of_name);
   auto node_of_name = _pImpl->_node_of_name.find(lang);
   if (node_of_name == _pImpl->_node_of_name.end())
   {

@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <vector>
 #include <limits.h>
+#include <mutex>
 
 namespace network
 {
@@ -13,6 +14,8 @@ namespace network
   public:
     void connect(Node a, Node b, long double probability = 1)
     {
+      std::lock_guard<std::mutex> lock(_mtx_left);
+      std::lock_guard<std::mutex> lock2(_mtx_right);
       auto leftIt = _left.find(a);
       auto rightIt = _right.find(b);
 
@@ -34,6 +37,7 @@ namespace network
         }
 
         Node hash;
+        std::lock_guard<std::mutex> lock3(_mtx_prob);
         auto it = find_probability(a, b, hash);
 
         if (it == _probabilities.end())
@@ -60,6 +64,7 @@ namespace network
 
     bool exists(Node a)
     {
+      std::lock_guard<std::mutex> lock(_mtx_left);
       return _left.find(a) != _left.end();
     }
 
@@ -70,10 +75,12 @@ namespace network
         return 1;
       }
       
+      std::lock_guard<std::mutex> lock(_mtx_left);
       auto itLeft = _left.find(a);
       if (itLeft != _left.end() && itLeft->second.count(b) == 1)
       {
         Node hash;
+        std::lock_guard<std::mutex> lock3(_mtx_prob);
         auto it = find_probability(a, b, hash);
         return it == _probabilities.end() ? 1 : it->second;
       }
@@ -85,8 +92,11 @@ namespace network
 
     Node create()
     {
+      std::lock_guard<std::mutex> lock(_mtx_left);
+      std::lock_guard<std::mutex> lock2(_mtx_right);
+
       while (_left.find(++_last) != _left.end())
-        ;
+          ;
 
       if (is_var(_last))
       {
@@ -100,6 +110,9 @@ namespace network
 
     Node var()
     {
+      std::lock_guard<std::mutex> lock(_mtx_left);
+      std::lock_guard<std::mutex> lock2(_mtx_right);
+
       if (_left.find(--_last_var) != _left.end())
       {
         throw std::runtime_error("Network::var: Node " + std::to_string(_last_var) + " already in use");
@@ -110,7 +123,7 @@ namespace network
         throw std::logic_error("Network::var: Exceeded maximum number of " + std::to_string(std::numeric_limits<Node>::max() - _last_var) + " variables.");
       }
 
-       _left[_last_var] = std::unordered_set<Node>();
+      _left[_last_var] = std::unordered_set<Node>();
       _right[_last_var] = std::unordered_set<Node>();
 
       return _last_var;
@@ -128,6 +141,9 @@ namespace network
 
     void create(Node a)
     {
+      std::lock_guard<std::mutex> lock(_mtx_left);
+      std::lock_guard<std::mutex> lock2(_mtx_right);
+
       if (_left.find(a) != _left.end())
       {
         throw std::runtime_error("Network::create: requested node " + std::to_string(a) + " already in use");
@@ -177,23 +193,37 @@ namespace network
              ) & mask_node;
     }
 
-    const std::map<Node, std::unordered_set<Node>> all_left()
+    typename std::map<Node, std::unordered_set<Node>>::iterator find_right(Node a)
     {
-      return _left;
+      std::lock_guard<std::mutex> lock(_mtx_left);
+      return  _left.find(a);
+    }
+    typename std::map<Node, std::unordered_set<Node>>::iterator find_left(Node b)
+    {
+      std::lock_guard<std::mutex> lock(_mtx_right);
+      return _right.find(b);
+    }
+    typename std::map<Node, std::unordered_set<Node>>::iterator  left_end()
+    {
+      std::lock_guard<std::mutex> lock(_mtx_left);
+      return  _left.end();
+    }
+    typename std::map<Node, std::unordered_set<Node>>::iterator right_end()
+    {
+      std::lock_guard<std::mutex> lock(_mtx_right);
+      return _right.end();
     }
 
-    const std::map<Node, std::unordered_set<Node>> all_right()
+    const std::unordered_set<Node>& get_left(Node b)
     {
-      return _right;
+      std::lock_guard<std::mutex> lock(_mtx_left);
+      auto it = _right.find(b); return it == _right.end() ? _empty : it->second;
     }
-
-    typename std::map<Node, std::unordered_set<Node>>::iterator find_right(Node a) { return  _left.find(a); }
-    typename std::map<Node, std::unordered_set<Node>>::iterator find_left(Node b)  { return _right.find(b); }
-    typename std::map<Node, std::unordered_set<Node>>::iterator  left_end()     { return  _left.end();	 }
-    typename std::map<Node, std::unordered_set<Node>>::iterator right_end()     { return _right.end();   }
-
-    const std::unordered_set<Node>& get_left(Node b)  { auto it = _right.find(b); return it == _right.end() ? _empty : it->second; }
-    const std::unordered_set<Node>& get_right(Node b) { auto it = _left.find(b);  return it == _left.end() ? _empty : it->second;  }
+    const std::unordered_set<Node>& get_right(Node b)
+    {
+      std::lock_guard<std::mutex> lock(_mtx_right);
+      auto it = _left.find(b);  return it == _left.end() ? _empty : it->second;
+    }
 
 #ifndef _DEBUG
 	private:
@@ -209,6 +239,9 @@ namespace network
     const std::unordered_set<Node> _empty;
     Node _last{ Node() };
     Node _last_var{ Node() };
+    std::mutex _mtx_prob;
+    std::mutex _mtx_left;
+    std::mutex _mtx_right;
 
     typename decltype(_probabilities)::iterator find_probability(Node a, Node b, Node& hash)
     {
@@ -225,7 +258,7 @@ namespace network
       const uint64_t mask = 8*sizeof(n)-1;
       c &= mask;
       //uint64_t wrapped = n >> ((-c)&mask);
-      uint64_t wrapped = (n & mask_highest_2_bits) >> (((-c)&mask) - 2); // we want to wrap already at bit 61 (not 63), since mask_node clears bit 63 and we use bit 62 to denote hashes (mark_hash)
+      uint64_t wrapped = (n & mask_highest_2_bits) >> (((-c)&mask) - 2); // we want to wrap already at bit 61 (not 63), since mask_node clears bit 63 (which marks vars) and we use bit 62 to denote hashes (mark_hash)
       return ((n << c) | wrapped) & mask_highest_2_bits;
     }
 
@@ -241,7 +274,7 @@ namespace network
 
     static uint64_t mod(uint64_t n)
     {
-      // We generate nodes both by counting counting up and down (for vars) from 0, which increases probability of hash collisions.
+      // We generate nodes both by counting up and down (for vars) from 0, which increases probability of hash collisions.
       // So, make a clear different between those two categories.
       return n > mask_node ? ror(n, 32) : n;
     }
