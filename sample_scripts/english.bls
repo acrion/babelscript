@@ -1,7 +1,7 @@
 X is a Y  => X ~ Y
 X is an Y => X is a Y
 
-has property   is a ->
+has attribute   is a ->
 has part       is a ->
 is opposite of is a ->
 
