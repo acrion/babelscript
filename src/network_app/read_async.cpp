@@ -9,25 +9,26 @@ using namespace babelscript_console;
 class ReadAsync::Impl
 {
 public:
-  Impl(fs::path file_name)
-    : _t(std::thread(&Impl::read_thread, this, file_name))
+  Impl(fs::path file_name, size_t sufficient_size)
+    : _sufficient_size(sufficient_size)
+    , _t(std::thread(&Impl::read_thread, this, file_name))
   {
   }
 
   void read_thread(fs::path file_name);
   void put_line(const std::wstring& line);
 
+  size_t _sufficient_size{ 10 };
+  std::thread _t;
   std::queue<std::wstring> _lines;
   std::atomic<bool> _EOF{ false };
   std::string _error_text;
-  std::mutex _mtx;
-  std::condition_variable _cv;
-  bool _processed{ false };
-  std::thread _t;
+  std::mutex _mtx, _mtx2;
+  std::condition_variable _cv, _cv2;
 };
 
-ReadAsync::ReadAsync(fs::path file_name)
-  : _pImpl(new Impl(file_name))
+ReadAsync::ReadAsync(fs::path file_name, size_t sufficient_size)
+  : _pImpl(new Impl(file_name, sufficient_size))
 {
 
 }
@@ -46,44 +47,41 @@ std::string ReadAsync::error_text()
 
 bool ReadAsync::get_line(std::wstring& line)
 {
-  {
-    std::lock_guard<std::mutex> lck(_pImpl->_mtx);
-    if (_pImpl->_lines.size() > 0)
-    {
-      line = _pImpl->_lines.front();
-      _pImpl->_processed = false;
-      _pImpl->_lines.pop();
-      return true;
-    }
-  }
-
-  if (_pImpl->_EOF)
-  {
-    _pImpl->_processed = false;
-    return false;
-  }
-
   std::unique_lock<std::mutex> lock(_pImpl->_mtx);
-  _pImpl->_cv.wait(lock, [&]{ return _pImpl->_processed; });
+  _pImpl->_cv.wait(lock, [&]{ return _pImpl->_lines.size() > 0; });
 
   if (_pImpl->_EOF)
   {
-    _pImpl->_processed = false;
     return false;
   }
   line = _pImpl->_lines.front();
-  _pImpl->_processed = false;
   _pImpl->_lines.pop();
   return true;
 }
 
 void ReadAsync::Impl::put_line(const std::wstring& line)
 {
+  bool done = false;
+  
+  do
   {
-    std::lock_guard<std::mutex> lck(_mtx);
-    _lines.push(line);
-    _processed = true;
+    {
+      std::lock_guard<std::mutex> lck(_mtx);
+
+      if (_lines.size() < _sufficient_size)
+      {
+        _lines.push(line);
+        done = true;
+      }
+    }
+    
+    if (!done)
+    {
+      std::this_thread::sleep_for(std::chrono::milliseconds(1)); // assuming that get_line will be called less than _sufficient_size times in 10 ms (since Windows OS waits longer
+    }
   }
+  while (!done);
+
   _cv.notify_one();
 }
 

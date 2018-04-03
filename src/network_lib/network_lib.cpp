@@ -34,28 +34,15 @@ Node Network_lib::var()
 }
 
 
-void Network_lib::set_name(Node node, std::wstring newName, std::string lang)
+void Network_lib::set_name(Node node, std::wstring name, std::string lang)
 {
   if (lang.empty()) lang = _lang;
 #if _DEBUG
-  //std::wcout << L"Node " << node << L" has name '" << newName << L"' (" << std::wstring(lang.begin(), lang.end()) << L")" << std::endl;
+  //std::wcout << L"Node " << node << L" has name '" << name << L"' (" << std::wstring(lang.begin(), lang.end()) << L")" << std::endl;
 #endif
 
-  auto& nodes_of_name = _pImpl->_node_of_name[lang];
-  auto it = nodes_of_name.find(newName);
-  if (it != nodes_of_name.end())
-  {
-    if (it->second != node)
-    {
-      nodes_of_name.erase(it); // since this name belongs to different nodes, remove it from _node_of_name (in case it has not been already removed)
-    }
-  }
-  else
-  {
-    nodes_of_name[newName] = node;
-  }
-
-  _pImpl->_name_of_node[lang][node] = newName; // overwrite any previous name (different strategy than with _node_of_name)
+  _pImpl->_node_of_name[lang][name] = node;
+  _pImpl->_name_of_node[lang][node] = name;
 }
 
 

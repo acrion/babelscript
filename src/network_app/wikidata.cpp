@@ -1,5 +1,6 @@
 #include "wikidata.h"
 #include "read_async.h"
+#include "utils.h"
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
 #include <iostream>
@@ -59,6 +60,32 @@ void Wikidata::import_json(fs::path file_name)
   std::wstring line;
   while (read_async.get_line(line))
   {
-    std::wcout << line << std::endl;
+    static const std::wstring id_tag(L"\"id\":\"");
+    size_t id0 = line.find(id_tag); if (id0 == std::wstring::npos) continue;
+    size_t id1 = line.find(L"\"", id0 + id_tag.size() + 1);
+    std::wstring id(line.substr(id0+id_tag.size(), id1 - id0 - id_tag.size()));
+
+    Node current = _n->node(id, "wikidata");
+    
+    size_t language0;
+    static const std::wstring language_tag(L"{\"language\":\"");
+    
+    while ((language0 = line.find(language_tag, id1+7)) != std::wstring::npos)
+    {
+      size_t language1 = line.find(L"\"", language0 + language_tag.size());
+      std::string language = utils::str(line.substr(language0+language_tag.size(), language1 - language0 - language_tag.size()));
+
+      static const std::wstring value_tag(L"\"value\":\"");
+      id0 = line.find(value_tag, language1 + 1);
+      id1 = line.find(L"\"", id0 + value_tag.size() + 1);
+      std::wstring value(line.substr(id0+value_tag.size(), id1 - id0 - value_tag.size()));
+
+      if (language == "en" || language=="de")
+      {
+        _n->set_name(current, value, language);
+
+        std::wcout << id << L": " << utils::wstr(language) << L": " << value << std::endl;
+      }
+    }
   }
 }
