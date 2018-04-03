@@ -55,7 +55,9 @@ bool ReadAsync::get_line(std::wstring& line)
     return false;
   }
   line = _pImpl->_lines.front();
+  std::lock_guard<std::mutex> lck(_pImpl->_mtx2);
   _pImpl->_lines.pop();
+  _pImpl->_cv2.notify_one();
   return true;
 }
 
@@ -77,7 +79,8 @@ void ReadAsync::Impl::put_line(const std::wstring& line)
     
     if (!done)
     {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1)); // assuming that get_line will be called less than _sufficient_size times in 10 ms (since Windows OS waits longer
+      std::unique_lock<std::mutex> lock(_mtx2);
+      _cv2.wait(lock, [&] { return _lines.size() < _sufficient_size; });
     }
   }
   while (!done);
