@@ -96,9 +96,9 @@ void Interactive::process(std::wstring line)
         Wikidata wikidata(_pImpl->_n);
         StopWatch watch;
         wikidata.import_json(cmd[1]);
-        std::cout << " Time needed for importing: " << static_cast<double>(watch.duration()) / 1000 << "s" << std::endl;
+        _pImpl->_n->_print(L" Time needed for importing: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s");
         run();
-        std::cout << " Total time: " << static_cast<double>(watch.duration()) / 1000 << "s" << std::endl;
+        _pImpl->_n->_print(L" Total time: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s");
       }
       else if (cmd[0] == L".dot")
       {
@@ -243,7 +243,7 @@ void Interactive::process(std::wstring line)
       std::wstring output;
       //_pImpl->_n->gen_dot(fact, "debug.dot", 5);
       _pImpl->_n->format_fact(output, _pImpl->_n->lang(), fact);
-      std::wcout << L"> " << output << std::endl;
+      _pImpl->_n->_print(L"> " + output);
     }
   }
   catch (std::exception& ex)
