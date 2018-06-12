@@ -54,6 +54,10 @@ bool Unification::increment_fact_index()
       else
         _fact_index = _facts_of_current_relation->second.begin(); // used to iterate over all facts the have relation type *_relation_index
     }
+    else if (_fact_index == std::unordered_set<Node>::iterator{ decltype(_facts_of_current_relation->second)::iterator() })
+    {
+      return false;
+    }
     else if (++_fact_index == _facts_of_current_relation->second.end()) // increment and return false if we reached the end, so _relation_index will be incremented
     {
       return false;

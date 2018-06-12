@@ -16,6 +16,8 @@ set( Boost_USE_STATIC_LIBS ON )
 include_directories(
     ${BOOST_INCLUDEDIR}
     ${BOOST_INCLUDEDIR}/libs/dll/include
+    ${BOOST_INCLUDEDIR}/libs/bimap/include
+    ${BOOST_INCLUDEDIR}/libs/container_hash/include
     ${BOOST_INCLUDEDIR}/libs/filesystem/include
     ${BOOST_INCLUDEDIR}/libs/core/include
 )
