@@ -29,13 +29,13 @@ StopWatch::~StopWatch()
 
 bool StopWatch::is_running()
 {
-  return _pImpl->m_stop == chrono::time_point<chrono::steady_clock>::min();
+  return _pImpl->m_stop == chrono::time_point<chrono::high_resolution_clock>::min();
 }
 
 void StopWatch::start()
 {
   _pImpl->m_start = chrono::high_resolution_clock::now();
-  _pImpl->m_stop = chrono::time_point<chrono::steady_clock>::min();
+  _pImpl->m_stop = chrono::time_point<chrono::high_resolution_clock>::min();
 }
 
 void StopWatch::stop()
