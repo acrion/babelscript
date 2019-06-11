@@ -1,3 +1,3 @@
 X is opposite of Y => Y is opposite of X
 white is opposite of black
-.dot test.dot
+.dot white 10 test.dot

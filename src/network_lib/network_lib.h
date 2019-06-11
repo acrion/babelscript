@@ -14,7 +14,7 @@ namespace network
 	{    
   public:
     Network_lib(std::function<void(std::wstring,bool)> print);
-		~Network_lib();
+    ~Network_lib();
 
     Node var();
 

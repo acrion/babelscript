@@ -66,23 +66,24 @@ void Wikidata::import_json(fs::path file_name)
   std::wstring line;
   while (read_async.get_line(line))
   {
-    size_t i = 0;
-    for (i = 0; i < threads.size(); ++i)
-      if (!(_running & 1ull<<i))
-        break;
+    process_command(line,0);
+//    size_t i = 0;
+//    for (i = 0; i < threads.size(); ++i)
+//      if (!(_running & 1ull<<i))
+//        break;
     
-    _running = _running | 1ull<<i;
-    std::thread t(&Wikidata::process_command, this, line, i);
-    if (i < threads.size())
-    {
-      if (threads[i].joinable()) threads[i].join();
-      threads[i] = std::move(t);
-    }
-    else
-    {
-      threads.emplace_back(std::move(t));
-      _n->print(L"Running " + std::to_wstring(threads.size()) + L" threads for reading wikidata file...", true);
-    }
+//    _running = _running | 1ull<<i;
+//    std::thread t(&Wikidata::process_command, this, line, i);
+//    if (i < threads.size())
+//    {
+//      if (threads[i].joinable()) threads[i].join();
+//      threads[i] = std::move(t);
+//    }
+//    else
+//    {
+//      threads.emplace_back(std::move(t));
+//      _n->print(L"Running " + std::to_wstring(threads.size()) + L" threads for reading wikidata file...", true);
+//    }
   }
 
   for (std::thread& t : threads)
