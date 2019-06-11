@@ -355,7 +355,7 @@ network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& t
     }
     else
     {
-      int len=1;
+      size_t len=1;
       bool done=false;
       for (; len <= tokens.size()-i && !is_var(tokens[i]); ++len)
       {
@@ -417,7 +417,7 @@ network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& t
   }
 
   std::unordered_set<Node> objects;
-  for (int i=2; i<combined.size(); ++i) objects.insert(combined[i]);
+  for (size_t i = 2; i < combined.size(); ++i) objects.insert(combined[i]);
   result = _n->fact(combined[0], combined[1], objects);
 
   return result;
