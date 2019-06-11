@@ -207,7 +207,7 @@ void Interactive::process(std::wstring line)
         std::vector<decltype(tokens)> conditions, deductions;
         bool is_deduction = false;
 
-        for (int i = 0; i < tokens.size(); ++i)
+        for (size_t i = 0; i < tokens.size(); ++i)
         {
           decltype(tokens) tokens_for_fact;
           while (i < tokens.size() && tokens[i] != And && tokens[i] != Causes)
@@ -328,7 +328,7 @@ network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& t
   bool done_all=true;
   network::Node result=0;
 
-  for (int i=0; i<tokens.size(); ++i)
+  for (size_t i = 0; i < tokens.size(); ++i)
   {
     std::wstring token = tokens[i];
 
