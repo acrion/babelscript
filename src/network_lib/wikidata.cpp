@@ -1,6 +1,6 @@
-#include "wikidata.h"
-#include "read_async.h"
-#include "utils.h"
+#include "wikidata.hpp"
+#include "read_async.hpp"
+#include "utils.hpp"
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
 #include <iostream>
@@ -8,8 +8,8 @@
 #include <mutex>
 #include <thread>
 
-using namespace babelscript_console;
-using namespace network;
+using namespace babelscript::console;
+using namespace babelscript::network;
 using boost::tokenizer;
 using boost::escaped_list_separator;
 

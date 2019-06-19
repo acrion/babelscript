@@ -1,6 +1,6 @@
-#include "answer.h"
+#include "answer.hpp"
 
-using namespace network;
+using namespace babelscript::network;
 
 Answer::Answer(State state, long double probability, Node relation)
   : state(state)

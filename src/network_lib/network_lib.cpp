@@ -1,11 +1,11 @@
-#include "network_lib.h"
-#include "network_lib_impl.h"
+#include "network_lib.hpp"
+#include "network_lib_impl.hpp"
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include <iomanip>
 #include <sstream>
 
-using namespace network;
+using namespace babelscript::network;
 
 const std::string Network_lib::get_version()
 {

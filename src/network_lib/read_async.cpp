@@ -1,11 +1,11 @@
-#include "read_async.h"
+#include "read_async.hpp"
 #include <mutex>
 #include <thread>
 #include <fstream>
 #include <queue>
 #include <condition_variable>
 
-using namespace babelscript_console;
+using namespace babelscript::console;
 
 class ReadAsync::Impl
 {

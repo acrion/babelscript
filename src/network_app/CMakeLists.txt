@@ -1,4 +1,4 @@
-add_executable (network_app main.cpp interactive.cpp interactive.h read_async.cpp read_async.h wikidata.cpp wikidata.h)
+add_executable (network_app main.cpp)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   add_definitions(-DBOOST_LIB_DIAGNOSTIC)

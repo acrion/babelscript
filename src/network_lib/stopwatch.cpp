@@ -1,7 +1,7 @@
-#include "stopwatch.h"
+#include "stopwatch.hpp"
 #include <chrono>
 
-using namespace network;
+using namespace babelscript::network;
 namespace chrono = std::chrono;
 
 class StopWatch::CImpl

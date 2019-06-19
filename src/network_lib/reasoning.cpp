@@ -1,9 +1,9 @@
-#include "reasoning.h"
-#include "network_lib_impl.h"
-#include "unification.h"
+#include "reasoning.hpp"
+#include "network_lib_impl.hpp"
+#include "unification.hpp"
 #include <thread>
 
-using namespace network;
+using namespace babelscript::network;
 
 Reasoning::Reasoning(std::function<void(std::wstring, bool)> print)
   : Network_lib(print)

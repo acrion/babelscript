@@ -1,41 +1,45 @@
-#include "utils.h"
+#include "utils.hpp"
 
-namespace network
+namespace babelscript
 {
-  namespace utils
+  namespace network
   {
-    std::shared_ptr<Variables> join(const Variables& v1, const Variables& v2)
+    namespace utils
     {
-      std::shared_ptr<Variables> result = std::make_shared<Variables>(v1);
-
-      for (auto& var : v2)
+      std::shared_ptr<Variables> join(const Variables& v1, const Variables& v2)
       {
-        auto it = result->find(var.first);
-        
-        if (it != result->end())
+        std::shared_ptr<Variables> result = std::make_shared<Variables>(v1);
+
+        for (auto& var : v2)
         {
-          if (it->second != var.second)
+          auto it = result->find(var.first);
+          
+          if (it != result->end())
           {
-            throw std::runtime_error("Variable sets to be merged do conflict");
+            if (it->second != var.second)
+            {
+              throw std::runtime_error("Variable sets to be merged do conflict");
+            }
+          }
+          else
+          {
+            (*result)[var.first] = var.second;
           }
         }
-        else
-        {
-          (*result)[var.first] = var.second;
-        }
+
+        return result;
       }
 
-      return result;
-    }
+      std::string str(std::wstring str)
+      {
+        return std::string(str.begin(), str.end());
+      }
 
-    std::string str(std::wstring str)
-    {
-      return std::string(str.begin(), str.end());
-    }
-
-    std::wstring wstr(std::string str)
-    {
-      return std::wstring(str.begin(), str.end());
+      std::wstring wstr(std::string str)
+      {
+        return std::wstring(str.begin(), str.end());
+      }
     }
   }
 }
+

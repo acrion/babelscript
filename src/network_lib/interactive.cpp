@@ -1,15 +1,15 @@
-#include "interactive.h"
-#include "reasoning.h"
-#include "wikidata.h"
-#include "stopwatch.h"
-#include "utils.h"
+#include "interactive.hpp"
+#include "reasoning.hpp"
+#include "wikidata.hpp"
+#include "stopwatch.hpp"
+#include "utils.hpp"
 #include <boost/tokenizer.hpp>
 #include <boost/bimap.hpp>
 #include <boost/algorithm/string.hpp>
 #include <iostream>
 
-using namespace babelscript_console;
-using namespace network;
+using namespace babelscript::console;
+using namespace babelscript::network;
 using boost::tokenizer;
 using boost::escaped_list_separator;
 
@@ -270,7 +270,7 @@ void Interactive::process(std::wstring line)
   }
 }
 
-network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, const std::map<std::vector<std::wstring>, network::Node>& relations, boost::bimap<std::wstring, network::Node>& variables)
+babelscript::network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, const std::map<std::vector<std::wstring>, network::Node>& relations, boost::bimap<std::wstring, network::Node>& variables)
 {
   class C
   {

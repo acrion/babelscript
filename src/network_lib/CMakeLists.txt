@@ -1,18 +1,26 @@
 add_library (network_lib SHARED
+# babelscript::network
   answer.cpp
-  answer.h
+  answer.hpp
   network_lib.cpp
-  network_lib.h
-  network_lib_impl.h
-  network.h
+  network_lib.hpp
+  network_lib_impl.hpp
+  network.hpp
   reasoning.cpp
-  reasoning.h
+  reasoning.hpp
   stopwatch.cpp
-  stopwatch.h
+  stopwatch.hpp
   unification.cpp
-  unification.h
+  unification.hpp
   utils.cpp
-  utils.h
+  utils.hpp
+# babelscript::console
+  interactive.cpp
+  interactive.hpp
+  read_async.cpp
+  read_async.hpp
+  wikidata.cpp
+  wikidata.hpp
 )
 
 generate_export_header(network_lib)
