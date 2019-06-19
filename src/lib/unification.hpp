@@ -1,6 +1,6 @@
 #pragma once
 
-#include "network_lib.hpp"
+#include "babelscript.hpp"
 #include "utils.hpp"
 #include <memory>
 #include <map>
@@ -13,12 +13,12 @@ namespace babelscript
     class Unification
     {
     public:
-      Unification(Network_lib* n, Node condition, Node parent, std::shared_ptr<Variables> variables, std::shared_ptr<Variables> unequals);
+      Unification(Babelscript* n, Node condition, Node parent, std::shared_ptr<Variables> variables, std::shared_ptr<Variables> unequals);
       std::shared_ptr<Variables> Next();
       std::shared_ptr<Variables> Unequals();
 
     protected:
-      Network_lib* const _n;
+      Babelscript* const _n;
       Node _parent;
       std::shared_ptr<Variables> _variables;
       std::shared_ptr<Variables> _unequals;

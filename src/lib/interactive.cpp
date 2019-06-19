@@ -7,6 +7,7 @@
 #include <boost/bimap.hpp>
 #include <boost/algorithm/string.hpp>
 #include <iostream>
+#include <fstream>
 
 using namespace babelscript::console;
 using namespace babelscript::network;
@@ -48,7 +49,7 @@ Interactive::~Interactive()
 
 std::string Interactive::get_version()
 {
-  return Network_lib::get_version();
+  return Babelscript::get_version();
 }
 
 void Interactive::process(std::wstring line)

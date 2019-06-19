@@ -1,6 +1,6 @@
 #pragma once
 
-#include "network_lib.hpp"
+#include "babelscript.hpp"
 #include <filesystem>
 
 namespace babelscript
@@ -16,7 +16,7 @@ namespace babelscript
     class Wikidata
     {
     public:
-      Wikidata(network::Network_lib* n);
+      Wikidata(network::Babelscript* n);
       ~Wikidata();
 
       void import_json(fs::path file_name);
@@ -27,7 +27,7 @@ namespace babelscript
       class Impl;
       Impl* const _pImpl; // must stay at top of members list because of initialization order
 
-      network::Network_lib* _n{ nullptr };
+      network::Babelscript* _n{ nullptr };
       size_t _running{ 0 };
     };
   }

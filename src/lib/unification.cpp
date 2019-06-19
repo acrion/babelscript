@@ -1,10 +1,10 @@
 #include <unification.hpp>
-#include "network_lib_impl.hpp"
+#include "babelscript_impl.hpp"
 #include "utils.hpp"
 
 using namespace babelscript::network;
 
-Unification::Unification(Network_lib* n, Node condition, Node parent, std::shared_ptr<Variables> variables, std::shared_ptr<Variables> unequals)
+Unification::Unification(Babelscript* n, Node condition, Node parent, std::shared_ptr<Variables> variables, std::shared_ptr<Variables> unequals)
   : _n(n)
   , _parent(parent)
   , _variables(variables)

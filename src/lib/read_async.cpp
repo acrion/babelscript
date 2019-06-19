@@ -3,6 +3,7 @@
 #include <thread>
 #include <fstream>
 #include <queue>
+#include <atomic>
 #include <condition_variable>
 
 using namespace babelscript::console;

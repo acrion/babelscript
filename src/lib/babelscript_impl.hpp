@@ -4,16 +4,16 @@
 #include <cstdint>
 #include <map>
 #include <mutex>
-#include "network_lib.hpp"
+#include "babelscript.hpp"
 #include "network.hpp"
 
 namespace babelscript
 {
   namespace network
   {
-    class NETWORK_LIB_EXPORT Network_lib::Impl : public Network
+    class BABELSCRIPT_EXPORT Babelscript::Impl : public Network
     {
-      friend class Network_lib;
+      friend class Babelscript;
 
     private:
       // cannot use boost:bitmap because we have to support nodes having the same name (within one language). In this case, _node_of_name has no entries for all of these names.

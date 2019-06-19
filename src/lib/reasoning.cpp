@@ -1,12 +1,12 @@
 #include "reasoning.hpp"
-#include "network_lib_impl.hpp"
+#include "babelscript_impl.hpp"
 #include "unification.hpp"
 #include <thread>
 
 using namespace babelscript::network;
 
 Reasoning::Reasoning(std::function<void(std::wstring, bool)> print)
-  : Network_lib(print)
+  : Babelscript(print)
 {
 }
 

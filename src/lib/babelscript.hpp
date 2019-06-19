@@ -5,18 +5,18 @@
 #include <vector>
 #include <unordered_set>
 #include <functional>
-#include "network_lib_export.h"
+#include "babelscript_export.h"
 #include "answer.hpp"
 
 namespace babelscript
 {
   namespace network
   {
-    class NETWORK_LIB_EXPORT Network_lib
+    class BABELSCRIPT_EXPORT Babelscript
     {    
     public:
-      Network_lib(std::function<void(std::wstring,bool)> print);
-      ~Network_lib();
+      Babelscript(std::function<void(std::wstring,bool)> print);
+      ~Babelscript();
 
       Node var();
 

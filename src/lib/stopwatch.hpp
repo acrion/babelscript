@@ -1,13 +1,13 @@
 #pragma once
 
-#include "network_lib.hpp"
-#include "network_lib_export.h"
+#include "babelscript.hpp"
+#include "babelscript_export.h"
 
 namespace babelscript
 {
   namespace network
   {
-    class NETWORK_LIB_EXPORT StopWatch
+    class BABELSCRIPT_EXPORT StopWatch
     {
     public:
       StopWatch();

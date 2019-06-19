@@ -21,7 +21,7 @@ public:
   }
 };
 
-Wikidata::Wikidata(network::Network_lib* n)
+Wikidata::Wikidata(network::Babelscript* n)
   : _pImpl(new Impl)
   , _n(n)
 {

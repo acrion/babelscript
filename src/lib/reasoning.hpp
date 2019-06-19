@@ -1,7 +1,7 @@
 #pragma once
 
-#include "network_lib_export.h"
-#include "network_lib.hpp"
+#include "babelscript_export.h"
+#include "babelscript.hpp"
 #include "stopwatch.hpp"
 #include <vector>
 #include <string>
@@ -22,7 +22,7 @@ namespace babelscript
       std::shared_ptr<Variables> unequals{ std::make_shared<Variables>() };
     };
     
-    class NETWORK_LIB_EXPORT Reasoning : public Network_lib
+    class BABELSCRIPT_EXPORT Reasoning : public Babelscript
     {
     public:
       Reasoning(std::function<void(std::wstring, bool)>);

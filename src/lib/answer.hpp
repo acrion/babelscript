@@ -5,13 +5,13 @@
 #include <string>
 #include <map>
 #include "utils.hpp"
-#include "network_lib_export.h"
+#include "babelscript_export.h"
 
 namespace babelscript
 {
   namespace network
   {
-    struct NETWORK_LIB_EXPORT Answer
+    struct BABELSCRIPT_EXPORT Answer
     {
     protected:
       enum class State

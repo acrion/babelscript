@@ -1,5 +1,5 @@
-#include "network_lib.hpp"
-#include "network_lib_impl.hpp"
+#include "babelscript.hpp"
+#include "babelscript_impl.hpp"
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include <iomanip>
@@ -7,13 +7,13 @@
 
 using namespace babelscript::network;
 
-const std::string Network_lib::get_version()
+const std::string Babelscript::get_version()
 {
   return "2.0";
 }
 
 
-Network_lib::Network_lib(std::function<void(std::wstring,bool)> print)
+Babelscript::Babelscript(std::function<void(std::wstring,bool)> print)
 	: _pImpl{new Impl}
   , core({ _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create()})
   , _print(print)
@@ -23,18 +23,18 @@ Network_lib::Network_lib(std::function<void(std::wstring,bool)> print)
   fact(core.Causes, core.IsA, { core.RelationTypeCategory });
 }
 
-Network_lib::~Network_lib()
+Babelscript::~Babelscript()
 {
   delete _pImpl;
 }
 
-Node Network_lib::var()
+Node Babelscript::var()
 {
   return _pImpl->var();
 }
 
 
-void Network_lib::set_name(Node node, std::wstring name, std::string lang)
+void Babelscript::set_name(Node node, std::wstring name, std::string lang)
 {
   if (lang.empty()) lang = _lang;
 #if _DEBUG
@@ -48,7 +48,7 @@ void Network_lib::set_name(Node node, std::wstring name, std::string lang)
 }
 
 
-Node Network_lib::node(std::wstring name, std::string lang)
+Node Babelscript::node(std::wstring name, std::string lang)
 {
   if (lang.empty()) lang = _lang;
 
@@ -67,7 +67,7 @@ Node Network_lib::node(std::wstring name, std::string lang)
   return new_node;
 }
 
-std::wstring Network_lib::get_name(Node node, std::string lang, bool fallback)
+std::wstring Babelscript::get_name(Node node, std::string lang, bool fallback)
 {
   if (lang.empty()) lang = _lang;
   
@@ -96,7 +96,7 @@ std::wstring Network_lib::get_name(Node node, std::string lang, bool fallback)
 }
 
 
-std::string Network_lib::get_name_hex(Node node, bool prepend_num)
+std::string Babelscript::get_name_hex(Node node, bool prepend_num)
 {
   std::string name = utils::str(get_name(node));
   
@@ -124,7 +124,7 @@ std::string Network_lib::get_name_hex(Node node, bool prepend_num)
 }
 
 
-Node Network_lib::get_node(std::wstring name, std::string lang)
+Node Babelscript::get_node(std::wstring name, std::string lang)
 {
   if (lang.empty()) lang = _lang;
   std::lock_guard<std::mutex> lock(_pImpl->_mtx_node_of_name);
@@ -147,7 +147,7 @@ Node Network_lib::get_node(std::wstring name, std::string lang)
   }
 }
 
-std::unordered_set<Node> Network_lib::get_sources(Node relationType, Node target, bool exclude_vars)
+std::unordered_set<Node> Babelscript::get_sources(Node relationType, Node target, bool exclude_vars)
 {
   std::unordered_set<Node> sources;
   
@@ -160,7 +160,7 @@ std::unordered_set<Node> Network_lib::get_sources(Node relationType, Node target
   return sources;
 }
 
-std::unordered_set<Node> Network_lib::filter(std::unordered_set<Node> source, Node target)
+std::unordered_set<Node> Babelscript::filter(std::unordered_set<Node> source, Node target)
 {
   std::unordered_set<Node> result;
 
@@ -175,7 +175,7 @@ std::unordered_set<Node> Network_lib::filter(std::unordered_set<Node> source, No
   return result;
 }
 
-std::unordered_set<Node> Network_lib::filter(Node fact, Node relationType, Node target)
+std::unordered_set<Node> Babelscript::filter(Node fact, Node relationType, Node target)
 {
   std::unordered_set<Node> source     = _pImpl->get_right(fact);
   std::unordered_set<Node> left_nodes = _pImpl->get_left(fact);
@@ -199,7 +199,7 @@ std::unordered_set<Node> Network_lib::filter(Node fact, Node relationType, Node 
   return result;
 }
 
-std::unordered_set<Node> Network_lib::filter(std::unordered_set<Node> source, std::function<bool(Node nd)> f)
+std::unordered_set<Node> Babelscript::filter(std::unordered_set<Node> source, std::function<bool(Node nd)> f)
 {
   std::unordered_set<Node> result;
 
@@ -211,7 +211,7 @@ std::unordered_set<Node> Network_lib::filter(std::unordered_set<Node> source, st
   return result;
 }
 
-Answer Network_lib::check_fact(Node source, Node relationType, const std::unordered_set<Node>& targets)
+Answer Babelscript::check_fact(Node source, Node relationType, const std::unordered_set<Node>& targets)
 {
   bool known = false;
 
@@ -238,7 +238,7 @@ Answer Network_lib::check_fact(Node source, Node relationType, const std::unorde
   }
 }
 
-Node Network_lib::fact(Node source, Node relationType, std::unordered_set<Node> targets, long double probability)
+Node Babelscript::fact(Node source, Node relationType, std::unordered_set<Node> targets, long double probability)
 {
   Answer answer = check_fact(source, relationType, targets);
 
@@ -286,7 +286,7 @@ Node Network_lib::fact(Node source, Node relationType, std::unordered_set<Node> 
   return answer.relation();
 }
 
-Node Network_lib::condition(Node op, std::unordered_set<Node> conditions)
+Node Babelscript::condition(Node op, std::unordered_set<Node> conditions)
 {
   Node relation = _pImpl->create_hash(op, conditions);
   _pImpl->create(relation);
@@ -296,7 +296,7 @@ Node Network_lib::condition(Node op, std::unordered_set<Node> conditions)
 }
 
 
-Node Network_lib::parse_fact(Node rule, std::unordered_set<Node>& objects, Node parent)
+Node Babelscript::parse_fact(Node rule, std::unordered_set<Node>& objects, Node parent)
 {
   Node subject = 0; // 0 means failure
   objects.clear();
@@ -325,7 +325,7 @@ Node Network_lib::parse_fact(Node rule, std::unordered_set<Node>& objects, Node 
   return empty_subject ? 0:subject;
 }
 
-Node Network_lib::parse_relation(Node rule)
+Node Babelscript::parse_relation(Node rule)
 {
   Node relation = 0; // 0 means failure
   Node subject = 0;
@@ -351,7 +351,7 @@ Node Network_lib::parse_relation(Node rule)
   return relation;
 }
 
-void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact, const Variables& variables, Node parent, std::shared_ptr<std::unordered_set<Node>> history)
+void Babelscript::format_fact(std::wstring& result, std::string lang, Node fact, const Variables& variables, Node parent, std::shared_ptr<std::unordered_set<Node>> history)
 {
   if (!history) history = std::make_shared<std::unordered_set<Node>>();
 
@@ -415,7 +415,7 @@ void Network_lib::format_fact(std::wstring& result, std::string lang, Node fact,
   boost::trim(result);
 }
 
-void Network_lib::add_nodes(Node current, std::unordered_set<Node>& touched, const std::unordered_set<Node>& conditions, const std::unordered_set<Node>& deductions, std::ofstream& dot, int max_depth)
+void Babelscript::add_nodes(Node current, std::unordered_set<Node>& touched, const std::unordered_set<Node>& conditions, const std::unordered_set<Node>& deductions, std::ofstream& dot, int max_depth)
 {
   if (--max_depth > 0 && touched.count(current) == 0)
   {
@@ -475,7 +475,7 @@ void Network_lib::add_nodes(Node current, std::unordered_set<Node>& touched, con
   }
 }
 
-void Network_lib::gen_dot(Node start, std::string file_name, int max_depth)
+void Babelscript::gen_dot(Node start, std::string file_name, int max_depth)
 {
   std::unordered_set<Node> conditions, deductions;
   
@@ -505,7 +505,7 @@ void Network_lib::gen_dot(Node start, std::string file_name, int max_depth)
 }
 
 
-void Network_lib::print(std::wstring msg, bool o)
+void Babelscript::print(std::wstring msg, bool o)
 {
   std::lock_guard<std::mutex> lock(_pImpl->_mtx_print);
   _print(msg, o);
