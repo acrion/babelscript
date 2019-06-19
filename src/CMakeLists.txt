@@ -3,14 +3,7 @@ set(CMAKE_CXX_STANDARD 14)
 project (network)
 include(GenerateExportHeader)
 
-set(BOOST_INCLUDEDIR Y:/ThirdParty/boost_1_66_0)
-
-message(STATUS "BOOST_INCLUDEDIR 1  = ${BOOST_INCLUDEDIR}")
-
-if(NOT IS_DIRECTORY ${BOOST_INCLUDEDIR})
-    set(BOOST_INCLUDEDIR "${CMAKE_BINARY_DIR}/../../boost")
-endif()
-
+set(BOOST_INCLUDEDIR "${CMAKE_BINARY_DIR}/../../boost")
 set(BOOST_LIBRARYDIR ${BOOST_INCLUDEDIR}/stage/lib)
 set( Boost_USE_STATIC_LIBS ON )
 include_directories(
@@ -18,15 +11,12 @@ include_directories(
     ${BOOST_INCLUDEDIR}/libs/dll/include
     ${BOOST_INCLUDEDIR}/libs/bimap/include
     ${BOOST_INCLUDEDIR}/libs/container_hash/include
-    ${BOOST_INCLUDEDIR}/libs/filesystem/include
     ${BOOST_INCLUDEDIR}/libs/core/include
 )
-message(STATUS "BOOST_INCLUDEDIR 2  = ${BOOST_INCLUDEDIR}")
 if (MSVC) # with Visual Studio we can rely on boost auto-linking
   add_definitions(-DBOOST_LIB_DIAGNOSTIC)
   link_directories(${BOOST_LIBRARYDIR})
 endif()
-
 
 # set compiler flags
 if (WIN32)

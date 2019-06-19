@@ -34,7 +34,6 @@ endif()
 if(NOT MSVC) # no auto linking available, so we have to set
   list(APPEND Boost_LIBRARIES ${BOOST_LIBRARYDIR}/libboost_system.a)
   list(APPEND Boost_LIBRARIES ${BOOST_LIBRARYDIR}/libboost_regex.a)
-  list(APPEND Boost_LIBRARIES ${BOOST_LIBRARYDIR}/libboost_filesystem.a)
   list(APPEND Boost_LIBRARIES ${BOOST_LIBRARYDIR}/libboost_date_time.a)
 
   target_link_libraries(network_lib ${Boost_LIBRARIES})

@@ -1,9 +1,9 @@
-#include "interactive.h"
+#include "interactive.hpp"
 #include <iostream>
 #include <fstream>
 #include <codecvt>
 
-using namespace babelscript_console;
+using namespace babelscript::console;
 Interactive interactive;
 
 int main(int argc, char** argv)

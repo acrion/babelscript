@@ -1,14 +1,18 @@
 #pragma once
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <string>
 
 namespace babelscript
 {
   namespace console
   {
-    namespace fs = boost::filesystem;
-    
+#if __cplusplus > 201402L
+  namespace fs = std::filesystem;
+#else
+  namespace fs = std::experimental::filesystem;
+#endif
+
     class ReadAsync
     {
     public:
