@@ -34,7 +34,7 @@ if (WIN32)
   endif()
 else()
   message(STATUS "CMake platform: NOT WIN32")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -lstdc++fs")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic")
 endif()
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
