@@ -356,9 +356,17 @@ babelscript::network::Node Interactive::Impl::process_fact(const std::vector<std
     }
     else
     {
+      // Find the longest sequence of words that makes sense to start searching a sequence that matches a relation name.
+      // We start at the longest to prefer longer word combinations over shorter, e. g. "is a" is found before "is".
+      size_t max_len=tokens.size()-i;
+      if (combined.size()==0) max_len-=2; else // we are at the object and will need predicate and subject, so reduce by 2
+      if (combined.size()==1) --max_len; // we are at the predicate and will need the subject, so reduce by 1
       size_t len=1;
+      for (; len <= max_len && !is_var(tokens[i+len-1]); ++len); // if the first is a variable then len=1
+      --len;
+      
       bool done=false;
-      for (; len <= tokens.size()-i && !is_var(tokens[i]); ++len)
+      for (; len >= 1; --len)
       {
         std::vector<std::wstring> test;
         test.insert(test.end(), tokens.begin()+i, tokens.begin()+i+len);
