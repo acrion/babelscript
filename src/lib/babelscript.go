@@ -1,6 +1,8 @@
 package babelscript
 
-// #cgo CXXFLAGS: -std=gnu++1z -fPIC -I/media/psf/Home/git/boost
+// #cgo darwin CXXFLAGS: -std=gnu++1z -fPIC -I/usr/local/Cellar/boost/1.70.0/include
+// #cgo linux CXXFLAGS: -std=gnu++1z -fPIC -I/usr/include
+// #cgo !linux,!darwin CXXFLAGS: -std=gnu++1z -fPIC -IC:/local/boost_1_70_0
 // #cgo LDFLAGS: -lstdc++fs
 // void babelscript_run();
 // void babelscript_process_c(const char* line, size_t len);
