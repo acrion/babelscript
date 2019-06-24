@@ -456,9 +456,12 @@ Interactive interactive;
 
 extern "C" void babelscript_process_c(const char* line, size_t len)
 {
-  std::string l(line, 0, len);
-  std::wstring wline(l.begin(), l.end());
-  interactive.process(wline);
+  if (len>0)
+  {
+    std::string l(line, 0, len);
+    std::wstring wline(l.begin(), l.end());
+    interactive.process(wline);
+  }
 }
 
 extern "C" void babelscript_run()
