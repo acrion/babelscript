@@ -3,7 +3,7 @@ set(CMAKE_CXX_STANDARD 17)
 project (babelscript)
 include(GenerateExportHeader)
 
-set(BOOST_INCLUDEDIR "${CMAKE_BINARY_DIR}/../../boost")
+set(BOOST_INCLUDEDIR "${CMAKE_BINARY_DIR}/../../../../git/boost")
 set(BOOST_LIBRARYDIR ${BOOST_INCLUDEDIR}/stage/lib)
 set( Boost_USE_STATIC_LIBS ON )
 include_directories(

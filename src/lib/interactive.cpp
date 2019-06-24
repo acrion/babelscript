@@ -57,7 +57,7 @@ void Interactive::process(std::wstring line)
   try
   {
     if (boost::starts_with(line, "#")) return; // comment
-    
+
     tokenizer<escaped_list_separator<wchar_t>, std::wstring::const_iterator, std::wstring > tok(line,
       escaped_list_separator<wchar_t>(L"\\", L" \t", L"\""));
 
@@ -78,7 +78,7 @@ void Interactive::process(std::wstring line)
         if (!it->empty()) cmd.push_back(*it);
         ++it;
       }
-      
+
       if (cmd[0] == L".lang")
       {
         if (cmd.size()<2) throw std::runtime_error("Command .lang: Missing language identifier");
@@ -113,7 +113,7 @@ void Interactive::process(std::wstring line)
         _pImpl->_n->print(L" Time needed for importing: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s", true);
         run(false);
         _pImpl->_n->print(L" Total time: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s", true);
-        
+
         _pImpl->_n->set_print([](std::wstring str, bool)
         {
           std::wcout << str << std::endl;
@@ -298,7 +298,7 @@ babelscript::network::Node Interactive::Impl::process_fact(const std::vector<std
       }
       return result;
     }
-    
+
     operator network::Node()
     {
       if (_node)
@@ -364,7 +364,7 @@ babelscript::network::Node Interactive::Impl::process_fact(const std::vector<std
       size_t len=1;
       for (; len <= max_len && !is_var(tokens[i+len-1]); ++len); // if the first is a variable then len=1
       --len;
-      
+
       bool done=false;
       for (; len >= 1; --len)
       {
@@ -449,3 +449,20 @@ bool Interactive::Impl::is_var(std::wstring token)
   default: return *token.begin() == L'_';
   }
 }
+
+
+#ifdef PROVIDE_C_INTERFACE
+Interactive interactive;
+
+extern "C" void babelscript_process_c(const char* line, size_t len)
+{
+  std::string l(line, 0, len);
+  std::wstring wline(l.begin(), l.end());
+  interactive.process(wline);
+}
+
+extern "C" void babelscript_run()
+{
+  interactive.run(true);
+}
+#endif

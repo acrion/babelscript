@@ -70,7 +70,7 @@ Node Babelscript::node(std::wstring name, std::string lang)
 std::wstring Babelscript::get_name(Node node, std::string lang, bool fallback)
 {
   if (lang.empty()) lang = _lang;
-  
+
   {
     std::lock_guard<std::mutex> lock(_pImpl->_mtx_name_of_node);
     auto& name_of_node = _pImpl->_name_of_node[lang];
@@ -99,7 +99,7 @@ std::wstring Babelscript::get_name(Node node, std::string lang, bool fallback)
 std::string Babelscript::get_name_hex(Node node, bool prepend_num)
 {
   std::string name = utils::str(get_name(node));
-  
+
   if (name.empty())
   {
     if (_pImpl->is_var(node))
@@ -150,7 +150,7 @@ Node Babelscript::get_node(std::wstring name, std::string lang)
 std::unordered_set<Node> Babelscript::get_sources(Node relationType, Node target, bool exclude_vars)
 {
   std::unordered_set<Node> sources;
-  
+
   for (Node relation: _pImpl->get_right(target))
     if (_pImpl->get_right(relation).count(relationType) == 1)
       for (Node source : _pImpl->get_left(relation))
@@ -183,7 +183,6 @@ std::unordered_set<Node> Babelscript::filter(Node fact, Node relationType, Node 
 
   for (Node nd : source)
   {
-    bool match = false;
     std::unordered_set<Node> possible_relations = _pImpl->get_right(nd);
     for (Node relation : filter(possible_relations, relationType))
     {
@@ -191,7 +190,6 @@ std::unordered_set<Node> Babelscript::filter(Node fact, Node relationType, Node 
           && left_nodes.count(nd)==0) // exclude the subject of the fact, since it is connected bidirectional. If <subject relationType target> is true, the subject would be included in the result by mistake
       {
         result.insert(nd);
-        match = true;
       }
     }
   }
@@ -261,7 +259,7 @@ Node Babelscript::fact(Node source, Node relationType, std::unordered_set<Node> 
       // ~ is for example is for example <= (~  is opposite of  is for example), (is for example  ~  ->)
       throw std::runtime_error("add_fact: facts with same relation type and object are not supported.");
     }
-    
+
     if (relationType != core.IsA) // note that the initial constructor call fact(core.IsA, core.IsA, core.RelationTypeCategory) is executed as intended
     {
       fact(relationType, core.IsA, { core.RelationTypeCategory });
@@ -308,7 +306,7 @@ Node Babelscript::parse_fact(Node rule, std::unordered_set<Node>& objects, Node 
       if (_pImpl->get_right(nd).count(core.Causes) == 0) // TODO: this might be not sufficient if rule is a sub-condition!?
       {
         assert(nd != parent); // indicates corrupt database
-        
+
         if (subject)
           empty_subject = true; // there may be only 1 subject
         else
@@ -360,7 +358,7 @@ void Babelscript::format_fact(std::wstring& result, std::string lang, Node fact,
     result = L"?";
     return;
   }
-  
+
   std::unordered_set<Node> objects;
   Node subject = parse_fact(fact, objects, parent);
 
@@ -478,7 +476,7 @@ void Babelscript::add_nodes(Node current, std::unordered_set<Node>& touched, con
 void Babelscript::gen_dot(Node start, std::string file_name, int max_depth)
 {
   std::unordered_set<Node> conditions, deductions;
-  
+
   for (Node rule : _pImpl->get_left(core.Causes))
   {
     std::unordered_set<Node> current_deductions;
@@ -500,7 +498,7 @@ void Babelscript::gen_dot(Node start, std::string file_name, int max_depth)
   dot << "digraph graphname{" << std::endl;
 
   add_nodes(start, touched, conditions, deductions, dot, max_depth);
-  
+
   dot << "}" << std::endl;
 }
 
