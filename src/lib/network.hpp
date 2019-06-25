@@ -7,6 +7,7 @@
 #include <limits.h>
 #include <mutex>
 
+
 namespace babelscript
 {
   namespace network
@@ -173,9 +174,10 @@ namespace babelscript
       Node create_hash(const std::unordered_set<Node>& vec)
       {
         Node result = mark_hash ^ rol(vec.size(), 56);
+        uint64_t c = 48;
         for (Node node: vec)
         {
-          result ^= mod(rol(node, 48));
+          result ^= mod(rol(node, c++%64)); // avoid hash collisions if vec contains identical nodes (with other vecs also having identical nodes) by incrementing c
         }
         return result & mask_node; // exclude values that denote variables
       }
@@ -277,7 +279,7 @@ namespace babelscript
       static uint64_t mod(uint64_t n)
       {
         // We generate nodes both by counting up and down (for vars) from 0, which increases probability of hash collisions.
-        // So, make a clear different between those two categories.
+        // So, make a clear difference between those two categories.
         return n > mask_node ? ror(n, 32) : n;
       }
     };

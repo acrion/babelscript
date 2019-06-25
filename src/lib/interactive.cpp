@@ -22,7 +22,7 @@ public:
       std::wcout << str << std::endl;
     }))
   {
-    _n->set_lang("en");
+    _n->set_lang("babelscript");
   }
 
   network::Node process_fact(const std::vector<std::wstring>& tokens, const std::map<std::vector<std::wstring>, Node>& relations, boost::bimap<std::wstring, Node>& variables);
@@ -34,12 +34,12 @@ public:
 Interactive::Interactive()
   : _pImpl(new Impl)
 {
-  _pImpl->_n->set_name(_pImpl->_n->core.RelationTypeCategory, L"->", "en");
-  _pImpl->_n->set_name(_pImpl->_n->core.Causes,               L"=>", "en");
-  _pImpl->_n->set_name(_pImpl->_n->core.And,                  L",",  "en");
-  _pImpl->_n->set_name(_pImpl->_n->core.IsA,                  L"~",  "en");
-  _pImpl->_n->set_name(_pImpl->_n->core.Unequal,              L"!=", "en");
-  _pImpl->_n->set_name(_pImpl->_n->core.Contradiction,        L"!",  "en");
+  _pImpl->_n->set_name(_pImpl->_n->core.RelationTypeCategory, L"->", "babelscript");
+  _pImpl->_n->set_name(_pImpl->_n->core.Causes,               L"=>", "babelscript");
+  _pImpl->_n->set_name(_pImpl->_n->core.And,                  L",",  "babelscript");
+  _pImpl->_n->set_name(_pImpl->_n->core.IsA,                  L"~",  "babelscript");
+  _pImpl->_n->set_name(_pImpl->_n->core.Unequal,              L"!=", "babelscript");
+  _pImpl->_n->set_name(_pImpl->_n->core.Contradiction,        L"!",  "babelscript");
 }
 
 Interactive::~Interactive()
