@@ -139,7 +139,12 @@ void Wikidata::process_command(const std::wstring& line, const size_t thread_ind
 
             try
             {
-              _n->fact(current, _n->node(property, "wikidata"), { _n->node(object, "wikidata") });
+              auto fact = _n->fact(current, _n->node(property, "wikidata"), { _n->node(object, "wikidata") });
+              std::wstring output;
+              _n->format_fact(output, "en", fact);
+              _n->print(L"      en> " + output, false); 
+              _n->format_fact(output, "wikidata", fact);
+              _n->print(L"wikidata> " + output, false); 
             }
             catch (std::exception& ex)
             {
