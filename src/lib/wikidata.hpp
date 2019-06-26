@@ -20,16 +20,17 @@ namespace babelscript
       ~Wikidata();
 
       void import_all();
+      void generate_index();
 
     private:
-      void process_entry(const std::wstring& line, const size_t thread_index=0);
+      void process_entry(const std::wstring& line, const size_t streampos, const size_t thread_index=0);
+      void index_entry(const std::wstring& line, const size_t streampos);
 
       class Impl;
       Impl* const _pImpl; // must stay at top of members list because of initialization order
 
       network::Babelscript* _n{ nullptr };
       size_t _running{ 0 };
-      fs::path _file_name;
     };
   }
 }

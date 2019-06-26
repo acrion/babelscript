@@ -5,6 +5,11 @@ include(GenerateExportHeader)
 
 set(BOOST_INCLUDEDIR "${CMAKE_BINARY_DIR}/../../../../git/boost")
 set(BOOST_LIBRARYDIR ${BOOST_INCLUDEDIR}/stage/lib)
+#set(BOOST_INCLUDEDIR "/usr/local/Cellar/boost/1.70.0/include")
+#set(BOOST_LIBRARYDIR "/usr/local/Cellar/boost/1.70.0/lib")
+#set(BOOST_INCLUDEDIR "C:/local/boost_1_70_0")
+#set(BOOST_LIBRARYDIR "C:/local/boost_1_70_0/lib64-msvc-14.1")
+
 set( Boost_USE_STATIC_LIBS ON )
 include_directories(
     ${BOOST_INCLUDEDIR}

@@ -35,9 +35,10 @@ if(NOT MSVC) # no auto linking available, so we have to set
   list(APPEND Boost_LIBRARIES ${BOOST_LIBRARYDIR}/libboost_system.a)
   list(APPEND Boost_LIBRARIES ${BOOST_LIBRARYDIR}/libboost_regex.a)
   list(APPEND Boost_LIBRARIES ${BOOST_LIBRARYDIR}/libboost_date_time.a)
+  list(APPEND Boost_LIBRARIES ${BOOST_LIBRARYDIR}/libboost_serialization.a)
 
   if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    target_link_libraries(babelscript ${Boost_LIBRARIES} stdc++fs) # stdc++fs must come after the source file in the command line, so we cannot add -lstdc++fs to CMAKE_CXX_FLAGS 
+    target_link_libraries(babelscript ${Boost_LIBRARIES} stdc++fs) # stdc++fs must come after the source file in the command line, so we cannot add -lstdc++fs to CMAKE_CXX_FLAGS
   else()
     target_link_libraries(babelscript ${Boost_LIBRARIES})
   endif()

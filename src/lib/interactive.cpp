@@ -106,13 +106,28 @@ void Interactive::process(std::wstring line)
           }
         });
 
-        StopWatch watch;
-        watch.start();
+        if (cmd.size()==2)
         {
-          Wikidata wikidata(_pImpl->_n, cmd[1]);
-          wikidata.import_all();
+          StopWatch watch;
+          watch.start();
+          {
+            Wikidata wikidata(_pImpl->_n, cmd[1]);
+            wikidata.import_all();
+          }
+          _pImpl->_n->print(L" Time needed for importing: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s", true);
         }
-        _pImpl->_n->print(L" Time needed for importing: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s", true);
+        else if (cmd.size()==4)
+        {
+           std::wstring start_entry = cmd[2];
+           int max_depth = std::atoi(utils::str(cmd[3]).c_str());
+           _pImpl->_n->print(L"Start entry='" + start_entry + L", link distance=" + std::to_wstring(max_depth), true);
+           Wikidata wikidata(_pImpl->_n, cmd[1]);
+           wikidata.generate_index();
+        }
+        else
+        {
+          throw std::runtime_error("Command .wikidata: Either specify only the json file to import, or add two filter parameters: name of start entry and link distance to be imported");
+        }
 
         _pImpl->_n->set_print([](std::wstring str, bool)
         {

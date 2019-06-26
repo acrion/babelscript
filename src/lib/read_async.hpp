@@ -18,7 +18,7 @@ namespace babelscript
     public:
       ReadAsync(fs::path file_name, size_t sufficient_size=2);
       ~ReadAsync();
-      bool get_line(std::wstring& line);
+      bool get_line(std::wstring& line, size_t& streampos);
       std::string error_text();
 
     private:
@@ -27,4 +27,3 @@ namespace babelscript
     };
   }
 }
-

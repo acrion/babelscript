@@ -8,6 +8,12 @@
 
 using namespace babelscript::console;
 
+struct Entry
+{
+  std::wstring _line;
+  size_t _streampos;
+};
+
 class ReadAsync::Impl
 {
 public:
@@ -23,11 +29,11 @@ public:
   }
 
   void read_thread(fs::path file_name);
-  void put_line(const std::wstring& line);
+  void put_line(const Entry& entry);
 
   size_t _sufficient_size;
   std::thread _t;
-  std::queue<std::wstring> _lines;
+  std::queue<Entry> _lines;
   std::atomic<bool> _EOF{ false };
   std::string _error_text;
   std::mutex _mtx, _mtx2;
@@ -52,7 +58,7 @@ std::string ReadAsync::error_text()
   return _pImpl->_error_text;
 }
 
-bool ReadAsync::get_line(std::wstring& line)
+bool ReadAsync::get_line(std::wstring& line, size_t& streampos)
 {
   std::unique_lock<std::mutex> lock(_pImpl->_mtx);
   _pImpl->_cv.wait(lock, [&]{ return _pImpl->_lines.size() > 0 || _pImpl->_EOF; });
@@ -61,14 +67,15 @@ bool ReadAsync::get_line(std::wstring& line)
   {
     return false;
   }
-  line = _pImpl->_lines.front();
+  line = _pImpl->_lines.front()._line;
+  streampos = _pImpl->_lines.front()._streampos;
   std::lock_guard<std::mutex> lck(_pImpl->_mtx2);
   _pImpl->_lines.pop();
   _pImpl->_cv2.notify_one();
   return true;
 }
 
-void ReadAsync::Impl::put_line(const std::wstring& line)
+void ReadAsync::Impl::put_line(const Entry& entry)
 {
   bool done = false;
 
@@ -79,7 +86,7 @@ void ReadAsync::Impl::put_line(const std::wstring& line)
 
       if (_lines.size() < _sufficient_size)
       {
-        _lines.push(line);
+        _lines.push(entry);
         done = true;
       }
     }
@@ -108,9 +115,12 @@ void ReadAsync::Impl::read_thread(fs::path file_name)
     return;
   }
 
+  size_t streampos=0;
+
   for (std::wstring line; std::getline(stream, line); )
   {
-    put_line(line);
+    put_line({line,streampos});
+    streampos = stream.tellg();
   }
 
   std::lock_guard<std::mutex> lck(_mtx);
