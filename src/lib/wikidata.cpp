@@ -21,8 +21,9 @@ using boost::escaped_list_separator;
 class Wikidata::Impl
 {
 public:
-  Impl(fs::path file_name)
-    : _file_name(file_name)
+  Impl(network::Babelscript* n, fs::path file_name)
+    : _n(n)
+    , _file_name(file_name)
   {
   }
 
@@ -30,6 +31,7 @@ public:
   void write_index_file();
   fs::path index_file_name();
 
+  network::Babelscript* _n{ nullptr };
   fs::path _file_name;
   std::map<std::string, size_t> _index;
   std::mutex _mtx;
@@ -38,8 +40,7 @@ public:
 };
 
 Wikidata::Wikidata(network::Babelscript* n, fs::path file_name)
-  : _pImpl(new Impl(file_name))
-  , _n(n)
+  : _pImpl(new Impl(n, file_name))
 {
 }
 
@@ -51,7 +52,7 @@ Wikidata::~Wikidata()
 
 void Wikidata::import_all()
 {
-  _n->print(L"Importing file " + _pImpl->_file_name.wstring(), true);
+  _pImpl->_n->print(L"Importing file " + _pImpl->_file_name.wstring(), true);
 
   ReadAsync read_async(_pImpl->_file_name);
   //std::wifstream stream(_pImpl->_file_name.string());
@@ -79,7 +80,7 @@ void Wikidata::import_all()
 //    else
 //    {
 //      threads.emplace_back(std::move(t));
-//      _n->print(L"Running " + std::to_wstring(threads.size()) + L" threads for reading wikidata file...", true);
+//      _pImpl->_n->print(L"Running " + std::to_wstring(threads.size()) + L" threads for reading wikidata file...", true);
 //    }
   }
 
@@ -100,7 +101,7 @@ void Wikidata::process_entry(const std::wstring& line, size_t streampos, const s
     size_t id1 = line.find(L"\"", id0 + id_tag.size() + 1);
     std::wstring id(line.substr(id0 + id_tag.size(), id1 - id0 - id_tag.size()));
 
-    Node current = _n->node(id, "wikidata");
+    Node current = _pImpl->_n->node(id, "wikidata");
 
     size_t language0;
     static const std::wstring language_tag(L"{\"language\":\"");
@@ -123,8 +124,8 @@ void Wikidata::process_entry(const std::wstring& line, size_t streampos, const s
 
       if (language == "en" || language == "de")
       {
-        _n->set_name(current, value, language);
-        _n->print(id + L": " + utils::wstr(language) + L": " + value, false);
+        _pImpl->_n->set_name(current, value, language);
+        _pImpl->_n->print(id + L": " + utils::wstr(language) + L": " + value, false);
       }
     }
 
@@ -163,16 +164,16 @@ void Wikidata::process_entry(const std::wstring& line, size_t streampos, const s
 
             try
             {
-              auto fact = _n->fact(current, _n->node(property, "wikidata"), { _n->node(object, "wikidata") });
+              auto fact = _pImpl->_n->fact(current, _pImpl->_n->node(property, "wikidata"), { _pImpl->_n->node(object, "wikidata") });
               std::wstring output;
-              _n->format_fact(output, "en", fact);
-              _n->print(L"      en> " + output, false);
-              _n->format_fact(output, "wikidata", fact);
-              _n->print(L"wikidata> " + output, false);
+              _pImpl->_n->format_fact(output, "en", fact);
+              _pImpl->_n->print(L"      en> " + output, false);
+              _pImpl->_n->format_fact(output, "wikidata", fact);
+              _pImpl->_n->print(L"wikidata> " + output, false);
             }
             catch (std::exception& ex)
             {
-              _n->print(utils::wstr(ex.what()), true);
+              _pImpl->_n->print(utils::wstr(ex.what()), true);
             }
           }
           else
@@ -201,7 +202,7 @@ void Wikidata::generate_index()
 {
   if (!_pImpl->read_index_file())
   {
-    _n->print(L"Indexing file " + _pImpl->_file_name.wstring(), true);
+    _pImpl->_n->print(L"Indexing file " + _pImpl->_file_name.wstring(), true);
 
     ReadAsync read_async(_pImpl->_file_name);
     //std::wifstream stream(_pImpl->_file_name.string());
@@ -232,14 +233,14 @@ void Wikidata::generate_index()
   //    else
   //    {
   //      threads.emplace_back(std::move(t));
-  //      _n->print(L"Running " + std::to_wstring(threads.size()) + L" threads for reading wikidata file...", true);
+  //      _pImpl->_n->print(L"Running " + std::to_wstring(threads.size()) + L" threads for reading wikidata file...", true);
   //    }
 
       if (watch.duration() >= 1000)
       {
         {
           std::lock_guard<std::mutex> lock(_pImpl->_mtx);
-          _n->print(L"Indexed " + std::to_wstring(_pImpl->_index.size()) + L" wikidata entries, latest is '" + utils::wstr(_pImpl->_last_entry) + L"' at position " + std::to_wstring(_pImpl->_last_index) + L" (" + std::to_wstring(_pImpl->_last_index/1024.0/1024/1024) + L" GB)", true);
+          _pImpl->_n->print(L"Indexed " + std::to_wstring(_pImpl->_index.size()) + L" wikidata entries, latest is '" + utils::wstr(_pImpl->_last_entry) + L"' at position " + std::to_wstring(_pImpl->_last_index) + L" (" + std::to_wstring(_pImpl->_last_index/1024.0/1024/1024) + L" GB)", true);
         }
         watch.start();
       }
@@ -269,6 +270,12 @@ void Wikidata::index_entry(const std::wstring& line, const size_t streampos)
 }
 
 
+void Wikidata::traverse(std::wstring start_entry, int max_depth)
+{
+
+}
+
+
 bool Wikidata::Impl::read_index_file()
 {
   if (!fs::exists(index_file_name()) || fs::last_write_time(_file_name) > fs::last_write_time(index_file_name()))
@@ -276,18 +283,22 @@ bool Wikidata::Impl::read_index_file()
       return false;
   }
 
+  _n->print(L"Reading index file " + index_file_name().wstring() + L"...", true);
   std::ifstream stream(index_file_name());
   boost::archive::text_iarchive iarch(stream);
   iarch >> _index;
+  _n->print(L"Finished reading", true);
 
   return true;
 }
 
 void Wikidata::Impl::write_index_file()
 {
+  _n->print(L"Writing index file " + index_file_name().wstring() + L"...", true);
   std::ofstream stream(index_file_name());
   boost::archive::text_oarchive oarch(stream);
   oarch << _index;
+  _n->print(L"Finished writing", true);
 }
 
 fs::path Wikidata::Impl::index_file_name()

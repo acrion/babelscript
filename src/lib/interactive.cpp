@@ -120,9 +120,10 @@ void Interactive::process(std::wstring line)
         {
            std::wstring start_entry = cmd[2];
            int max_depth = std::atoi(utils::str(cmd[3]).c_str());
-           _pImpl->_n->print(L"Start entry='" + start_entry + L", link distance=" + std::to_wstring(max_depth), true);
+           _pImpl->_n->print(L"Start entry='" + start_entry + L"', link distance=" + std::to_wstring(max_depth), true);
            Wikidata wikidata(_pImpl->_n, cmd[1]);
            wikidata.generate_index();
+           wikidata.traverse(start_entry, max_depth);
         }
         else
         {
