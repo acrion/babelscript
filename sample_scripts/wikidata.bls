@@ -62,9 +62,15 @@ X has quality E, E is a X           => !
 X has quality E, E is subclass of X => !
 X has quality E, E has part X       => !
 
-A is a B, A is subclass of C => !
+# The following contradiction doesn't seem to make sense for wikidata, because
+# there are things that are at the same time subclasses and instances, e. g. "black":
+# ! <= (Q23445  is a  Q1075), (Q23445  is subclass of  Q40890790)
+# ! <= (black  is a  color), (black  is subclass of  absorbed or reflected object light)
+# A is a B, A is subclass of C => !
 
 A is a B, B is a A                     => !
 A is subclass of B, B is subclass of A => !
+
 A is a B, B is subclass of A           => !
 
+.wikidata Q23445-black.json

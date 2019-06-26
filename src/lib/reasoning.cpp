@@ -16,7 +16,7 @@ void Reasoning::run(bool print_deductions)
 {
   _print_deductions = print_deductions;
   _skipped = 0;
-  
+
   do
   {
     std::vector<std::thread> threads;
@@ -77,7 +77,7 @@ void Reasoning::evaluate(RulePos rule)
 {
   Node condition = *rule.index; // points to the relation: normally 'and', connecting several conditions, or a the relation of a fact (which may consist of variables)
   auto current_op = _pImpl->get_right(condition); // get the set of Nodes the relation points to, which is its type. Empty if the relation is a variable.
-  
+
   // condition points to
   //    (1) the rule itself (i. e. the relaton node pointing to core.Causes), and
   //    (2) the type of relation, which may be any relation type (i. e. any node pointing having a core.IsA relation to core.RelationTypeCategory),
@@ -156,15 +156,21 @@ bool Reasoning::contradicts(const Variables& variables, const Variables& unequal
   return false; // no contradiction
 }
 
-void Reasoning::deduce(const Variables& variables, Node parent) // use _deductions!
+void Reasoning::deduce(const Variables& variables, Node parent)
 {
   for (Node deduction : _deductions)
   {
     if (deduction == core.Contradiction)
     {
+      if (_print_deductions)
+      {
+        std::wstring input,output;
+        format_fact(input, _lang, _current_condition, variables, parent);
+        print(L"! <= " + input, true);
+      }
       throw std::runtime_error("Contradiction!");
     }
-    
+
     std::unordered_set<Node> relations = filter(deduction, core.IsA, core.RelationTypeCategory);
 
     if (relations.size() == 1) // more than one relation for given condition makes no sense. _relation_list is empty, so Next() won't return anything
@@ -241,7 +247,7 @@ void Reasoning::deduce(const Variables& variables, Node parent) // use _deductio
                       _stop_watch.start();
                     }
                   }
-                  
+
                   if (do_print)
                   {
                     if (_skipped > 0) print(L" (skipped " + std::to_wstring(_skipped) + L" deductions)", true);

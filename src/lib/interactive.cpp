@@ -106,13 +106,13 @@ void Interactive::process(std::wstring line)
           }
         });
 
-        Wikidata wikidata(_pImpl->_n);
         StopWatch watch;
         watch.start();
-        wikidata.import_json(cmd[1]);
+        {
+          Wikidata wikidata(_pImpl->_n);
+          wikidata.import_json(cmd[1]);
+        }
         _pImpl->_n->print(L" Time needed for importing: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s", true);
-        run(true);//false);
-        _pImpl->_n->print(L" Total time: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s", true);
 
         _pImpl->_n->set_print([](std::wstring str, bool)
         {

@@ -57,7 +57,7 @@ bool ReadAsync::get_line(std::wstring& line)
   std::unique_lock<std::mutex> lock(_pImpl->_mtx);
   _pImpl->_cv.wait(lock, [&]{ return _pImpl->_lines.size() > 0 || _pImpl->_EOF; });
 
-  if (_pImpl->_EOF)
+  if (_pImpl->_lines.size()==0)
   {
     return false;
   }
@@ -71,7 +71,7 @@ bool ReadAsync::get_line(std::wstring& line)
 void ReadAsync::Impl::put_line(const std::wstring& line)
 {
   bool done = false;
-  
+
   do
   {
     {
@@ -83,7 +83,7 @@ void ReadAsync::Impl::put_line(const std::wstring& line)
         done = true;
       }
     }
-    
+
     if (!done)
     {
       std::unique_lock<std::mutex> lock(_mtx2);

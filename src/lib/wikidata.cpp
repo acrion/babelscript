@@ -77,6 +77,7 @@ void Wikidata::process_command(const std::wstring& line, const size_t thread_ind
 {
   static const std::wstring id_tag(L"\"id\":\"");
   size_t id0 = line.find(id_tag);
+
   if (id0 != std::wstring::npos)
   {
     size_t id1 = line.find(L"\"", id0 + id_tag.size() + 1);
