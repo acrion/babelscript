@@ -41,7 +41,7 @@ void Wikidata::import_json(fs::path file_name)
   //std::wifstream stream(file_name.string());
 
   std::vector<std::thread> threads;
-  
+
   //for (std::wstring line; std::getline(stream, line); )
   std::wstring line;
   while (read_async.get_line(line))
@@ -51,7 +51,7 @@ void Wikidata::import_json(fs::path file_name)
 //    for (i = 0; i < threads.size(); ++i)
 //      if (!(_running & 1ull<<i))
 //        break;
-    
+
 //    _running = _running | 1ull<<i;
 //    std::thread t(&Wikidata::process_command, this, line, i);
 //    if (i < threads.size())
@@ -86,8 +86,14 @@ void Wikidata::process_command(const std::wstring& line, const size_t thread_ind
 
     size_t language0;
     static const std::wstring language_tag(L"{\"language\":\"");
+    size_t labels = line.find(L"\"labels\":{");
+    size_t aliases = line.find(L"\"aliases\":{", id1+7);
+    size_t descriptions = line.find(L"\"descriptions\":{", id1+7);
 
-    while ((language0 = line.find(language_tag, id1 + 7)) != std::wstring::npos)
+    while ((language0 = line.find(language_tag, id1 + 7)) != std::wstring::npos
+      && language0>labels
+      && (aliases     ==std::wstring::npos || language0<aliases)
+      && (descriptions==std::wstring::npos || language0<descriptions))
     {
       size_t language1 = line.find(L"\"", language0 + language_tag.size());
       std::string language = utils::str(line.substr(language0 + language_tag.size(), language1 - language0 - language_tag.size()));
@@ -142,9 +148,9 @@ void Wikidata::process_command(const std::wstring& line, const size_t thread_ind
               auto fact = _n->fact(current, _n->node(property, "wikidata"), { _n->node(object, "wikidata") });
               std::wstring output;
               _n->format_fact(output, "en", fact);
-              _n->print(L"      en> " + output, false); 
+              _n->print(L"      en> " + output, false);
               _n->format_fact(output, "wikidata", fact);
-              _n->print(L"wikidata> " + output, false); 
+              _n->print(L"wikidata> " + output, false);
             }
             catch (std::exception& ex)
             {
