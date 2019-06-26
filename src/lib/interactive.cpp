@@ -109,8 +109,8 @@ void Interactive::process(std::wstring line)
         StopWatch watch;
         watch.start();
         {
-          Wikidata wikidata(_pImpl->_n);
-          wikidata.import_json(cmd[1]);
+          Wikidata wikidata(_pImpl->_n, cmd[1]);
+          wikidata.import_all();
         }
         _pImpl->_n->print(L" Time needed for importing: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s", true);
 

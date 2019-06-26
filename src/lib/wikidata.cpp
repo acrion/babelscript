@@ -21,9 +21,10 @@ public:
   }
 };
 
-Wikidata::Wikidata(network::Babelscript* n)
+Wikidata::Wikidata(network::Babelscript* n, fs::path file_name)
   : _pImpl(new Impl)
   , _n(n)
+  , _file_name(file_name)
 {
 }
 
@@ -33,12 +34,12 @@ Wikidata::~Wikidata()
 }
 
 
-void Wikidata::import_json(fs::path file_name)
+void Wikidata::import_all()
 {
-  _n->print(L"Importing file " + file_name.wstring(), true);
+  _n->print(L"Importing file " + _file_name.wstring(), true);
 
-  ReadAsync read_async(file_name);
-  //std::wifstream stream(file_name.string());
+  ReadAsync read_async(_file_name);
+  //std::wifstream stream(_file_name.string());
 
   std::vector<std::thread> threads;
 
@@ -46,7 +47,7 @@ void Wikidata::import_json(fs::path file_name)
   std::wstring line;
   while (read_async.get_line(line))
   {
-    process_entry(line,0);
+    process_entry(line);
 //    size_t i = 0;
 //    for (i = 0; i < threads.size(); ++i)
 //      if (!(_running & 1ull<<i))
