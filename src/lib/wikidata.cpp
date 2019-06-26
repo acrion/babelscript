@@ -46,7 +46,7 @@ void Wikidata::import_json(fs::path file_name)
   std::wstring line;
   while (read_async.get_line(line))
   {
-    process_command(line,0);
+    process_entry(line,0);
 //    size_t i = 0;
 //    for (i = 0; i < threads.size(); ++i)
 //      if (!(_running & 1ull<<i))
@@ -73,7 +73,7 @@ void Wikidata::import_json(fs::path file_name)
 }
 
 
-void Wikidata::process_command(const std::wstring& line, const size_t thread_index)
+void Wikidata::process_entry(const std::wstring& line, const size_t thread_index)
 {
   static const std::wstring id_tag(L"\"id\":\"");
   size_t id0 = line.find(id_tag);

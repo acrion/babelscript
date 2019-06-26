@@ -22,7 +22,7 @@ namespace babelscript
       void import_json(fs::path file_name);
 
     private:
-      void process_command(const std::wstring& line, const size_t thread_index);
+      void process_entry(const std::wstring& line, const size_t thread_index);
 
       class Impl;
       Impl* const _pImpl; // must stay at top of members list because of initialization order
@@ -32,4 +32,3 @@ namespace babelscript
     };
   }
 }
-
