@@ -74,4 +74,4 @@ A is subclass of B, B is subclass of A => !
 A is a B, B is subclass of A           => !
 
 #.wikidata Q23445-black.json
-.wikidata /Users/stefan/_excludedFromBackup/latest-all.json Q23445 2
+.wikidata /Users/stefan/_excludedFromBackup/latest-all.json 2

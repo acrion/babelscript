@@ -64,7 +64,7 @@ void Wikidata::import_all()
   size_t streampos;
   while (read_async.get_line(line, streampos))
   {
-    process_entry(line, streampos);
+    process_entry(line);
 //    size_t i = 0;
 //    for (i = 0; i < threads.size(); ++i)
 //      if (!(_running & 1ull<<i))
@@ -91,7 +91,7 @@ void Wikidata::import_all()
 }
 
 
-void Wikidata::process_entry(const std::wstring& line, size_t streampos, const size_t thread_index)
+void Wikidata::process_entry(const std::wstring& line, const size_t thread_index)
 {
   static const std::wstring id_tag(L"\"id\":\"");
   size_t id0 = line.find(id_tag);
@@ -105,8 +105,8 @@ void Wikidata::process_entry(const std::wstring& line, size_t streampos, const s
 
     size_t language0;
     static const std::wstring language_tag(L"{\"language\":\"");
-    size_t labels = line.find(L"\"labels\":{");
-    size_t aliases = line.find(L"\"aliases\":{", id1+7);
+    size_t labels       = line.find(L"\"labels\":{");
+    size_t aliases      = line.find(L"\"aliases\":{", id1+7);
     size_t descriptions = line.find(L"\"descriptions\":{", id1+7);
 
     while ((language0 = line.find(language_tag, id1 + 7)) != std::wstring::npos
@@ -166,10 +166,8 @@ void Wikidata::process_entry(const std::wstring& line, size_t streampos, const s
             {
               auto fact = _pImpl->_n->fact(current, _pImpl->_n->node(property, "wikidata"), { _pImpl->_n->node(object, "wikidata") });
               std::wstring output;
-              _pImpl->_n->format_fact(output, "en", fact);
-              _pImpl->_n->print(L"      en> " + output, false);
-              _pImpl->_n->format_fact(output, "wikidata", fact);
-              _pImpl->_n->print(L"wikidata> " + output, false);
+              _pImpl->_n->format_fact(output, "en", fact);       _pImpl->_n->print(id + L":       en> " + output, false);
+              _pImpl->_n->format_fact(output, "wikidata", fact); _pImpl->_n->print(id + L": wikidata> " + output, false);
             }
             catch (std::exception& ex)
             {
@@ -263,18 +261,52 @@ void Wikidata::index_entry(const std::wstring& line, const size_t streampos)
     std::string id0 = utils::str(id);
 
     std::lock_guard<std::mutex> lock(_pImpl->_mtx);
-    _pImpl->_index[id0] = streampos+id1;
+    _pImpl->_index[id0] = streampos;
     _pImpl->_last_entry = id0;
-    _pImpl->_last_index = streampos+id1;
+    _pImpl->_last_index = streampos;
   }
 }
 
 
-void Wikidata::traverse(std::wstring start_entry, int max_depth)
+void Wikidata::traverse(int max_depth, std::wstring start_entry)
 {
+  std::wifstream stream(_pImpl->_file_name);
 
+  if (start_entry.empty())
+  {
+    for (const auto& it : _pImpl->_n->get_nodes_in_language("wikidata"))
+    {
+      const std::wstring entry = it.second;
+      if (_pImpl->_index.count(utils::str(entry))==0)
+      {
+        _pImpl->_n->print(L"Cannot find wikidata entry '" + entry + L"' in " + _pImpl->_file_name.wstring(), true);
+      }
+      else
+      {
+        stream.seekg(_pImpl->_index[utils::str(entry)]);
+
+        std::wstring line;
+        std::getline(stream, line);
+        process_entry(line);
+      }
+    }
+  }
+  else
+  {
+    if (_pImpl->_index.count(utils::str(start_entry))==0)
+    {
+      throw std::runtime_error(_pImpl->_file_name.string() + " does not contain '" + utils::str(start_entry));
+    }
+
+    stream.seekg(_pImpl->_index[utils::str(start_entry)]);
+
+    std::wstring line;
+    std::getline(stream, line);
+    process_entry(line);
+  }
 }
 
+// ------------------------------------------------- Wikidata::Impl
 
 bool Wikidata::Impl::read_index_file()
 {

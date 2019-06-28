@@ -13,7 +13,7 @@ namespace babelscript
   namespace network
   {
     class BABELSCRIPT_EXPORT Babelscript
-    {    
+    {
     public:
       Babelscript(std::function<void(std::wstring,bool)> print);
       ~Babelscript();
@@ -25,6 +25,7 @@ namespace babelscript
       std::string lang() { return _lang; }
       Node node(std::wstring name, std::string lang="");
       std::wstring get_name(Node node, std::string lang="", bool fallback=false);
+      std::map<Node, std::wstring> get_nodes_in_language(std::string lang);
       Node get_node(std::wstring name, std::string lang="");
       std::string get_name_hex(Node node, bool prepend_num=true);
       void set_name(Node node, std::wstring name, std::string lang="");
@@ -67,4 +68,3 @@ namespace babelscript
     };
   }
 }
-

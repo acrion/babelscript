@@ -21,10 +21,10 @@ namespace babelscript
 
       void import_all();
       void generate_index();
-      void traverse(std::wstring start_entry, int max_depth);
+      void traverse(int max_depth, std::wstring start_entry=L"");
 
     private:
-      void process_entry(const std::wstring& line, const size_t streampos, const size_t thread_index=0);
+      void process_entry(const std::wstring& line, const size_t thread_index=0);
       void index_entry(const std::wstring& line, const size_t streampos);
 
       class Impl;

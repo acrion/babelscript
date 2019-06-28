@@ -107,6 +107,11 @@ std::wstring Babelscript::get_name(Node node, std::string lang, bool fallback)
 }
 
 
+std::map<Node, std::wstring> Babelscript::get_nodes_in_language(std::string lang)
+{
+  return _pImpl->_name_of_node[lang];
+}
+
 std::string Babelscript::get_name_hex(Node node, bool prepend_num)
 {
   std::string name = utils::str(get_name(node));

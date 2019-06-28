@@ -116,18 +116,26 @@ void Interactive::process(std::wstring line)
           }
           _pImpl->_n->print(L" Time needed for importing: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s", true);
         }
-        else if (cmd.size()==4)
+        else if (cmd.size()==3)
         {
-           std::wstring start_entry = cmd[2];
-           int max_depth = std::atoi(utils::str(cmd[3]).c_str());
-           _pImpl->_n->print(L"Start entry='" + start_entry + L"', link distance=" + std::to_wstring(max_depth), true);
+           int max_depth = std::atoi(utils::str(cmd[2]).c_str());
+           _pImpl->_n->print(L"Link distance=" + std::to_wstring(max_depth), true);
            Wikidata wikidata(_pImpl->_n, cmd[1]);
            wikidata.generate_index();
-           wikidata.traverse(start_entry, max_depth);
+           wikidata.traverse(max_depth);
+        }
+        else if (cmd.size()==4)
+        {
+          int max_depth = std::atoi(utils::str(cmd[2]).c_str());
+           std::wstring start_entry = cmd[3];
+           _pImpl->_n->print(L"Link distance=" + std::to_wstring(max_depth) + L", start entry='" + start_entry + L"'", true);
+           Wikidata wikidata(_pImpl->_n, cmd[1]);
+           wikidata.generate_index();
+           wikidata.traverse(max_depth, start_entry);
         }
         else
         {
-          throw std::runtime_error("Command .wikidata: Either specify only the json file to import, or add two filter parameters: name of start entry and link distance to be imported");
+          throw std::runtime_error("Command .wikidata: You need to specify the json file to import and optionally add the maximum link distance and the start entry to be imported");
         }
 
         _pImpl->_n->set_print([](std::wstring str, bool)
