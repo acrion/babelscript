@@ -274,20 +274,29 @@ void Wikidata::traverse(int max_depth, std::wstring start_entry)
 
   if (start_entry.empty())
   {
+    for(int i=0; i<10; ++i)
     for (const auto& it : _pImpl->_n->get_nodes_in_language("wikidata"))
     {
+      const Node node = it.first;
       const std::wstring entry = it.second;
-      if (_pImpl->_index.count(utils::str(entry))==0)
+      if (_pImpl->_n->get_name(node, "en").empty())
       {
-        _pImpl->_n->print(L"Cannot find wikidata entry '" + entry + L"' in " + _pImpl->_file_name.wstring(), true);
+        if (_pImpl->_index.count(utils::str(entry))==0)
+        {
+          _pImpl->_n->print(L"Cannot find wikidata entry '" + entry + L"' in " + _pImpl->_file_name.wstring(), true);
+        }
+        else
+        {
+          stream.seekg(_pImpl->_index[utils::str(entry)]);
+
+          std::wstring line;
+          std::getline(stream, line);
+          process_entry(line);
+        }
       }
       else
       {
-        stream.seekg(_pImpl->_index[utils::str(entry)]);
-
-        std::wstring line;
-        std::getline(stream, line);
-        process_entry(line);
+        _pImpl->_n->print(entry + L" is already known.", true);
       }
     }
   }

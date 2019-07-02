@@ -114,7 +114,7 @@ std::map<Node, std::wstring> Babelscript::get_nodes_in_language(std::string lang
 
 std::string Babelscript::get_name_hex(Node node, bool prepend_num)
 {
-  std::string name = utils::str(get_name(node));
+  std::string name = utils::str(get_name(node, _lang, true));
 
   if (name.empty())
   {
@@ -240,6 +240,20 @@ Answer Babelscript::check_fact(Node source, Node relationType, const std::unorde
       && connectedToRelationType.count(source) == 1 // source must be connected with and from <--> relation (i. e. bidirectional, to distinguish it from targets)
       && [&]() { for (Node t : targets) if (connectedToRelationType.count(t) == 0) return false; return true; }() // targets must all be connected with relation
       && [&]() { for (Node t : targets) if (connectedFromRelationType.count(t) == 1) return false; return true; }(); // no target must be connected from relation
+
+    if (!known)
+    {
+      const bool relationConnectsToSource              = connectedFromRelationType.count(source) == 1;
+      const bool sourceConnectsToRelation              = connectedToRelationType.count(source) == 1;
+      const bool targetsMustAllBeConnectedWithRelation = [&]() { for (Node t : targets) if (connectedToRelationType.count(t) == 0) return false; return true; }();
+      const bool noTargetMustBeConnectedFromRelation   = [&]() { for (Node t : targets) if (connectedFromRelationType.count(t) == 1) return false; return true; }();
+
+      gen_dot(relation, "/Users/stefan/go/src/babelscript.org/sample_scripts/debug.dot",2);
+      print(L"relationConnectsToSource              == " + std::to_wstring(relationConnectsToSource), true);
+      print(L"sourceConnectsToRelation              == " + std::to_wstring(sourceConnectsToRelation), true);
+      print(L"targetsMustAllBeConnectedWithRelation == " + std::to_wstring(targetsMustAllBeConnectedWithRelation), true);
+      print(L"noTargetMustBeConnectedFromRelation   == " + std::to_wstring(noTargetMustBeConnectedFromRelation), true);
+    }
   }
 
   if (known)
@@ -283,7 +297,7 @@ Node Babelscript::fact(Node source, Node relationType, std::unordered_set<Node> 
 
     if (_pImpl->exists(answer.relation()))
     {
-      // check_fact can return KNOWN though answer.relation exists, which should not happen. Indicates corrupt database or hash collision.
+      // check_fact can return !answer.is_known() though answer.relation exists, which should not happen. Indicates corrupt database or hash collision.
       assert(false);
     }
     else
@@ -381,7 +395,7 @@ void Babelscript::format_fact(std::wstring& result, std::string lang, Node fact,
   bool is_condition = _pImpl->get_right(fact).count(core.And) == 1; // if fact is a condition node (having relation type core.And), there is no subject
   if (subject == 0 && !is_condition)
   {
-    result = L"?";
+    result = L"??";
     return;
   }
 
