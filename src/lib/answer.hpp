@@ -5,7 +5,7 @@
 #include <string>
 #include <map>
 #include "utils.hpp"
-#include "babelscript_export.h"
+#include <babelscript_export.h>
 
 namespace babelscript
 {

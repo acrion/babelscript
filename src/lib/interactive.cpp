@@ -295,7 +295,7 @@ void Interactive::process(std::wstring line)
   }
 }
 
-babelscript::network::Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, const std::map<std::vector<std::wstring>, network::Node>& relations, boost::bimap<std::wstring, network::Node>& variables)
+Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, const std::map<std::vector<std::wstring>, Node>& relations, boost::bimap<std::wstring, Node>& variables)
 {
   class C
   {

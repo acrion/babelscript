@@ -56,7 +56,7 @@ void Reasoning::run(bool print_deductions)
   if (_skipped > 0) print(L" (skipped " + std::to_wstring(_skipped) + L" deductions)", true);
 }
 
-void Reasoning::apply_rule(const network::Node &rule, size_t thread_index)
+void Reasoning::apply_rule(const Node &rule, size_t thread_index)
 {
   Node condition = parse_fact(rule, _deductions);
 

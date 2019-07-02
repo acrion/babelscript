@@ -1,14 +1,19 @@
 cmake_minimum_required (VERSION 2.8.11)
-set(CMAKE_CXX_STANDARD 17)
+
+if (WIN32)
+	set(BOOST_INCLUDEDIR "C:/local/boost_1_70_0")
+	set(BOOST_LIBRARYDIR "C:/local/boost_1_70_0/lib64-msvc-14.1")
+	set(CMAKE_CXX_STANDARD 14) # 17 causes "already defined symbol" errors in boost includes
+else()
+	set(BOOST_INCLUDEDIR "${CMAKE_BINARY_DIR}/../../../../git/boost")
+	set(BOOST_LIBRARYDIR ${BOOST_INCLUDEDIR}/stage/lib)
+	#set(BOOST_INCLUDEDIR "/usr/local/Cellar/boost/1.70.0/include")
+	#set(BOOST_LIBRARYDIR "/usr/local/Cellar/boost/1.70.0/lib")
+	set(CMAKE_CXX_STANDARD 17)
+endif()
+
 project (babelscript)
 include(GenerateExportHeader)
-
-set(BOOST_INCLUDEDIR "${CMAKE_BINARY_DIR}/../../../../git/boost")
-set(BOOST_LIBRARYDIR ${BOOST_INCLUDEDIR}/stage/lib)
-#set(BOOST_INCLUDEDIR "/usr/local/Cellar/boost/1.70.0/include")
-#set(BOOST_LIBRARYDIR "/usr/local/Cellar/boost/1.70.0/lib")
-#set(BOOST_INCLUDEDIR "C:/local/boost_1_70_0")
-#set(BOOST_LIBRARYDIR "C:/local/boost_1_70_0/lib64-msvc-14.1")
 
 set( Boost_USE_STATIC_LIBS ON )
 include_directories(

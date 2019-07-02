@@ -241,12 +241,16 @@ Answer Babelscript::check_fact(Node source, Node relationType, const std::unorde
       && [&]() { for (Node t : targets) if (connectedToRelationType.count(t) == 0) return false; return true; }() // targets must all be connected with relation
       && [&]() { for (Node t : targets) if (connectedFromRelationType.count(t) == 1) return false; return true; }(); // no target must be connected from relation
 
-    if (!known)
+    if (!known && !_pImpl->is_var(source) && !_pImpl->is_var(relationType) && [&]() { for (Node t : targets) if (_pImpl->is_var(t)) return false; return true; }())
     {
       const bool relationConnectsToSource              = connectedFromRelationType.count(source) == 1;
       const bool sourceConnectsToRelation              = connectedToRelationType.count(source) == 1;
       const bool targetsMustAllBeConnectedWithRelation = [&]() { for (Node t : targets) if (connectedToRelationType.count(t) == 0) return false; return true; }();
       const bool noTargetMustBeConnectedFromRelation   = [&]() { for (Node t : targets) if (connectedFromRelationType.count(t) == 1) return false; return true; }();
+
+      std::wstring output;
+      format_fact(output, _lang, relation);
+      print(output, true);
 
       gen_dot(relation, "/Users/stefan/go/src/babelscript.org/sample_scripts/debug.dot",2);
       print(L"relationConnectsToSource              == " + std::to_wstring(relationConnectsToSource), true);

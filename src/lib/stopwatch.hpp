@@ -1,7 +1,7 @@
 #pragma once
 
 #include "babelscript.hpp"
-#include "babelscript_export.h"
+#include <babelscript_export.h>
 
 namespace babelscript
 {

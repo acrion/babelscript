@@ -5,7 +5,7 @@
 #include <vector>
 #include <unordered_set>
 #include <functional>
-#include "babelscript_export.h"
+#include <babelscript_export.h>
 #include "answer.hpp"
 
 namespace babelscript

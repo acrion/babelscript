@@ -39,7 +39,7 @@ public:
   size_t _last_index;
 };
 
-Wikidata::Wikidata(network::Babelscript* n, fs::path file_name)
+Wikidata::Wikidata(Babelscript* n, fs::path file_name)
   : _pImpl(new Impl(n, file_name))
 {
 }
@@ -257,18 +257,18 @@ void Wikidata::index_entry(const std::wstring& line, const size_t streampos)
   if (id0 != std::wstring::npos)
   {
     size_t id1 = line.find(L"\"", id0 + id_tag.size() + 1);
-    std::wstring id(line.substr(id0 + id_tag.size(), id1 - id0 - id_tag.size()));
-    std::string id0 = utils::str(id);
+    std::wstring idw(line.substr(id0 + id_tag.size(), id1 - id0 - id_tag.size()));
+    std::string id = utils::str(idw);
 
     std::lock_guard<std::mutex> lock(_pImpl->_mtx);
-    _pImpl->_index[id0] = streampos;
-    _pImpl->_last_entry = id0;
+    _pImpl->_index[id] = streampos;
+    _pImpl->_last_entry = id;
     _pImpl->_last_index = streampos;
   }
 }
 
 
-void Wikidata::traverse(int max_depth, std::wstring start_entry)
+void Wikidata::traverse(int /*max_depth*/, std::wstring start_entry)
 {
   std::wifstream stream(_pImpl->_file_name);
 

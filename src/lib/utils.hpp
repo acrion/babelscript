@@ -1,5 +1,5 @@
 #pragma once
-#include "babelscript_export.h"
+#include <babelscript_export.h>
 #include <string>
 #include <map>
 #include <memory>

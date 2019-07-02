@@ -1,6 +1,6 @@
 #pragma once
 
-#include "babelscript_export.h"
+#include <babelscript_export.h>
 #include "babelscript.hpp"
 #include "stopwatch.hpp"
 #include <vector>

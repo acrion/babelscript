@@ -2,12 +2,13 @@
 
 #include <string>
 #include <map>
+#include <babelscript_export.h>
 
 namespace babelscript
 {
   namespace console
   {
-    class Interactive
+    class BABELSCRIPT_EXPORT Interactive
     {
     public:
       Interactive();
