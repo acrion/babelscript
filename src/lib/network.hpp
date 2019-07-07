@@ -192,8 +192,8 @@ namespace babelscript
       Node create_hash(const Node head1, const Node head2, const std::unordered_set<Node>& vec)
       {
         return (  create_hash(vec)
-                ^ rol(mod(head1), 32)
-                ^ rol(mod(head2), 40)
+                ^ rol(mod(head1), 24)
+                ^ rol(mod(head2), 32)
                ) & mask_node;
       }
 

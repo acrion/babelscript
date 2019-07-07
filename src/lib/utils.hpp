@@ -43,6 +43,13 @@ namespace babelscript
         }
         return connected;
       }
+
+	    struct IncDec
+      {
+        IncDec(int& n) : _n(n) { ++_n; }
+        ~IncDec() { --_n; }
+        int& _n;
+      };
     }
   }
 }

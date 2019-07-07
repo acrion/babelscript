@@ -23,6 +23,8 @@ namespace babelscript
       std::mutex _mtx_name_of_node;
       std::mutex _mtx_node_of_name;
       std::mutex _mtx_print;
+
+      int _format_fact_level{ 0 }; // recursion level of method format_fact
     };
   }
 }
