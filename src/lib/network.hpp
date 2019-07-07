@@ -191,10 +191,18 @@ namespace babelscript
 
       Node create_hash(const Node head1, const Node head2, const std::unordered_set<Node>& vec)
       {
+//        Node c1  = create_hash(vec);
+//        Node c2b = mod(head1);
+//        Node c2  = rol(mod(head1), 20);
+//        Node c3b = mod(head2);
+//        Node c3  = rol(mod(head2), 32);
+//        Node result = (c1^c2^c3) & mask_node;
+  
+//        return result;
         return (  create_hash(vec)
-                ^ rol(mod(head1), 24)
+                ^ rol(mod(head1), 20)
                 ^ rol(mod(head2), 32)
-               ) & mask_node;
+              ) & mask_node;
       }
 
       typename std::map<Node, std::unordered_set<Node>>::iterator find_right(Node a)

@@ -32,9 +32,16 @@ European Union  topic's main Wikimedia portal  Portal:European Union
     vec: {948}
 		c1	4806466702311161856	unsigned __int64 0x42B4000000000000
 		c3	515670953426944	unsigned __int64        0x1D50000000000
-    c3b	469	unsigned __int64
 
-    vec: {950}
 		c1	4807029652264583168	unsigned __int64 0x42B6000000000000
 		c3	1078620906848256	unsigned __int64      0x3D50000000000
-    c3b	981	unsigned __int64
+
+		c1	0x458d000000000000	unsigned __int64
+		c2	0x000000004d000000	unsigned __int64
+		c3	0x00000fd600000000	unsigned __int64
+		result	0x458d0fd64d000000	unsigned __int64
+
+		c1	0x458d000000000000	unsigned __int64
+		c2	0x000000014d000000	unsigned __int64
+		c3	0x00000fd700000000	unsigned __int64
+		result	0x458d0fd64d000000	unsigned __int64
