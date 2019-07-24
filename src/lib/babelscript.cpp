@@ -241,7 +241,7 @@ Answer Babelscript::check_fact(Node source, Node relationType, const std::unorde
       && [&]() { for (Node t : targets) if (connectedToRelationType.count(t) == 0) return false; return true; }() // targets must all be connected with relation
       && [&]() { for (Node t : targets) if (connectedFromRelationType.count(t) == 1) return false; return true; }(); // no target must be connected from relation
 
-    if (!known && !_pImpl->is_var(source) && !_pImpl->is_var(relationType) && [&]() { for (Node t : targets) if (_pImpl->is_var(t)) return false; return true; }())
+    if (!_pImpl->_format_fact_level && !known && !_pImpl->is_var(source) && !_pImpl->is_var(relationType) && [&]() { for (Node t : targets) if (_pImpl->is_var(t)) return false; return true; }())
     {
       const bool relationConnectsToSource              = connectedFromRelationType.count(source) == 1;
       const bool sourceConnectsToRelation              = connectedToRelationType.count(source) == 1;
@@ -252,7 +252,7 @@ Answer Babelscript::check_fact(Node source, Node relationType, const std::unorde
       format_fact(output, _lang, relation);
       print(output, true);
 
-      gen_dot(relation, "/Users/stefan/go/src/babelscript.org/sample_scripts/debug.dot",2);
+      gen_dot(relation, "debug.dot",2);
       print(L"relationConnectsToSource              == " + std::to_wstring(relationConnectsToSource), true);
       print(L"sourceConnectsToRelation              == " + std::to_wstring(sourceConnectsToRelation), true);
       print(L"targetsMustAllBeConnectedWithRelation == " + std::to_wstring(targetsMustAllBeConnectedWithRelation), true);
@@ -385,6 +385,7 @@ Node Babelscript::parse_relation(Node rule)
 
 void Babelscript::format_fact(std::wstring& result, std::string lang, Node fact, const Variables& variables, Node parent, std::shared_ptr<std::unordered_set<Node>> history)
 {
+  utils::IncDec incDec(_pImpl->_format_fact_level);
   if (!history) history = std::make_shared<std::unordered_set<Node>>();
 
   if (history->find(fact) != history->end())

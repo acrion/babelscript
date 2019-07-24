@@ -12,10 +12,12 @@ package babelscript
 // }
 import "C"
 
+// Parse command and add it to the network
 func Process(cmd string) {
 	C.babelscript_process(cmd)
 }
 
+// Apply rules and add any deductions to the network
 func Run() {
 	C.babelscript_run()
 }
