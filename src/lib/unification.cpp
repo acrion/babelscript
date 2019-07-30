@@ -81,7 +81,8 @@ std::shared_ptr<Variables> Unification::Next()
         std::unordered_set<Node> objects;
         Node subject = _n->parse_fact(*_fact_index, objects, *_relation_index); // todo: use _parent instead of *_relation_index!? or both?!
 
-        if (   !_n->_pImpl->is_var(subject)
+        if (   objects.size()>0
+            && !_n->_pImpl->is_var(subject)
             && !_n->_pImpl->is_var(*objects.begin())
             && utils::get(*_variables, _subject, subject) == subject
             && utils::get(*_variables, *_objects.begin(), *objects.begin()) == *objects.begin() // todo: what if more than one?
