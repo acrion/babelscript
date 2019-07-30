@@ -274,7 +274,7 @@ void Wikidata::traverse(int /*max_depth*/, std::wstring start_entry)
 
   if (start_entry.empty())
   {
-    for(int i=0; i<10; ++i)
+    for(int i=0; i<4; ++i)
     for (const auto& it : _pImpl->_n->get_nodes_in_language("wikidata"))
     {
       const Node node = it.first;

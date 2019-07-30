@@ -44,19 +44,17 @@ bool Unification::increment_fact_index()
 {
   do
   {
-    if (!_initialized) // first call after construction. Condition _fact_index == decltype(_facts_of_current_relation->second)::iterator() causes _DEBUG_ERROR("map/set iterators incompatible") if false
+    if (!_fact_index_initialized)
     {
-      _initialized = true;
       _facts_of_current_relation = _n->_pImpl->find_left(*_relation_index);
 
       if (_facts_of_current_relation == _n->_pImpl->right_end())
-        return false; // there is a relation without any facts that use it (might happen we it has been explicitely defined via fact(r, core.IsA, core.RelationType))
+        return false; // there is a relation without any facts that use it (might happen if it has been explicitely defined via fact(r, core.IsA, core.RelationType))
       else
+      {
         _fact_index = _facts_of_current_relation->second.begin(); // used to iterate over all facts the have relation type *_relation_index
-    }
-    else if (_fact_index == std::unordered_set<Node>::iterator{ decltype(_facts_of_current_relation->second)::iterator() })
-    {
-      return false;
+        _fact_index_initialized = true;
+      }
     }
     else if (++_fact_index == _facts_of_current_relation->second.end()) // increment and return false if we reached the end, so _relation_index will be incremented
     {
@@ -105,6 +103,7 @@ std::shared_ptr<Variables> Unification::Next()
         }
       }
     }
+    _fact_index_initialized = false;
   } while (++_relation_index != _relation_list.end());
   
   return nullptr;
