@@ -290,11 +290,11 @@ Node Babelscript::fact(Node source, Node relationType, std::unordered_set<Node> 
   {
     if (answer.is_wrong() && probability>0.5L)
     {
-      throw std::runtime_error("add_fact: this fact is known to be wrong");
+      throw std::runtime_error("fact(): this fact is known to be wrong");
     }
     else if (answer.is_correct() && probability<0.5L)
     {
-      throw std::runtime_error("add_fact: this fact is known to be true");
+      throw std::runtime_error("fact(): this fact is known to be true");
     }
   }
   else
@@ -303,7 +303,7 @@ Node Babelscript::fact(Node source, Node relationType, std::unordered_set<Node> 
     {
       // 1 13 13
       // ~ is for example is for example <= (~  is opposite of  is for example), (is for example  ~  ->)
-      throw std::runtime_error("add_fact: facts with same relation type and object are not supported.");
+      throw std::runtime_error("fact(): facts with same relation type and object are not supported.");
     }
 
     if (relationType != core.IsA) // note that the initial constructor call fact(core.IsA, core.IsA, core.RelationTypeCategory) is executed as intended
@@ -323,7 +323,23 @@ Node Babelscript::fact(Node source, Node relationType, std::unordered_set<Node> 
 
     _pImpl->connect(source, answer.relation());
     _pImpl->connect(answer.relation(), source);
-    for (Node t:targets) _pImpl->connect(t, answer.relation());
+    for (Node t : targets)
+    {
+      if (t == source)
+      {
+        // We do not support relations that have the same subject and object. Real life example (from invalid wikidata entries):
+        // South Africa (Q258)  country (P17)  South Africa (Q258)
+        // or
+        // chemical substance  has part  chemical substance <= (matter  has part  chemical substance), (chemical substance  is subclass of  matter)
+
+        std::wstring name_subject_object = get_name(source, _lang, true);
+        std::wstring name_relationType   = get_name(relationType, _lang, true);
+
+        throw std::runtime_error("fact(): facts with same subject and object are not supported: " + utils::str(name_subject_object) + " " + utils::str(name_relationType) + " " + utils::str(name_subject_object));
+      }
+      
+      _pImpl->connect(t, answer.relation());
+    }
     _pImpl->connect(answer.relation(), relationType, probability);
   }
 

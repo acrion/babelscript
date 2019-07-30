@@ -231,7 +231,7 @@ void Reasoning::deduce(const Variables& variables, Node parent)
 
               if (answer.is_wrong())
               {
-                throw std::runtime_error("Deduction is known to be wrong.");
+                throw contradiction_error(_current_condition, variables, parent);
               }
               else if (!answer.is_known()
                 && targets.count(rel) == 0) // ignore deductions with same relation and target type as we do not support these
@@ -275,9 +275,9 @@ void Reasoning::deduce(const Variables& variables, Node parent)
 
                   _done = true;
                 }
-                catch (std::exception& ex)
+                catch (const std::exception&)
                 {
-                  throw std::runtime_error(std::string("Deduction cannot be added: ") + ex.what());
+                  throw contradiction_error(_current_condition, variables, parent);
                 }
               }
             }
