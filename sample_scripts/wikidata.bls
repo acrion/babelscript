@@ -19,17 +19,20 @@
 #is for example is a ->
 #"is subclass of" "is a" ->
 
-#"is part of"      is inverse of "has part"
+# The following facts are part of wikidata:
+#"is subclass of" is a  transitive relation
+#"has part"       is a transitive relation
+#"is part of"     is inverse of "has part"
+
+The following facts are not part of wikidata:
+#"has quality" is a transitive relation
+
+# The following (quite obvious) fact is not part of wikidata. Wikidata only includes the fact "is subclass of" "subject item of this property" "is for example"
 #"is for example"  is inverse of "is a"
 
-#"has part"    is a transitive relation
-#"has quality" is a transitive relation
-#is a          is a transitive relation
-
-X is a K, K is subclass of U => X is a U
-X is subclass of Y, Y is subclass of Z => X is subclass of Z
-
 R is a transitive relation, X R Y, Y R Z => X R Z
+P is a transitive relation, P is inverse of Q => Q is a transitive relation
+X is a K, K is subclass of U => X is a U
 
 #X has quality E,   E is a K            => X has quality K
 X has quality E,   E is subclass of K  => X has quality K
@@ -62,15 +65,14 @@ X has quality E, E is a X           => !
 X has quality E, E is subclass of X => !
 X has quality E, E has part X       => !
 
-# The following contradiction doesn't seem to make sense for wikidata, because
-# there are things that are at the same time subclasses and instances, e. g. "black":
+# The following contradiction requires that X cannot be at the same time an instance and a subclass:
+# X is a A, X is subclass of B => !
+# But this doesn't seem to make sense for wikidata, because there are X that are at the same time subclasses and instances, e. g. "black":
 # ! <= (Q23445  is a  Q1075), (Q23445  is subclass of  Q40890790)
 # ! <= (black  is a  color), (black  is subclass of  absorbed or reflected object light)
-# A is a B, A is subclass of C => !
 
 A is a B, B is a A                     => !
 A is subclass of B, B is subclass of A => !
-
 A is a B, B is subclass of A           => !
 
 #.wikidata Q23445-black.json

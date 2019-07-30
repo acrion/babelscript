@@ -11,6 +11,7 @@ $tf/*
 *.lnk
 *.obj
 *.opensdf
+*.orig
 *.pch
 *.pdb
 *.pgd
