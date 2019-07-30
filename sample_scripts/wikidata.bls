@@ -65,6 +65,12 @@ X has quality E, E is a X           => !
 X has quality E, E is subclass of X => !
 X has quality E, E has part X       => !
 
+#X has part E, X is a E           => !
+#X has part E, X is subclass of E => !
+#X has part E, E is a X           => !
+#X has part E, E is subclass of X => !
+#(matter  has part  chemical substance), (chemical substance  is subclass of  matter)
+
 # The following contradiction requires that X cannot be at the same time an instance and a subclass:
 # X is a A, X is subclass of B => !
 # But this doesn't seem to make sense for wikidata, because there are X that are at the same time subclasses and instances, e. g. "black":

@@ -67,9 +67,21 @@ Node Babelscript::node(std::wstring name, std::string lang)
   return new_node;
 }
 
+bool Babelscript::has_name(Node node, std::string lang)
+{
+  auto& name_of_node = _pImpl->_name_of_node[lang];
+  auto it = name_of_node.find(node);
+  return it != name_of_node.end();
+}
+
 std::wstring Babelscript::get_name(Node node, std::string lang, bool fallback)
 {
   if (lang.empty()) lang = _lang;
+
+  if (_process_node)
+  {
+    _process_node(node, lang);
+  }
 
   {
     std::lock_guard<std::mutex> lock(_pImpl->_mtx_name_of_node);

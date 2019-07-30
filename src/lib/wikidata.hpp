@@ -1,6 +1,7 @@
 #pragma once
 
 #include "babelscript.hpp"
+#include "utils.hpp"
 #include <filesystem>
 
 namespace babelscript
@@ -22,9 +23,11 @@ namespace babelscript
       void import_all();
       void generate_index();
       void traverse(int max_depth, std::wstring start_entry=L"");
+      void process_node(network::Node node, std::string lang);
 
     private:
-      void process_entry(const std::wstring& line, const size_t thread_index=0);
+      void process_entry(const std::wstring& line, const bool log=true, const size_t thread_index = 0);
+      void process_name(std::wstring wikidata_name);
       void index_entry(const std::wstring& line, const size_t streampos);
 
       class Impl;

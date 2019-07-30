@@ -42,6 +42,10 @@ public:
 Wikidata::Wikidata(Babelscript* n, fs::path file_name)
   : _pImpl(new Impl(n, file_name))
 {
+  n->set_process_node([this](Node node, std::string lang)
+  {
+    return this->process_node(node, lang);
+  });
 }
 
 Wikidata::~Wikidata()
@@ -91,7 +95,7 @@ void Wikidata::import_all()
 }
 
 
-void Wikidata::process_entry(const std::wstring& line, const size_t thread_index)
+void Wikidata::process_entry(const std::wstring& line, const bool log, const size_t thread_index)
 {
   static const std::wstring id_tag(L"\"id\":\"");
   size_t id0 = line.find(id_tag);
@@ -165,9 +169,12 @@ void Wikidata::process_entry(const std::wstring& line, const size_t thread_index
             try
             {
               auto fact = _pImpl->_n->fact(current, _pImpl->_n->node(property, "wikidata"), { _pImpl->_n->node(object, "wikidata") });
-              std::wstring output;
-              _pImpl->_n->format_fact(output, "en", fact);       _pImpl->_n->print(id + L":       en> " + output, false);
-              _pImpl->_n->format_fact(output, "wikidata", fact); _pImpl->_n->print(id + L": wikidata> " + output, false);
+              if (log)
+              {
+                std::wstring output;
+                _pImpl->_n->format_fact(output, "en", fact);       _pImpl->_n->print(id + L":       en> " + output, false);
+                _pImpl->_n->format_fact(output, "wikidata", fact); _pImpl->_n->print(id + L": wikidata> " + output, false);
+              }
             }
             catch (std::exception& ex)
             {
@@ -270,16 +277,17 @@ void Wikidata::index_entry(const std::wstring& line, const size_t streampos)
 
 void Wikidata::traverse(int /*max_depth*/, std::wstring start_entry)
 {
-  std::wifstream stream(_pImpl->_file_name);
 
   if (start_entry.empty())
   {
+    std::wifstream stream(_pImpl->_file_name);
     for(int i=0; i<4; ++i)
     for (const auto& it : _pImpl->_n->get_nodes_in_language("wikidata"))
     {
       const Node node = it.first;
       const std::wstring entry = it.second;
-      if (_pImpl->_n->get_name(node, "en").empty())
+      std::wstring name = _pImpl->_n->get_name(node, "en");
+      if (name.empty())
       {
         if (_pImpl->_index.count(utils::str(entry))==0)
         {
@@ -296,22 +304,41 @@ void Wikidata::traverse(int /*max_depth*/, std::wstring start_entry)
       }
       else
       {
-        _pImpl->_n->print(entry + L" is already known.", true);
+        _pImpl->_n->print(name + L" (" + entry + L") is already known.", true);
       }
     }
   }
   else
   {
-    if (_pImpl->_index.count(utils::str(start_entry))==0)
-    {
-      throw std::runtime_error(_pImpl->_file_name.string() + " does not contain '" + utils::str(start_entry));
-    }
+    process_name(start_entry);
+  }
+}
 
-    stream.seekg(_pImpl->_index[utils::str(start_entry)]);
+void Wikidata::process_name(std::wstring wikidata_name)
+{
+  if (_pImpl->_index.count(utils::str(wikidata_name)) != 0)
+  {
+    std::wifstream stream(_pImpl->_file_name);
+    stream.seekg(_pImpl->_index[utils::str(wikidata_name)]);
 
     std::wstring line;
     std::getline(stream, line);
-    process_entry(line);
+    process_entry(line, false);
+  }
+}
+
+void Wikidata::process_node(Node node, std::string lang)
+{
+  if (lang != "wikidata")
+  {
+    if (!_pImpl->_n->has_name(node, "en"))
+    {
+      const std::wstring name = _pImpl->_n->get_name(node, "wikidata");
+      if (!name.empty())
+      {
+        process_name(name);
+      }
+    }
   }
 }
 

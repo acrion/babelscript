@@ -28,6 +28,7 @@ public:
   network::Node process_fact(const std::vector<std::wstring>& tokens, const std::map<std::vector<std::wstring>, Node>& relations, boost::bimap<std::wstring, Node>& variables);
   static bool is_var(std::wstring token);
 
+  std::shared_ptr<Wikidata> _wikidata;
   Reasoning* const _n;
 };
 
@@ -111,8 +112,8 @@ void Interactive::process(std::wstring line)
           StopWatch watch;
           watch.start();
           {
-            Wikidata wikidata(_pImpl->_n, cmd[1]);
-            wikidata.import_all();
+            _pImpl->_wikidata = std::make_shared<Wikidata>(_pImpl->_n, cmd[1]);
+            _pImpl->_wikidata->import_all();
           }
           _pImpl->_n->print(L" Time needed for importing: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s", true);
         }
@@ -120,18 +121,18 @@ void Interactive::process(std::wstring line)
         {
            int max_depth = std::atoi(utils::str(cmd[2]).c_str());
            _pImpl->_n->print(L"Link distance=" + std::to_wstring(max_depth), true);
-           Wikidata wikidata(_pImpl->_n, cmd[1]);
-           wikidata.generate_index();
-           wikidata.traverse(max_depth);
+           _pImpl->_wikidata = std::make_shared<Wikidata>(_pImpl->_n, cmd[1]);
+           _pImpl->_wikidata->generate_index();
+           _pImpl->_wikidata->traverse(max_depth);
         }
         else if (cmd.size()==4)
         {
           int max_depth = std::atoi(utils::str(cmd[2]).c_str());
            std::wstring start_entry = cmd[3];
            _pImpl->_n->print(L"Link distance=" + std::to_wstring(max_depth) + L", start entry='" + start_entry + L"'", true);
-           Wikidata wikidata(_pImpl->_n, cmd[1]);
-           wikidata.generate_index();
-           wikidata.traverse(max_depth, start_entry);
+           _pImpl->_wikidata = std::make_shared<Wikidata>(_pImpl->_n, cmd[1]);
+           _pImpl->_wikidata->generate_index();
+           _pImpl->_wikidata->traverse(max_depth, start_entry);
         }
         else
         {

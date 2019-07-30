@@ -22,8 +22,10 @@ namespace babelscript
 
       void set_lang(std::string lang) { _lang = lang; }
       void set_print(std::function<void(std::wstring, bool)> print) { _print = print; }
+      void set_process_node(std::function<void(Node, std::string)> process_node) { _process_node = process_node; }
       std::string lang() { return _lang; }
       Node node(std::wstring name, std::string lang="");
+      bool has_name(Node node, std::string lang);
       std::wstring get_name(Node node, std::string lang="", bool fallback=false);
       std::map<Node, std::wstring> get_nodes_in_language(std::string lang);
       Node get_node(std::wstring name, std::string lang="");
@@ -65,6 +67,7 @@ namespace babelscript
       void add_nodes(Node current, std::unordered_set<Node>& touched, const std::unordered_set<Node>& conditions, const std::unordered_set<Node>& deductions, std::ofstream& dot, int max_depth);
 
       std::function<void(std::wstring, bool)> _print;
+      std::function<void(Node, std::string)> _process_node;
     };
   }
 }
