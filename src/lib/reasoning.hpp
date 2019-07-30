@@ -40,6 +40,7 @@ namespace babelscript
       std::vector<RulePos> _next;
       size_t _running{ 0 };
       bool _print_deductions{ true };
+      bool _contradiction{ false };
       StopWatch _stop_watch;
       size_t _skipped{ 0 };
     };

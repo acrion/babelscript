@@ -1,6 +1,7 @@
 #include "reasoning.hpp"
 #include "babelscript_impl.hpp"
 #include "unification.hpp"
+#include "contradiction_error.hpp"
 #include <thread>
 
 using namespace babelscript::network;
@@ -54,6 +55,11 @@ void Reasoning::run(bool print_deductions)
 
   _stop_watch.stop();
   if (_skipped > 0) print(L" (skipped " + std::to_wstring(_skipped) + L" deductions)", true);
+
+  if (_contradiction)
+  {
+    print(L"Found one or more contradictions!", true);
+  }
 }
 
 void Reasoning::apply_rule(const Node &rule, size_t thread_index)
@@ -67,7 +73,21 @@ void Reasoning::apply_rule(const Node &rule, size_t thread_index)
 
     _current_condition = condition;
     _next.clear();
-    evaluate(RulePos({ rule, conditions.end(), conditions.begin() }));
+
+    try
+    {
+      evaluate(RulePos({ rule, conditions.end(), conditions.begin() }));
+    }
+    catch (const contradiction_error& error)
+    {
+      _contradiction = true;
+      if (_print_deductions)
+      {
+        std::wstring output;
+        format_fact(output, _lang, error.get_fact(), error.get_variables(), error.get_parent());
+        print(L"! <= " + output, true);
+      }
+    }
   }
 
   _running = _running & ~(1ull << thread_index);
@@ -162,13 +182,7 @@ void Reasoning::deduce(const Variables& variables, Node parent)
   {
     if (deduction == core.Contradiction)
     {
-      if (_print_deductions)
-      {
-        std::wstring input,output;
-        format_fact(input, _lang, _current_condition, variables, parent);
-        print(L"! <= " + input, true);
-      }
-      throw std::runtime_error("Contradiction!");
+      throw contradiction_error(_current_condition, variables, parent);
     }
 
     std::unordered_set<Node> relations = filter(deduction, core.IsA, core.RelationTypeCategory);

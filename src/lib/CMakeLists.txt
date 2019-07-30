@@ -5,6 +5,7 @@ add_library (babelscript SHARED
   babelscript.cpp
   babelscript.hpp
   babelscript_impl.hpp
+  contradiction_error.hpp
   network.hpp
   reasoning.cpp
   reasoning.hpp
