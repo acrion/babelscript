@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 3.12.2)
 
 if (WIN32)
 	set(BOOST_INCLUDEDIR "C:/local/boost_1_70_0")
