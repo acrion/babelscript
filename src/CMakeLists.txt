@@ -1,36 +1,7 @@
 cmake_minimum_required (VERSION 3.12.2)
 
-if (WIN32)
-	set(BOOST_INCLUDEDIR "C:/local/boost_1_70_0")
-	set(BOOST_LIBRARYDIR "C:/local/boost_1_70_0/lib64-msvc-14.1")
-	set(CMAKE_CXX_STANDARD 14) # 17 causes "already defined symbol" errors in boost includes
-elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	set(BOOST_INCLUDEDIR "${CMAKE_BINARY_DIR}/../../../../git/boost")
-	set(BOOST_LIBRARYDIR ${BOOST_INCLUDEDIR}/stage/lib)
-	#set(BOOST_INCLUDEDIR "/usr/local/Cellar/boost/1.70.0/include")
-	#set(BOOST_LIBRARYDIR "/usr/local/Cellar/boost/1.70.0/lib")
-	set(CMAKE_CXX_STANDARD 17)
-else()
-	set(BOOST_INCLUDEDIR "/usr/include")
-	set(BOOST_LIBRARYDIR "/usr/lib/x86_64-linux-gnu")
-	set(CMAKE_CXX_STANDARD 17)
-endif()
-
 project (babelscript)
 include(GenerateExportHeader)
-
-set( Boost_USE_STATIC_LIBS ON )
-include_directories(
-    ${BOOST_INCLUDEDIR}
-    ${BOOST_INCLUDEDIR}/libs/dll/include
-    ${BOOST_INCLUDEDIR}/libs/bimap/include
-    ${BOOST_INCLUDEDIR}/libs/container_hash/include
-    ${BOOST_INCLUDEDIR}/libs/core/include
-)
-if (MSVC) # with Visual Studio we can rely on boost auto-linking
-  add_definitions(-DBOOST_LIB_DIAGNOSTIC)
-  link_directories(${BOOST_LIBRARYDIR})
-endif()
 
 # set compiler flags
 if (WIN32)
