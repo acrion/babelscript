@@ -11,7 +11,7 @@ using namespace babelscript::console;
 struct Entry
 {
   std::wstring _line;
-  size_t _streampos;
+  std::streamoff _streampos;
 };
 
 class ReadAsync::Impl
@@ -58,7 +58,7 @@ std::string ReadAsync::error_text()
   return _pImpl->_error_text;
 }
 
-bool ReadAsync::get_line(std::wstring& line, size_t& streampos)
+bool ReadAsync::get_line(std::wstring& line, std::streamoff& streampos)
 {
   std::unique_lock<std::mutex> lock(_pImpl->_mtx);
   _pImpl->_cv.wait(lock, [&]{ return _pImpl->_lines.size() > 0 || _pImpl->_EOF; });
@@ -115,7 +115,7 @@ void ReadAsync::Impl::read_thread(fs::path file_name)
     return;
   }
 
-  size_t streampos=0;
+  std::streamoff streampos=0;
 
   for (std::wstring line; std::getline(stream, line); )
   {

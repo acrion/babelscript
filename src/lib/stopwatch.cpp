@@ -19,7 +19,13 @@ StopWatch::StopWatch()
 StopWatch::StopWatch(const StopWatch& stopWatch)
   : _pImpl(new CImpl)
 {
-  *_pImpl = *stopWatch._pImpl;
+  *_pImpl = *stopWatch._pImpl; // memberwise copy of CImpl members (which include no pointers)
+}
+
+StopWatch& StopWatch::operator=(const StopWatch& stopWatch)
+{
+  *_pImpl = *stopWatch._pImpl; // memberwise copy of CImpl members (which include no pointers)
+  return *this;
 }
 
 StopWatch::~StopWatch()

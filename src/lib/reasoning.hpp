@@ -34,7 +34,7 @@ namespace babelscript
       bool contradicts(const Variables& variables, const Variables& unequals);
       void deduce(const Variables& variables, Node parent);
 
-      bool _done;
+      bool _done { false };
       Node _current_condition{ 0 };
       std::unordered_set<Node> _deductions;
       std::vector<RulePos> _next;

@@ -22,7 +22,7 @@ add_library (babelscript SHARED
   read_async.hpp
   wikidata.cpp
   wikidata.hpp
-# boost/serialization. We compile it ourselves, because using external lib boost in our 3x2 configs is hell. The configurations are (Mac, Linux, Windows) x (CMake, go). In addition we need to match the boost build with our build (e. g. regarding use of C++14).
+# boost/serialization. We compile it ourselves, because using external lib boost in our 3x2 build configs is hell. The configurations are (Mac, Linux, Windows) x (CMake, go). In addition we need to match the boost build with our build (e. g. regarding use of C++14).
   ../boost/serialization/src/archive_exception.cpp
   ../boost/serialization/src/basic_archive.cpp
   ../boost/serialization/src/basic_iarchive.cpp

@@ -30,6 +30,9 @@ public:
 
   std::shared_ptr<Wikidata> _wikidata;
   Reasoning* const _n;
+
+  Impl(const Impl&) = delete;
+  Impl& operator=(const Impl&) = delete;
 };
 
 Interactive::Interactive()
@@ -303,7 +306,7 @@ Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, co
     Interactive::Impl* _enclosing{ nullptr };
 
   public:
-    C(Interactive::Impl* enclosing, network::Node node=0, std::wstring token=L"")
+    C(Interactive::Impl* enclosing, network::Node node=0, const std::wstring& token=L"")
       : _enclosing(enclosing)
       , _node(node)
       , _token(token)

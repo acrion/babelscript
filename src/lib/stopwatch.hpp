@@ -13,6 +13,8 @@ namespace babelscript
       StopWatch();
       ~StopWatch();
       StopWatch(const StopWatch& stopWatch);
+      StopWatch& operator=(const StopWatch&);
+
       bool is_running();
       void stop();
       void start();
