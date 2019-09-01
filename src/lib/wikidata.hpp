@@ -3,6 +3,7 @@
 #include "babelscript.hpp"
 #include "utils.hpp"
 #include <filesystem>
+#include <iosfwd>
 
 namespace babelscript
 {
@@ -28,7 +29,7 @@ namespace babelscript
     private:
       void process_entry(const std::wstring& line, const bool log=true, const size_t thread_index = 0);
       void process_name(std::wstring wikidata_name);
-      void index_entry(const std::wstring& line, const size_t streampos);
+      void index_entry(const std::wstring& line, const std::streamoff streampos);
 
       class Impl;
       Impl* const _pImpl; // must stay at top of members list because of initialization order

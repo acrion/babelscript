@@ -15,6 +15,7 @@ namespace babelscript
     class BABELSCRIPT_EXPORT Babelscript::Impl : public Network
     {
       friend class Babelscript;
+      Impl()=default;
 
     private:
       // cannot use boost:bitmap because we have to support nodes having the same name (within one language). In this case, _node_of_name has no entries for all of these names.

@@ -33,6 +33,9 @@ public:
 
   std::shared_ptr<Wikidata> _wikidata;
   Reasoning* const _n;
+
+  Impl(const Impl&) = delete;
+  Impl& operator=(const Impl&) = delete;
 };
 
 Interactive::Interactive()

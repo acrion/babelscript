@@ -22,6 +22,9 @@ namespace babelscript
     private:
       class Impl;
       Impl* const _pImpl; // must stay at top of members list because of initialization order
+
+      Interactive(const Interactive&) = delete;
+      Interactive& operator=(const Interactive&) = delete;
     };
   }
 }

@@ -33,10 +33,10 @@ public:
 
   network::Babelscript* _n{ nullptr };
   fs::path _file_name;
-  std::map<std::string, size_t> _index;
+  std::map<std::string, std::streamoff> _index;
   std::mutex _mtx;
   std::string _last_entry;
-  size_t _last_index;
+  std::streamoff _last_index{ 0 };
 };
 
 Wikidata::Wikidata(Babelscript* n, fs::path file_name)
@@ -65,7 +65,7 @@ void Wikidata::import_all()
 
   //for (std::wstring line; std::getline(stream, line); )
   std::wstring line;
-  size_t streampos;
+  std::streamoff streampos;
   while (read_async.get_line(line, streampos))
   {
     process_entry(line);
@@ -219,7 +219,7 @@ void Wikidata::generate_index()
 
     //for (std::wstring line; std::getline(stream, line); )
     std::wstring line;
-    size_t streampos;
+    std::streamoff streampos;
     while (read_async.get_line(line, streampos))
     {
       index_entry(line, streampos);
@@ -256,7 +256,7 @@ void Wikidata::generate_index()
 }
 
 
-void Wikidata::index_entry(const std::wstring& line, const size_t streampos)
+void Wikidata::index_entry(const std::wstring& line, const std::streamoff streampos)
 {
   static const std::wstring id_tag(L"\"id\":\"");
   size_t id0 = line.find(id_tag);

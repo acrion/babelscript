@@ -411,7 +411,7 @@ Node Babelscript::parse_relation(Node rule)
   return relation;
 }
 
-void Babelscript::format_fact(std::wstring& result, std::string lang, Node fact, const Variables& variables, Node parent, std::shared_ptr<std::unordered_set<Node>> history)
+void Babelscript::format_fact(std::wstring& result, const std::string& lang, Node fact, const Variables& variables, Node parent, std::shared_ptr<std::unordered_set<Node>> history)
 {
   utils::IncDec incDec(_pImpl->_format_fact_level);
   if (!history) history = std::make_shared<std::unordered_set<Node>>();
