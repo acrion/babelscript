@@ -16,6 +16,8 @@ namespace babelscript
       void process(std::wstring line);
       void run(bool print_deductions);
       static std::string get_version();
+      Interactive & operator=(const Interactive&) = delete;
+      Interactive(const Interactive&) = delete;
 
     private:
       class Impl;

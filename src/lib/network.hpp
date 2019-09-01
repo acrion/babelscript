@@ -77,7 +77,7 @@ namespace babelscript
         {
           return 1;
         }
-        
+
         std::lock_guard<std::mutex> lock(_mtx_left);
         auto itLeft = _left.find(a);
         if (itLeft != _left.end() && itLeft->second.count(b) == 1)
@@ -177,6 +177,7 @@ namespace babelscript
         uint64_t c = 48;
         for (Node node: vec)
         {
+          // cppcheck-suppress useStlAlgorithm
           result ^= mod(rol(node, c++%64)); // avoid hash collisions if vec contains identical nodes (with other vecs also having identical nodes) by incrementing c
         }
         return result & mask_node; // exclude values that denote variables
@@ -197,7 +198,7 @@ namespace babelscript
 //        Node c3b = mod(head2);
 //        Node c3  = rol(mod(head2), 32);
 //        Node result = (c1^c2^c3) & mask_node;
-  
+
 //        return result;
         return (  create_hash(vec)
                 ^ rol(mod(head1), 20)
@@ -262,7 +263,7 @@ namespace babelscript
       }
 
 #ifdef _MSC_VER
-      #pragma warning( push )  
+      #pragma warning( push )
       #pragma warning( disable : 4146 )
 #endif
       static inline uint64_t rol(uint64_t n, uint64_t c = 1)
@@ -293,4 +294,3 @@ namespace babelscript
     };
   }
 }
-

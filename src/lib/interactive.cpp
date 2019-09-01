@@ -25,6 +25,9 @@ public:
     _n->set_lang("babelscript");
   }
 
+  Impl& operator=(const Impl&) = delete;
+  Impl(const Impl&) = delete;
+
   network::Node process_fact(const std::vector<std::wstring>& tokens, const std::map<std::vector<std::wstring>, Node>& relations, boost::bimap<std::wstring, Node>& variables);
   static bool is_var(std::wstring token);
 
@@ -288,6 +291,25 @@ void Interactive::process(std::wstring line)
       //_pImpl->_n->gen_dot(fact, "debug.dot", 5);
       _pImpl->_n->format_fact(output, _pImpl->_n->lang(), fact);
       _pImpl->_n->print(L"> " + output, false);
+      
+      if (!is_rule)
+      {
+        bool contains_variable=false;
+        
+        for (size_t i = 0; i < tokens.size(); ++i)
+        {
+          if (Impl::is_var(tokens[i]))
+          {
+            contains_variable=true;
+            break;
+          }
+        }
+        
+        if (contains_variable)
+        {
+          _pImpl->_n->apply_rule(0, fact, 0); // query
+        }
+      }
     }
   }
   catch (std::exception& ex)
@@ -303,7 +325,7 @@ Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, co
     Interactive::Impl* _enclosing{ nullptr };
 
   public:
-    C(Interactive::Impl* enclosing, network::Node node=0, std::wstring token=L"")
+    C(Interactive::Impl* enclosing, network::Node node=0, const std::wstring& token=L"")
       : _enclosing(enclosing)
       , _node(node)
       , _token(token)

@@ -25,7 +25,7 @@ namespace babelscript
     public:
       Answer(State state, long double probability, Node relation = 0);
       Answer(long double probability, Node relation);
-      Answer(Node relation);
+      explicit Answer(Node relation);
 
       Node relation();
       bool is_known();
@@ -35,4 +35,3 @@ namespace babelscript
     };
   }
 }
-

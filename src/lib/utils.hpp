@@ -46,11 +46,10 @@ namespace babelscript
 
 	    struct IncDec
       {
-        IncDec(int& n) : _n(n) { ++_n; }
+        explicit IncDec(int& n) : _n(n) { ++_n; }
         ~IncDec() { --_n; }
         int& _n;
       };
     }
   }
 }
-

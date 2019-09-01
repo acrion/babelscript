@@ -3,6 +3,7 @@
 #include "unification.hpp"
 #include "contradiction_error.hpp"
 #include <thread>
+#include <cassert>
 
 using namespace babelscript::network;
 
@@ -26,7 +27,7 @@ void Reasoning::run(bool print_deductions)
     for (Node rule : _pImpl->get_left(core.Causes))
     {
 #ifndef PARALLEL_REASONING
-      apply_rule(rule, 0);
+      apply_rule(rule, 0, 0);
 #else
       size_t i = 0;
       for (i = 0; i < threads.size(); ++i)
@@ -34,7 +35,7 @@ void Reasoning::run(bool print_deductions)
           break;
 
       _running = _running | 1ull << i;
-      std::thread t(&Reasoning::apply_rule, this, rule, i);
+      std::thread t(&Reasoning::process_rule, this, rule, 0, i);
       if (i < threads.size())
       {
         if (threads[i].joinable()) threads[i].join();
@@ -62,18 +63,26 @@ void Reasoning::run(bool print_deductions)
   }
 }
 
-void Reasoning::apply_rule(const Node &rule, size_t thread_index)
+void Reasoning::apply_rule(const Node& rule, Node condition, size_t thread_index)
 {
-  Node condition = parse_fact(rule, _deductions);
+  if (rule==0)
+  {
+    _deductions.clear();
+    assert(condition!=0);
+  }
+  else
+  {
+    condition = parse_fact(rule, _deductions);
+  }
 
-  if (condition && condition != core.Causes && _deductions.size() > 0)
+  if (condition && condition != core.Causes)
   {
     std::unordered_set<Node> conditions;
     conditions.insert(condition);
-
+    
     _current_condition = condition;
     _next.clear();
-
+    
     try
     {
       evaluate(RulePos({ rule, conditions.end(), conditions.begin() }));
@@ -89,10 +98,12 @@ void Reasoning::apply_rule(const Node &rule, size_t thread_index)
       }
     }
   }
-
+  
   _running = _running & ~(1ull << thread_index);
 }
 
+
+//rule& adfa
 void Reasoning::evaluate(RulePos rule)
 {
   Node condition = *rule.index; // points to the relation: normally 'and', connecting several conditions, or a the relation of a fact (which may consist of variables)
@@ -139,7 +150,16 @@ void Reasoning::evaluate(RulePos rule)
       }
       else if (!contradicts(*joined, *joined_unequals) && joined->size()>0)
       {
-        deduce(*joined, rule.node);
+        if (_deductions.size() > 0)
+        {
+          deduce(*joined, rule.node);
+        }
+        else
+        {
+          std::wstring output;
+          format_fact(output, _lang, _current_condition, *joined, rule.node);
+          print(L"Answer: " + output, true);
+        }
       }
     }
   }

@@ -2,11 +2,13 @@ $tf/*
 *.bi
 *.bsc
 *.cache
+*.cson
 *.db
 *.iobj
 *.ipch
 *.ipdb
 *.ilk
+*.kdev4
 *.lastbuildstate
 *.lnk
 *.obj

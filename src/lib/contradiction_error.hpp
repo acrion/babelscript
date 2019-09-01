@@ -10,6 +10,7 @@ namespace babelscript
     class contradiction_error : public std::exception
     {
     public:
+      // cppcheck-suppress passedByValue
       contradiction_error(Node fact, const Variables variables, Node parent)
         : std::exception()
         , _fact(fact)

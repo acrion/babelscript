@@ -11,6 +11,7 @@ namespace babelscript
 {
   namespace network
   {
+    // cppcheck-suppress noConstructor
     class BABELSCRIPT_EXPORT Babelscript::Impl : public Network
     {
       friend class Babelscript;
@@ -28,4 +29,3 @@ namespace babelscript
     };
   }
 }
-

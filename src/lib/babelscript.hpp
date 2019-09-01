@@ -15,12 +15,12 @@ namespace babelscript
     class BABELSCRIPT_EXPORT Babelscript
     {
     public:
-      Babelscript(std::function<void(std::wstring,bool)> print);
+      explicit Babelscript(std::function<void(std::wstring,bool)> print);
       ~Babelscript();
 
       Node var();
 
-      void set_lang(std::string lang) { _lang = lang; }
+      void set_lang(const std::string& lang) { _lang = lang; }
       void set_print(std::function<void(std::wstring, bool)> print) { _print = print; }
       void set_process_node(std::function<void(Node, std::string)> process_node) { _process_node = process_node; }
       std::string lang() { return _lang; }

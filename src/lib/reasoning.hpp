@@ -21,20 +21,20 @@ namespace babelscript
       std::shared_ptr<Variables> variables{ std::make_shared<Variables>() };
       std::shared_ptr<Variables> unequals{ std::make_shared<Variables>() };
     };
-    
+
     class BABELSCRIPT_EXPORT Reasoning : public Babelscript
     {
     public:
-      Reasoning(std::function<void(std::wstring, bool)>);
+      explicit Reasoning(std::function<void(std::wstring, bool)>);
       void run(bool print_deductions);
-      void apply_rule(const network::Node &rule, size_t thread_index);
+      void apply_rule(const network::Node& rule, network::Node condition, size_t thread_index);
 
     private:
       void evaluate(RulePos rule);
       bool contradicts(const Variables& variables, const Variables& unequals);
       void deduce(const Variables& variables, Node parent);
 
-      bool _done;
+      bool _done{ false };
       Node _current_condition{ 0 };
       std::unordered_set<Node> _deductions;
       std::vector<RulePos> _next;
@@ -46,4 +46,3 @@ namespace babelscript
     };
   }
 }
-

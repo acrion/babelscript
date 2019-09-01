@@ -22,8 +22,11 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++1z -Wall -pedantic")
 endif()
 
+message("CMAKE_SYSTEM_NAME: '${CMAKE_SYSTEM_NAME}'")
+message("CMAKE_BUILD_TYPE:  '${CMAKE_BUILD_TYPE}'")
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     add_definitions(-D_DEBUG)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 endif()
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
