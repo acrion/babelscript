@@ -177,14 +177,14 @@ void Interactive::process(std::wstring line)
 
         std::wstring current;
 
-        if (boost::algorithm::starts_with(*it, And))
+        if (boost::algorithm::starts_with(*it, And)) // we allow the and symbol - usually a comma - to be connected with the following token
         {
           current = it->substr(And.size());
           tokens.push_back(And);
           tokens.push_back(current);
         }
 
-        if (boost::algorithm::ends_with(*it, And))
+        if (boost::algorithm::ends_with(*it, And)) // we allow the and symbol - usually a comma - to be connected with the preceding token
         {
           if (current.empty())
           {
