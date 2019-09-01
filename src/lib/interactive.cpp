@@ -25,9 +25,6 @@ public:
     _n->set_lang("babelscript");
   }
 
-  Impl& operator=(const Impl&) = delete;
-  Impl(const Impl&) = delete;
-
   network::Node process_fact(const std::vector<std::wstring>& tokens, const std::map<std::vector<std::wstring>, Node>& relations, boost::bimap<std::wstring, Node>& variables);
   static bool is_var(std::wstring token);
 
