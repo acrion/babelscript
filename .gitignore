@@ -1,5 +1,4 @@
 $tf/*
-.vscode/*
 *.bi
 *.bsc
 *.cache
@@ -34,14 +33,15 @@ unsuccessfulbuild
 *.vspscc
 *.vssscc
 **/.vs/*
+**/.vscode/*
 **/Bin/*
 **/.nuget/*
 **/Release*
 **/Debug*
 **/packages/*
+**/build/*
+**/build-*
 demo_out.*
-build/*
-build-*
 sample_scripts/*.dot
 sample_scripts/*.png
 log.txt
