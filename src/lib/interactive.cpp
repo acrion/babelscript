@@ -25,7 +25,9 @@ public:
     _n->set_lang("babelscript");
   }
 
-  network::Node process_fact(const std::vector<std::wstring>& tokens, const std::map<std::vector<std::wstring>, Node>& relations, boost::bimap<std::wstring, Node>& variables);
+  network::Node process_fact(const std::vector<std::wstring>& tokens, boost::bimap<std::wstring, Node>& variables);
+  network::Node process_rule(const std::vector<std::wstring>& tokens, std::wstring& line, boost::bimaps::bimap<std::wstring, babelscript::network::Node>& variables, const std::wstring &And, const std::wstring &Causes);
+  void process_token(std::vector<std::wstring>& tokens, bool& is_rule, std::wstring& first_var, std::wstring& assigns_to_var, const std::wstring& token, const std::wstring& And, const std::wstring& Causes);
   static bool is_var(std::wstring token);
 
   std::shared_ptr<Wikidata> _wikidata;
@@ -164,122 +166,26 @@ void Interactive::process(std::wstring line)
     }
     else
     {
-      boost::bimap<std::wstring, network::Node> variables;
-      std::vector<std::wstring> tokens;
       const std::wstring And = _pImpl->_n->get_name(_pImpl->_n->core.And, _pImpl->_n->lang());
       const std::wstring Causes = _pImpl->_n->get_name(_pImpl->_n->core.Causes, _pImpl->_n->lang());
       bool is_rule = false;
       std::wstring assigns_to_var;
       std::wstring first_var = Impl::is_var(*it) ? L"" : *it;
+      std::vector<std::wstring> tokens;
       for (; it != tok.end(); ++it)
       {
-        if (it->empty()) continue;
-
-        std::wstring current;
-
-        if (boost::algorithm::starts_with(*it, And)) // we allow the and symbol - usually a comma - to be connected with the following token
-        {
-          current = it->substr(And.size());
-          tokens.push_back(And);
-          tokens.push_back(current);
-        }
-
-        if (boost::algorithm::ends_with(*it, And)) // we allow the and symbol - usually a comma - to be connected with the preceding token
-        {
-          if (current.empty())
-          {
-            current = it->substr(0, it->size() - And.size());
-            tokens.push_back(current);
-          }
-          tokens.push_back(And);
-        }
-
-        if (current.empty())
-        {
-          current = *it;
-          tokens.push_back(current);
-        }
-
-        if (current == Causes)
-        {
-          if (is_rule)
-            throw std::runtime_error("Line contains two times " + utils::str(_pImpl->_n->get_name(_pImpl->_n->core.Causes))); // this is just a parser restriction to distinguish between condition and deduction, might be useful to support it
-          else
-            is_rule = true;
-        }
-        else if (tokens.size() == 2 && *it == L"=" && !first_var.empty())
-        {
-          assigns_to_var = first_var;
-          tokens.clear();
-        }
+        _pImpl->process_token(tokens, is_rule, first_var, assigns_to_var, *it, And, Causes);
       }
 
-      // tokenize relation names to single words to prepare comparing them with the tokens (see process_fact)
-      std::map<std::vector<std::wstring>, network::Node> relations;
-      for (network::Node relation : _pImpl->_n->get_sources(_pImpl->_n->core.IsA, _pImpl->_n->core.RelationTypeCategory, true))
-      {
-        std::wstring name = _pImpl->_n->get_name(relation, _pImpl->_n->lang());
-        if (!name.empty())
-        {
-          tokenizer<escaped_list_separator<wchar_t>, std::wstring::const_iterator, std::wstring > t(name,
-            escaped_list_separator<wchar_t>(L"\\", L" \t", L"\""));
-
-          std::vector<std::wstring> list;
-          for (decltype(tok)::iterator to = t.begin(); it != t.end(); ++it) list.push_back(*to);
-          relations[list] = relation;
-        }
-      }
-
+      boost::bimap<std::wstring, network::Node> variables;
       network::Node fact = 0;
       if (is_rule)
       {
-        std::vector<decltype(tokens)> conditions, deductions;
-        bool is_deduction = false;
-
-        for (size_t i = 0; i < tokens.size(); ++i)
-        {
-          decltype(tokens) tokens_for_fact;
-          while (i < tokens.size() && tokens[i] != And && tokens[i] != Causes)
-            tokens_for_fact.push_back(tokens[i++]);
-
-          if (tokens_for_fact.size() == 0)
-          {
-            throw std::runtime_error("Found empty condition or deduction in " + utils::str(line));
-          }
-
-          if (is_deduction)
-            deductions.emplace_back(tokens_for_fact);
-          else
-            conditions.emplace_back(tokens_for_fact);
-
-          if (i < tokens.size() && tokens[i] == Causes) is_deduction = true;
-        }
-
-        if (conditions.size() == 0) throw std::runtime_error("Found rule without condition in " + utils::str(line));
-        if (deductions.size() == 0) throw std::runtime_error("Found rule without condition in " + utils::str(line));
-
-        std::unordered_set<network::Node> condition_nodes;
-        for (auto condition : conditions)
-        {
-          condition_nodes.insert(_pImpl->process_fact(condition, relations, variables));
-        }
-
-        network::Node combined_condition = conditions.size() == 1
-          ? *condition_nodes.begin()
-          : _pImpl->_n->condition(_pImpl->_n->core.And, condition_nodes);
-
-        std::unordered_set<network::Node> deduction_list;
-
-        for (auto deduction : deductions)
-        {
-          deduction_list.insert(_pImpl->process_fact(deduction, relations, variables));
-        }
-
-        fact = _pImpl->_n->fact(combined_condition, _pImpl->_n->core.Causes, deduction_list);
+        fact = _pImpl->process_rule(tokens, line, variables, And, Causes);
       }
       else
       {
-        fact = _pImpl->process_fact(tokens, relations, variables);
+        fact = _pImpl->process_fact(tokens, variables);
       }
 
       if (!assigns_to_var.empty())
@@ -318,7 +224,51 @@ void Interactive::process(std::wstring line)
   }
 }
 
-Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, const std::map<std::vector<std::wstring>, Node>& relations, boost::bimap<std::wstring, Node>& variables)
+void Interactive::Impl::process_token(std::vector<std::wstring>& tokens, bool& is_rule, std::wstring& first_var, std::wstring& assigns_to_var, const std::wstring& token, const std::wstring& And, const std::wstring& Causes)
+{
+  if (!token.empty())
+  {
+    std::wstring current;
+
+    if (boost::algorithm::starts_with(token, And)) // we allow the and symbol - usually a comma - to be connected with the following token
+    {
+      current = token.substr(And.size());
+      tokens.push_back(And);
+      tokens.push_back(current);
+    }
+
+    if (boost::algorithm::ends_with(token, And)) // we allow the and symbol - usually a comma - to be connected with the preceding token
+    {
+      if (current.empty())
+      {
+        current = token.substr(0, token.size() - And.size());
+        tokens.push_back(current);
+      }
+      tokens.push_back(And);
+    }
+
+    if (current.empty())
+    {
+      current = token;
+      tokens.push_back(current);
+    }
+
+    if (current == Causes)
+    {
+      if (is_rule)
+        throw std::runtime_error("Line contains two times " + utils::str(_n->get_name(_n->core.Causes))); // this is just a parser restriction to distinguish between condition and deduction, might be useful to support it
+      else
+        is_rule = true;
+    }
+    else if (tokens.size() == 2 && token == L"=" && !first_var.empty())
+    {
+      assigns_to_var = first_var;
+      tokens.clear();
+    }
+  }
+}
+
+Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, boost::bimap<std::wstring, Node>& variables)
 {
   class C
   {
@@ -374,7 +324,6 @@ Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, co
 
   std::vector<C> combined;
   bool done_all=true;
-  network::Node result=0;
 
   for (size_t i = 0; i < tokens.size(); ++i)
   {
@@ -417,27 +366,13 @@ Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, co
       {
         std::vector<std::wstring> test;
         test.insert(test.end(), tokens.begin()+i, tokens.begin()+i+len);
-        auto relation = relations.find(test);
-        if (relation != relations.end())
+        std::wstring connected = utils::concatenate(test, L' ');
+        network::Node node = _n->get_node(connected, _n->lang());
+        if (node)
         {
-          std::wstring connected;
-#ifdef _DEBUG
-          connected = utils::concatenate(test, L' ');
-#endif
-          combined.push_back(C(this,relation->second, connected));
+          combined.push_back(C(this,node,connected));
           done = true;
           break;
-        }
-        else
-        {
-          std::wstring connected = utils::concatenate(test, L' ');
-          network::Node node = _n->get_node(connected, _n->lang());
-          if (node)
-          {
-            combined.push_back(C(this,node,connected));
-            done = true;
-            break;
-          }
         }
       }
 
@@ -474,9 +409,54 @@ Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, co
 
   std::unordered_set<Node> objects;
   for (size_t i = 2; i < combined.size(); ++i) objects.insert(combined[i]);
-  result = _n->fact(combined[0], combined[1], objects);
 
-  return result;
+  return _n->fact(combined[0], combined[1], objects);
+}
+
+Node Interactive::Impl::process_rule(const std::vector<std::wstring>& tokens, std::wstring &line, boost::bimaps::bimap<std::wstring, babelscript::network::Node> &variables, const std::wstring &And, const std::wstring &Causes)
+{
+  std::vector<std::vector<std::wstring>> conditions, deductions;
+  bool is_deduction = false;
+
+  for (size_t i = 0; i < tokens.size(); ++i)
+  {
+    std::vector<std::wstring> tokens_for_fact;
+    while (i < tokens.size() && tokens[i] != And && tokens[i] != Causes)
+      tokens_for_fact.push_back(tokens[i++]);
+
+    if (tokens_for_fact.size() == 0)
+    {
+      throw std::runtime_error("Found empty condition or deduction in " + utils::str(line));
+    }
+
+    if (is_deduction)
+      deductions.emplace_back(tokens_for_fact);
+    else
+      conditions.emplace_back(tokens_for_fact);
+
+    if (i < tokens.size() && tokens[i] == Causes) is_deduction = true;
+  }
+
+  if (conditions.size() == 0) throw std::runtime_error("Found rule without condition in " + utils::str(line));
+  if (deductions.size() == 0) throw std::runtime_error("Found rule without condition in " + utils::str(line));
+
+  std::unordered_set<network::Node> condition_nodes;
+  for (auto condition : conditions)
+  {
+    condition_nodes.insert(process_fact(condition, variables));
+  }
+
+  network::Node combined_condition = conditions.size() == 1
+    ? *condition_nodes.begin()
+    : _n->condition(_n->core.And, condition_nodes);
+
+  std::unordered_set<network::Node> deduction_list;
+  for (auto deduction : deductions)
+  {
+    deduction_list.insert(process_fact(deduction, variables));
+  }
+
+  return _n->fact(combined_condition, _n->core.Causes, deduction_list);
 }
 
 void Interactive::run(bool print_deductions)
