@@ -25,6 +25,7 @@ public:
     _n->set_lang("babelscript");
   }
 
+  void process_command(const std::vector<std::wstring>& cmd);
   network::Node process_fact(const std::vector<std::wstring>& tokens, boost::bimap<std::wstring, Node>& variables);
   network::Node process_rule(const std::vector<std::wstring>& tokens, std::wstring& line, boost::bimaps::bimap<std::wstring, babelscript::network::Node>& variables, const std::wstring &And, const std::wstring &Causes);
   void process_token(std::vector<std::wstring>& tokens, bool& is_rule, std::wstring& first_var, std::wstring& assigns_to_var, const std::wstring& token, const std::wstring& And, const std::wstring& Causes);
@@ -85,84 +86,7 @@ void Interactive::process(std::wstring line)
         ++it;
       }
 
-      if (cmd[0] == L".lang")
-      {
-        if (cmd.size()<2) throw std::runtime_error("Command .lang: Missing language identifier");
-        _pImpl->_n->set_lang(utils::str(cmd[1]));
-      }
-      else if (cmd[0] == L".name")
-      {
-        if (cmd.size() == 1) throw std::runtime_error("Command .name: Missing current name. Usage: .name <current name in " + _pImpl->_n->lang() + "> <language identifier> <name in that language>");
-        if (cmd.size() == 2) throw std::runtime_error("Command .name: Missing language identifier. Usage: .name <current name in " + _pImpl->_n->lang() + "> <language identifier> <name in that language>");
-        if (cmd.size() == 3) throw std::runtime_error("Command .name: Missing " + utils::str(cmd[2]) + " name of " + utils::str(cmd[1]) + ". Usage: .name <current name in " + _pImpl->_n->lang() + "> <language identifier> <name in that language>");
-        _pImpl->_n->set_name(_pImpl->_n->node(cmd[1]), cmd[3], utils::str(cmd[2]));
-      }
-      else if (cmd[0] == L".wikidata")
-      {
-        if (cmd.size()<2) throw std::runtime_error("Command .wikidata: Missing json file name");
-
-        std::wofstream log("wikidata.log");
-        _pImpl->_n->set_print([&](std::wstring str, bool o)
-        {
-          log << str << std::endl;
-
-          if (o)
-          {
-            std::wcout << str << std::endl;
-          }
-        });
-
-        if (cmd.size()==2)
-        {
-          StopWatch watch;
-          watch.start();
-          {
-            _pImpl->_wikidata = std::make_shared<Wikidata>(_pImpl->_n, cmd[1]);
-            _pImpl->_wikidata->import_all();
-          }
-          _pImpl->_n->print(L" Time needed for importing: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s", true);
-        }
-        else if (cmd.size()==3)
-        {
-           int max_depth = std::atoi(utils::str(cmd[2]).c_str());
-           _pImpl->_n->print(L"Link distance=" + std::to_wstring(max_depth), true);
-           _pImpl->_wikidata = std::make_shared<Wikidata>(_pImpl->_n, cmd[1]);
-           _pImpl->_wikidata->generate_index();
-           _pImpl->_wikidata->traverse(max_depth);
-        }
-        else if (cmd.size()==4)
-        {
-          int max_depth = std::atoi(utils::str(cmd[2]).c_str());
-           std::wstring start_entry = cmd[3];
-           _pImpl->_n->print(L"Link distance=" + std::to_wstring(max_depth) + L", start entry='" + start_entry + L"'", true);
-           _pImpl->_wikidata = std::make_shared<Wikidata>(_pImpl->_n, cmd[1]);
-           _pImpl->_wikidata->generate_index();
-           _pImpl->_wikidata->traverse(max_depth, start_entry);
-        }
-        else
-        {
-          throw std::runtime_error("Command .wikidata: You need to specify the json file to import and optionally add the maximum link distance and the start entry to be imported");
-        }
-
-        _pImpl->_n->set_print([](std::wstring str, bool)
-        {
-          std::wcout << str << std::endl;
-        });
-      }
-      else if (cmd[0] == L".dot")
-      {
-        if (cmd.size()==1) throw std::runtime_error("Command .dot: Missing node name to visualize");
-        Node nd = _pImpl->_n->get_node(cmd[1]);
-        if (nd == 0) throw std::runtime_error("Command .dot: Unknown node '" + utils::str(cmd[1]) + "'");
-        if (cmd.size()<3) throw std::runtime_error("Command .dot: Missing maximum depth");
-        int max_depth = std::atoi(utils::str(cmd[2]).c_str());
-        if (max_depth < 2) throw std::runtime_error("Command .dot: Maximum depth must be greater than 1");
-        _pImpl->_n->gen_dot(nd, utils::str(cmd[1]) + ".dot", max_depth);
-      }
-      else
-      {
-        throw std::runtime_error(utils::str(L"Unknown command " + cmd[0]));
-      }
+      _pImpl->process_command(cmd);
     }
     else
     {
@@ -221,6 +145,88 @@ void Interactive::process(std::wstring line)
   catch (std::exception& ex)
   {
     throw std::runtime_error("Error in line \"" + utils::str(line) + "\": " + ex.what());
+  }
+}
+
+void Interactive::Impl::process_command(const std::vector<std::wstring> &cmd)
+{
+  if (cmd[0] == L".lang")
+  {
+    if (cmd.size()<2) throw std::runtime_error("Command .lang: Missing language identifier");
+    _n->set_lang(utils::str(cmd[1]));
+  }
+  else if (cmd[0] == L".name")
+  {
+    if (cmd.size() == 1) throw std::runtime_error("Command .name: Missing current name. Usage: .name <current name in " + _n->lang() + "> <language identifier> <name in that language>");
+    if (cmd.size() == 2) throw std::runtime_error("Command .name: Missing language identifier. Usage: .name <current name in " + _n->lang() + "> <language identifier> <name in that language>");
+    if (cmd.size() == 3) throw std::runtime_error("Command .name: Missing " + utils::str(cmd[2]) + " name of " + utils::str(cmd[1]) + ". Usage: .name <current name in " + _n->lang() + "> <language identifier> <name in that language>");
+    _n->set_name(_n->node(cmd[1]), cmd[3], utils::str(cmd[2]));
+  }
+  else if (cmd[0] == L".dot")
+  {
+    if (cmd.size() == 1) throw std::runtime_error("Command .dot: Missing node name to visualize");
+    Node nd = _n->get_node(cmd[1]);
+    if (nd == 0) throw std::runtime_error("Command .dot: Unknown node '" + utils::str(cmd[1]) + "'");
+    if (cmd.size() < 3) throw std::runtime_error("Command .dot: Missing maximum depth");
+    int max_depth = std::atoi(utils::str(cmd[2]).c_str());
+    if (max_depth < 2) throw std::runtime_error("Command .dot: Maximum depth must be greater than 1");
+    _n->gen_dot(nd, utils::str(cmd[1]) + ".dot", max_depth);
+  }
+  else if (cmd[0] == L".wikidata")
+  {
+    if (cmd.size()<2) throw std::runtime_error("Command .wikidata: Missing json file name");
+
+    std::wofstream log("wikidata.log");
+    _n->set_print([&](std::wstring str, bool o)
+    {
+      log << str << std::endl;
+
+      if (o)
+      {
+        std::wcout << str << std::endl;
+      }
+    });
+
+    if (cmd.size() == 2)
+    {
+      StopWatch watch;
+      watch.start();
+      {
+        _wikidata = std::make_shared<Wikidata>(_n, cmd[1]);
+        _wikidata->import_all();
+      }
+      _n->print(L" Time needed for importing: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s", true);
+    }
+    else if (cmd.size() == 3)
+    {
+      int max_depth = std::atoi(utils::str(cmd[2]).c_str());
+      _n->print(L"Link distance=" + std::to_wstring(max_depth), true);
+      _wikidata = std::make_shared<Wikidata>(_n, cmd[1]);
+      _wikidata->generate_index();
+      _wikidata->traverse(max_depth);
+    }
+    else if (cmd.size() == 4)
+    {
+      int max_depth = std::atoi(utils::str(cmd[2]).c_str());
+      std::wstring start_entry = cmd[3];
+      _n->print(L"Link distance=" + std::to_wstring(max_depth) + L", start entry='" + start_entry + L"'", true);
+      _wikidata = std::make_shared<Wikidata>(_n, cmd[1]);
+      _wikidata->generate_index();
+      _wikidata->traverse(max_depth, start_entry);
+    }
+    else
+    {
+      throw std::runtime_error("Command .wikidata: You need to specify the json file to import and optionally add the maximum link distance and the start entry to be imported");
+    }
+
+    _n->set_print([](std::wstring str, bool)
+    {
+      std::wcout << str << std::endl;
+    });
+  }
+  else
+  {
+    throw std::runtime_error(utils::str(L"Unknown command " + cmd[0]));
   }
 }
 
