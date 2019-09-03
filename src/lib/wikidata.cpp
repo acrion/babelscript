@@ -251,7 +251,14 @@ void Wikidata::generate_index()
       }
     }
 
-    _pImpl->write_index_file();
+    if (read_async.error_text().empty())
+    {
+      _pImpl->write_index_file();
+    }
+    else
+    {
+      throw std::runtime_error(read_async.error_text());
+    }
   }
 }
 
@@ -277,7 +284,6 @@ void Wikidata::index_entry(const std::wstring& line, const std::streamoff stream
 
 void Wikidata::traverse(int /*max_depth*/, std::wstring start_entry)
 {
-
   if (start_entry.empty())
   {
     std::wifstream stream(_pImpl->_file_name);
