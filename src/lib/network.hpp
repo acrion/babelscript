@@ -1,12 +1,13 @@
 #pragma once
 
+#include "utils.hpp"
+
 #include <cstdint>
+#include <limits>
 #include <map>
+#include <mutex>
 #include <unordered_set>
 #include <vector>
-#include <limits.h>
-#include <mutex>
-
 
 namespace babelscript
 {
@@ -249,7 +250,7 @@ namespace babelscript
       std::map<Node, std::unordered_set<Node>> _left;
       std::map<Node, std::unordered_set<Node>> _right;
       std::map<Node, long double> _probabilities;
-      const std::unordered_set<Node> _empty;
+      const std::unordered_set<Node> _empty{std::unordered_set<Node>()};
       Node _last{ Node() };
       Node _last_var{ Node() };
       std::mutex _mtx_prob;

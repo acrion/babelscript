@@ -1,5 +1,7 @@
 #include "utils.hpp"
 
+#include <stdexcept>
+
 namespace babelscript
 {
   namespace network

@@ -85,4 +85,4 @@ A is a B, B is subclass of A           => !
 #.wikidata /Users/stefan/_excludedFromBackup/latest-all.json 2
 #.wikidata Y:/_excludedFromBackup/latest-all.json 2
 #.wikidata /mnt/hgfs/_excludedFromBackup/latest-all.json 2
-.wikidata latest-all.json 2
+#.wikidata latest-all.json 2

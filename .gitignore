@@ -1,3 +1,4 @@
+*.bz2
 $tf/*
 *.bi
 *.bsc
@@ -47,3 +48,5 @@ sample_scripts/*.png
 log.txt
 *.log
 xcode/*
+*.crdownload
+latest-all*.json
