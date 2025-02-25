@@ -36,8 +36,18 @@ namespace zelph
 {
     namespace network
     {
-        using Node      = uint64_t; // todo: make sure this is identical with size_t
+        using Node      = uint64_t;
         using Variables = std::map<Node, Node>;
+
+        static_assert(sizeof(Node) == 8,
+                      "Node must be exactly 64 bits (8 bytes) in size. This implementation uses "
+                      "bit-shift operations and other bit-specific logic that requires exactly "
+                      "64 bits. Please modify the implementation for different bit sizes.");
+
+        static_assert(std::is_same_v<Node, std::size_t>,
+                      "Node and size_t must be identical. On this platform, they differ in size. "
+                      "This implementation requires a 64-bit architecture where size_t is also 64 bits. "
+                      "Compilation has been halted to prevent undefined behavior.");
 
         namespace utils
         {

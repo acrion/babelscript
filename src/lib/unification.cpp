@@ -74,7 +74,7 @@ bool Unification::increment_fact_index()
             _facts_of_current_relation = _n->_pImpl->find_left(*_relation_index);
 
             if (_facts_of_current_relation == _n->_pImpl->right_end())
-                return false; // there is a relation without any facts that use it (might happen if it has been explicitely defined via fact(r, core.IsA, core.RelationType))
+                return false; // there is a relation without any facts that use it (might happen if it has been explicitly defined via fact(r, core.IsA, core.RelationType))
             else
             {
                 _fact_index             = _facts_of_current_relation->second.begin(); // used to iterate over all facts the have relation type *_relation_index

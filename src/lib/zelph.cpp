@@ -372,7 +372,7 @@ Node Zelph::fact(Node source, Node relationType, std::unordered_set<Node> target
                 // We do not support relations that have the same subject and object. Real life example (from invalid wikidata entries):
                 // South Africa (Q258)  country (P17)  South Africa (Q258)
                 // or
-                // chemical substance  has part  chemical substance <= (matter  has part  chemical substance), (chemical substance  is subclass of  matter)
+                // chemical substance  has part  chemical substance ⇐ (matter  has part  chemical substance), (chemical substance  is subclass of  matter)
 
                 std::wstring name_subject_object = get_name(source, _lang, true);
                 std::wstring name_relationType   = get_name(relationType, _lang, true);
