@@ -29,7 +29,7 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 #include <fstream>
 #include <iostream>
 
-using namespace babelscript::console;
+using namespace zelph::console;
 Interactive interactive;
 
 int main(int argc, char** argv)
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
         }
 
         if (argc > 1) std::cout << "Ready." << std::endl;
-        std::cout << "babelscript " << Interactive::get_version() << std::endl;
+        std::cout << "zelph " << Interactive::get_version() << std::endl;
         std::cout << std::endl;
         if (argc == 1) std::cout << "You may specify script files that will be processed prior interactive mode." << std::endl;
         std::wcout << L" -- interactive mode - type " << exit_command << L" to exit --" << std::endl;

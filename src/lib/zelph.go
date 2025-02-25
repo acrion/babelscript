@@ -23,26 +23,26 @@ You should have received a copy of the GNU Affero General Public License
 along with zelph. If not, see <https://www.gnu.org/licenses/>.
 */
 
-package babelscript
+package zelph
 
 // #cgo darwin CXXFLAGS: -std=gnu++1z -fPIC -I/Users/stefan/git/boost
 // #cgo linux CXXFLAGS: -std=gnu++1z -fPIC -I/usr/include
 // #cgo !linux,!darwin CXXFLAGS: -std=gnu++1z -fPIC -IC:/local/boost_1_70_0
 // #cgo darwin LDFLAGS: -lstdc++fs -L/Users/stefan/git/boost/stage/lib -lboost_serialization
-// void babelscript_run();
-// void babelscript_process_c(const char* line, size_t len);
-// static void babelscript_process(_GoString_ line)
+// void zelph_run();
+// void zelph_process_c(const char* line, size_t len);
+// static void zelph_process(_GoString_ line)
 // {
-//   babelscript_process_c(line.p, line.n);
+//   zelph_process_c(line.p, line.n);
 // }
 import "C"
 
 // Parse command and add it to the network
 func Process(cmd string) {
-	C.babelscript_process(cmd)
+	C.zelph_process(cmd)
 }
 
 // Apply rules and add any deductions to the network
 func Run() {
-	C.babelscript_run()
+	C.zelph_run()
 }

@@ -25,7 +25,7 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 #include "answer.hpp"
 
-using namespace babelscript::network;
+using namespace zelph::network;
 
 Answer::Answer(State state, long double probability, Node relation)
     : state(state)

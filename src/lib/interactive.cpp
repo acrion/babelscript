@@ -36,8 +36,8 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 #include <fstream>
 #include <iostream>
 
-using namespace babelscript::console;
-using namespace babelscript::network;
+using namespace zelph::console;
+using namespace zelph::network;
 using boost::escaped_list_separator;
 using boost::tokenizer;
 
@@ -48,12 +48,12 @@ public:
         : _n(new Reasoning([](std::wstring str, bool)
                            { std::cout << utils::str(str) << std::endl; }))
     {
-        _n->set_lang("babelscript");
+        _n->set_lang("zelph");
     }
 
     void          process_command(const std::vector<std::wstring>& cmd);
     network::Node process_fact(const std::vector<std::wstring>& tokens, boost::bimap<std::wstring, Node>& variables);
-    network::Node process_rule(const std::vector<std::wstring>& tokens, std::wstring& line, boost::bimaps::bimap<std::wstring, babelscript::network::Node>& variables, const std::wstring& And, const std::wstring& Causes);
+    network::Node process_rule(const std::vector<std::wstring>& tokens, std::wstring& line, boost::bimaps::bimap<std::wstring, zelph::network::Node>& variables, const std::wstring& And, const std::wstring& Causes);
     void          process_token(std::vector<std::wstring>& tokens, bool& is_rule, std::wstring& first_var, std::wstring& assigns_to_var, const std::wstring& token, const std::wstring& And, const std::wstring& Causes);
     static bool   is_var(std::wstring token);
 
@@ -67,12 +67,12 @@ public:
 Interactive::Interactive()
     : _pImpl(new Impl)
 {
-    _pImpl->_n->set_name(_pImpl->_n->core.RelationTypeCategory, L"->", "babelscript");
-    _pImpl->_n->set_name(_pImpl->_n->core.Causes, L"=>", "babelscript");
-    _pImpl->_n->set_name(_pImpl->_n->core.And, L",", "babelscript");
-    _pImpl->_n->set_name(_pImpl->_n->core.IsA, L"~", "babelscript");
-    _pImpl->_n->set_name(_pImpl->_n->core.Unequal, L"!=", "babelscript");
-    _pImpl->_n->set_name(_pImpl->_n->core.Contradiction, L"!", "babelscript");
+    _pImpl->_n->set_name(_pImpl->_n->core.RelationTypeCategory, L"->", "zelph");
+    _pImpl->_n->set_name(_pImpl->_n->core.Causes, L"=>", "zelph");
+    _pImpl->_n->set_name(_pImpl->_n->core.And, L",", "zelph");
+    _pImpl->_n->set_name(_pImpl->_n->core.IsA, L"~", "zelph");
+    _pImpl->_n->set_name(_pImpl->_n->core.Unequal, L"!=", "zelph");
+    _pImpl->_n->set_name(_pImpl->_n->core.Contradiction, L"!", "zelph");
 }
 
 Interactive::~Interactive()
@@ -82,7 +82,7 @@ Interactive::~Interactive()
 
 std::string Interactive::get_version()
 {
-    return Babelscript::get_version();
+    return Zelph::get_version();
 }
 
 void Interactive::process(std::wstring line)
@@ -447,7 +447,7 @@ Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, bo
     return _n->fact(combined[0], combined[1], objects);
 }
 
-Node Interactive::Impl::process_rule(const std::vector<std::wstring>& tokens, std::wstring& line, boost::bimaps::bimap<std::wstring, babelscript::network::Node>& variables, const std::wstring& And, const std::wstring& Causes)
+Node Interactive::Impl::process_rule(const std::vector<std::wstring>& tokens, std::wstring& line, boost::bimaps::bimap<std::wstring, zelph::network::Node>& variables, const std::wstring& And, const std::wstring& Causes)
 {
     std::vector<std::vector<std::wstring>> conditions, deductions;
     bool                                   is_deduction = false;
@@ -516,7 +516,7 @@ bool Interactive::Impl::is_var(std::wstring token)
 #ifdef PROVIDE_C_INTERFACE
 Interactive interactive;
 
-extern "C" void babelscript_process_c(const char* line, size_t len)
+extern "C" void zelph_process_c(const char* line, size_t len)
 {
     if (len > 0)
     {
@@ -526,7 +526,7 @@ extern "C" void babelscript_process_c(const char* line, size_t len)
     }
 }
 
-extern "C" void babelscript_run()
+extern "C" void zelph_run()
 {
     interactive.run(true);
 }

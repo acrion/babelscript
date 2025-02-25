@@ -25,15 +25,15 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "babelscript.hpp"
+#include "zelph.hpp"
 
-#include <babelscript_export.h>
+#include <zelph_export.h>
 
-namespace babelscript
+namespace zelph
 {
     namespace network
     {
-        class BABELSCRIPT_EXPORT StopWatch
+        class ZELPH_EXPORT StopWatch
         {
         public:
             StopWatch();

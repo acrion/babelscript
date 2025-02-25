@@ -25,10 +25,10 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "babelscript.hpp"
 #include "stopwatch.hpp"
+#include "zelph.hpp"
 
-#include <babelscript_export.h>
+#include <zelph_export.h>
 
 #include <map>
 #include <memory>
@@ -36,7 +36,7 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 #include <unordered_set>
 #include <vector>
 
-namespace babelscript
+namespace zelph
 {
     namespace network
     {
@@ -49,7 +49,7 @@ namespace babelscript
             std::shared_ptr<Variables>         unequals{std::make_shared<Variables>()};
         };
 
-        class BABELSCRIPT_EXPORT Reasoning : public Babelscript
+        class ZELPH_EXPORT Reasoning : public Zelph
         {
         public:
             explicit Reasoning(std::function<void(std::wstring, bool)>);

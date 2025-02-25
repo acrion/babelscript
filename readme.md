@@ -2,9 +2,9 @@
 
 ## Preperation
 
-- build Y:\git\babelscript\build-vs\network.sln
+- build Y:\git\zelph\build-vs\network.sln
 - open windows command line
-- cd Y:\git\babelscript\sample_scripts
+- cd Y:\git\zelph\sample_scripts
 
 ## sample 1
 

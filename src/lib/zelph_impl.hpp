@@ -25,7 +25,7 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "babelscript.hpp"
+#include "zelph.hpp"
 #include "network.hpp"
 
 #include <cstdint>
@@ -33,14 +33,14 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 #include <mutex>
 #include <string>
 
-namespace babelscript
+namespace zelph
 {
     namespace network
     {
         // cppcheck-suppress noConstructor
-        class BABELSCRIPT_EXPORT Babelscript::Impl : public Network
+        class ZELPH_EXPORT Zelph::Impl : public Network
         {
-            friend class Babelscript;
+            friend class Zelph;
             Impl() = default;
 
         private:

@@ -25,26 +25,26 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "babelscript.hpp"
 #include "utils.hpp"
+#include "zelph.hpp"
 
 #include <map>
 #include <memory>
 #include <unordered_set>
 
-namespace babelscript
+namespace zelph
 {
     namespace network
     {
         class Unification
         {
         public:
-            Unification(Babelscript* n, Node condition, Node parent, std::shared_ptr<Variables> variables, std::shared_ptr<Variables> unequals);
+            Unification(Zelph* n, Node condition, Node parent, std::shared_ptr<Variables> variables, std::shared_ptr<Variables> unequals);
             std::shared_ptr<Variables> Next();
             std::shared_ptr<Variables> Unequals();
 
         protected:
-            Babelscript* const                 _n;
+            Zelph* const                       _n;
             Node                               _parent;
             std::shared_ptr<Variables>         _variables;
             std::shared_ptr<Variables>         _unequals;

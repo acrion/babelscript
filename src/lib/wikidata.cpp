@@ -40,15 +40,15 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 #include <mutex>
 #include <thread>
 
-using namespace babelscript::console;
-using namespace babelscript::network;
+using namespace zelph::console;
+using namespace zelph::network;
 using boost::escaped_list_separator;
 using boost::tokenizer;
 
 class Wikidata::Impl
 {
 public:
-    Impl(network::Babelscript* n, fs::path file_name)
+    Impl(network::Zelph* n, fs::path file_name)
         : _n(n)
         , _file_name(file_name)
     {
@@ -58,7 +58,7 @@ public:
     void     write_index_file();
     fs::path index_file_name();
 
-    network::Babelscript*                 _n{nullptr};
+    network::Zelph*                       _n{nullptr};
     fs::path                              _file_name;
     std::map<std::string, std::streamoff> _index;
     std::mutex                            _mtx;
@@ -66,7 +66,7 @@ public:
     std::streamoff                        _last_index{0};
 };
 
-Wikidata::Wikidata(Babelscript* n, fs::path file_name)
+Wikidata::Wikidata(Zelph* n, fs::path file_name)
     : _pImpl(new Impl(n, file_name))
 {
     n->set_process_node([this](Node node, std::string lang)

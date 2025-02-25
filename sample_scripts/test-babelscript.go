@@ -1,13 +1,13 @@
 package main
 
-import "babelscript.org/src/lib"
+import "zelph.org/src/lib"
 //import "encoding/json"
 
 func main() {
 
-  babelscript.Process("peter \"is ancestor of\" paul")
-  babelscript.Process("paul is ancestor of pius")
-  babelscript.Run();
+  zelph.Process("peter \"is ancestor of\" paul")
+  zelph.Process("paul is ancestor of pius")
+  zelph.Run();
 }
 
 

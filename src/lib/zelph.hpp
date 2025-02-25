@@ -27,7 +27,7 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 #include "answer.hpp"
 
-#include <babelscript_export.h>
+#include <zelph_export.h>
 
 #include <cstdint>
 #include <functional>
@@ -35,15 +35,15 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 #include <unordered_set>
 #include <vector>
 
-namespace babelscript
+namespace zelph
 {
     namespace network
     {
-        class BABELSCRIPT_EXPORT Babelscript
+        class ZELPH_EXPORT Zelph
         {
         public:
-            explicit Babelscript(std::function<void(std::wstring, bool)> print);
-            ~Babelscript();
+            explicit Zelph(std::function<void(std::wstring, bool)> print);
+            ~Zelph();
 
             Node var();
 

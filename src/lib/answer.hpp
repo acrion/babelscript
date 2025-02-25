@@ -27,18 +27,18 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 #include "utils.hpp"
 
-#include <babelscript_export.h>
+#include <zelph_export.h>
 
 #include <algorithm>
 #include <map>
 #include <stdexcept>
 #include <string>
 
-namespace babelscript
+namespace zelph
 {
     namespace network
     {
-        struct BABELSCRIPT_EXPORT Answer
+        struct ZELPH_EXPORT Answer
         {
         protected:
             enum class State

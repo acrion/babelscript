@@ -27,7 +27,7 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 #include <chrono>
 
-using namespace babelscript::network;
+using namespace zelph::network;
 namespace chrono = std::chrono;
 
 class StopWatch::CImpl

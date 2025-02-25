@@ -1,12 +1,12 @@
 #pragma once
 
-#include "babelscript.hpp"
 #include "utils.hpp"
+#include "zelph.hpp"
 
 #include <filesystem>
 #include <iosfwd>
 
-namespace babelscript
+namespace zelph
 {
     namespace console
     {
@@ -19,7 +19,7 @@ namespace babelscript
         class Wikidata
         {
         public:
-            Wikidata(network::Babelscript* n, fs::path file_name);
+            Wikidata(network::Zelph* n, fs::path file_name);
             ~Wikidata();
 
             void import_all();

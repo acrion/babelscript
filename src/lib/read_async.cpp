@@ -32,7 +32,7 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 #include <queue>
 #include <thread>
 
-using namespace babelscript::console;
+using namespace zelph::console;
 
 struct Entry
 {

@@ -34,7 +34,7 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 #include <unordered_set>
 #include <vector>
 
-namespace babelscript
+namespace zelph
 {
     namespace network
     {

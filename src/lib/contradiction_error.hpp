@@ -29,7 +29,7 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 #include <exception>
 
-namespace babelscript
+namespace zelph
 {
     namespace network
     {

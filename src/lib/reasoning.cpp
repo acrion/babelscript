@@ -24,17 +24,17 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "reasoning.hpp"
-#include "babelscript_impl.hpp"
 #include "contradiction_error.hpp"
 #include "unification.hpp"
+#include "zelph_impl.hpp"
 
 #include <cassert>
 #include <thread>
 
-using namespace babelscript::network;
+using namespace zelph::network;
 
 Reasoning::Reasoning(std::function<void(std::wstring, bool)> print)
-    : Babelscript(print)
+    : Zelph(print)
 {
 }
 

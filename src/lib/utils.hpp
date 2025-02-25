@@ -25,14 +25,14 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <babelscript_export.h>
+#include <zelph_export.h>
 
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace babelscript
+namespace zelph
 {
     namespace network
     {
@@ -41,9 +41,9 @@ namespace babelscript
 
         namespace utils
         {
-            std::shared_ptr<Variables>      join(const Variables& v1, const Variables& v2);
-            std::string BABELSCRIPT_EXPORT  str(std::wstring str);
-            std::wstring BABELSCRIPT_EXPORT wstr(std::string str);
+            std::shared_ptr<Variables> join(const Variables& v1, const Variables& v2);
+            std::string ZELPH_EXPORT   str(std::wstring str);
+            std::wstring ZELPH_EXPORT  wstr(std::string str);
 
             template <typename T, typename U, typename V>
             static T get(U container, V key, T return_if_not_found)

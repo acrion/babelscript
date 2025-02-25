@@ -23,7 +23,7 @@
 
 cmake_minimum_required (VERSION 3.12.2)
 
-project (babelscript)
+project (zelph)
 include(GenerateExportHeader)
 
 # set compiler flags

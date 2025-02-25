@@ -24,12 +24,12 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "unification.hpp"
-#include "babelscript_impl.hpp"
 #include "utils.hpp"
+#include "zelph_impl.hpp"
 
-using namespace babelscript::network;
+using namespace zelph::network;
 
-Unification::Unification(Babelscript* n, Node condition, Node parent, std::shared_ptr<Variables> variables, std::shared_ptr<Variables> unequals)
+Unification::Unification(Zelph* n, Node condition, Node parent, std::shared_ptr<Variables> variables, std::shared_ptr<Variables> unequals)
     : _n(n)
     , _parent(parent)
     , _variables(variables)

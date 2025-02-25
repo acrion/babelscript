@@ -1,6 +1,6 @@
-.lang babelscript
+.lang zelph
 
-.name ~                babelscript "is a"
+.name ~                zelph "is a"
 .name ~                wikidata P31
 .name "is subclass of" wikidata P279
 .name ->               wikidata Q18616576

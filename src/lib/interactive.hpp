@@ -25,16 +25,16 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <babelscript_export.h>
+#include <zelph_export.h>
 
 #include <map>
 #include <string>
 
-namespace babelscript
+namespace zelph
 {
     namespace console
     {
-        class BABELSCRIPT_EXPORT Interactive
+        class ZELPH_EXPORT Interactive
         {
         public:
             Interactive();

@@ -21,13 +21,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
-add_library (babelscript SHARED
-# babelscript::network
+add_library (zelph SHARED
+# zelph::network
   answer.cpp
   answer.hpp
-  babelscript.cpp
-  babelscript.hpp
-  babelscript_impl.hpp
+  zelph.cpp
+  zelph.hpp
+  zelph_impl.hpp
   contradiction_error.hpp
   network.hpp
   reasoning.cpp
@@ -38,7 +38,7 @@ add_library (babelscript SHARED
   unification.hpp
   utils.cpp
   utils.hpp
-# babelscript::console
+# zelph::console
   interactive.cpp
   interactive.hpp
   read_async.cpp
@@ -61,8 +61,8 @@ add_library (babelscript SHARED
   ../boost/serialization/src/text_oarchive.cpp
 )
 
-generate_export_header(babelscript)
-target_include_directories (babelscript PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} PRIVATE .)
+generate_export_header(zelph)
+target_include_directories (zelph PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} PRIVATE .)
 add_definitions(-DBOOST_ALL_NO_LIB) # disable boost auto linking under MSVC
 include_directories(
   "../boost/algorithm/include"
@@ -98,5 +98,5 @@ include_directories(
 )
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  set_target_properties(babelscript PROPERTIES MACOSX_RPATH ON)
+  set_target_properties(zelph PROPERTIES MACOSX_RPATH ON)
 endif()

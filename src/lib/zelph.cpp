@@ -23,22 +23,22 @@ You should have received a copy of the GNU Affero General Public License
 along with zelph. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "babelscript.hpp"
-#include "babelscript_impl.hpp"
+#include "zelph.hpp"
+#include "zelph_impl.hpp"
 #include <boost/algorithm/string.hpp>
 
 #include <fstream>
 #include <iomanip>
 #include <sstream>
 
-using namespace babelscript::network;
+using namespace zelph::network;
 
-const std::string Babelscript::get_version()
+const std::string Zelph::get_version()
 {
     return "2.0";
 }
 
-Babelscript::Babelscript(std::function<void(std::wstring, bool)> print)
+Zelph::Zelph(std::function<void(std::wstring, bool)> print)
     : _pImpl{new Impl}
     , core({_pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create()})
     , _print(print)
@@ -48,17 +48,17 @@ Babelscript::Babelscript(std::function<void(std::wstring, bool)> print)
     fact(core.Causes, core.IsA, {core.RelationTypeCategory});
 }
 
-Babelscript::~Babelscript()
+Zelph::~Zelph()
 {
     delete _pImpl;
 }
 
-Node Babelscript::var()
+Node Zelph::var()
 {
     return _pImpl->var();
 }
 
-void Babelscript::set_name(Node node, std::wstring name, std::string lang)
+void Zelph::set_name(Node node, std::wstring name, std::string lang)
 {
     if (lang.empty()) lang = _lang;
 #if _DEBUG
@@ -71,7 +71,7 @@ void Babelscript::set_name(Node node, std::wstring name, std::string lang)
     _pImpl->_name_of_node[lang][node] = name;
 }
 
-Node Babelscript::node(std::wstring name, std::string lang)
+Node Zelph::node(std::wstring name, std::string lang)
 {
     if (lang.empty()) lang = _lang;
 
@@ -90,14 +90,14 @@ Node Babelscript::node(std::wstring name, std::string lang)
     return new_node;
 }
 
-bool Babelscript::has_name(Node node, std::string lang)
+bool Zelph::has_name(Node node, std::string lang)
 {
     auto& name_of_node = _pImpl->_name_of_node[lang];
     auto  it           = name_of_node.find(node);
     return it != name_of_node.end();
 }
 
-std::wstring Babelscript::get_name(Node node, std::string lang, bool fallback)
+std::wstring Zelph::get_name(Node node, std::string lang, bool fallback)
 {
     if (lang.empty()) lang = _lang;
 
@@ -116,7 +116,7 @@ std::wstring Babelscript::get_name(Node node, std::string lang, bool fallback)
         }
     }
 
-    if (fallback && lang == "babelscript")
+    if (fallback && lang == "zelph")
     {
         std::lock_guard<std::mutex> lock(_pImpl->_mtx_name_of_node);
         auto&                       name_of_node = _pImpl->_name_of_node["en"];
@@ -141,12 +141,12 @@ std::wstring Babelscript::get_name(Node node, std::string lang, bool fallback)
     return L"";
 }
 
-std::map<Node, std::wstring> Babelscript::get_nodes_in_language(std::string lang)
+std::map<Node, std::wstring> Zelph::get_nodes_in_language(std::string lang)
 {
     return _pImpl->_name_of_node[lang];
 }
 
-std::string Babelscript::get_name_hex(Node node, bool prepend_num)
+std::string Zelph::get_name_hex(Node node, bool prepend_num)
 {
     std::string name = utils::str(get_name(node, _lang, true));
 
@@ -173,7 +173,7 @@ std::string Babelscript::get_name_hex(Node node, bool prepend_num)
     return name;
 }
 
-Node Babelscript::get_node(std::wstring name, std::string lang)
+Node Zelph::get_node(std::wstring name, std::string lang)
 {
     if (lang.empty()) lang = _lang;
     std::lock_guard<std::mutex> lock(_pImpl->_mtx_node_of_name);
@@ -196,7 +196,7 @@ Node Babelscript::get_node(std::wstring name, std::string lang)
     }
 }
 
-std::unordered_set<Node> Babelscript::get_sources(Node relationType, Node target, bool exclude_vars)
+std::unordered_set<Node> Zelph::get_sources(Node relationType, Node target, bool exclude_vars)
 {
     std::unordered_set<Node> sources;
 
@@ -209,7 +209,7 @@ std::unordered_set<Node> Babelscript::get_sources(Node relationType, Node target
     return sources;
 }
 
-std::unordered_set<Node> Babelscript::filter(std::unordered_set<Node> source, Node target)
+std::unordered_set<Node> Zelph::filter(std::unordered_set<Node> source, Node target)
 {
     std::unordered_set<Node> result;
 
@@ -224,7 +224,7 @@ std::unordered_set<Node> Babelscript::filter(std::unordered_set<Node> source, No
     return result;
 }
 
-std::unordered_set<Node> Babelscript::filter(Node fact, Node relationType, Node target)
+std::unordered_set<Node> Zelph::filter(Node fact, Node relationType, Node target)
 {
     std::unordered_set<Node> source     = _pImpl->get_right(fact);
     std::unordered_set<Node> left_nodes = _pImpl->get_left(fact);
@@ -246,7 +246,7 @@ std::unordered_set<Node> Babelscript::filter(Node fact, Node relationType, Node 
     return result;
 }
 
-std::unordered_set<Node> Babelscript::filter(std::unordered_set<Node> source, std::function<bool(Node nd)> f)
+std::unordered_set<Node> Zelph::filter(std::unordered_set<Node> source, std::function<bool(Node nd)> f)
 {
     std::unordered_set<Node> result;
 
@@ -258,7 +258,7 @@ std::unordered_set<Node> Babelscript::filter(std::unordered_set<Node> source, st
     return result;
 }
 
-Answer Babelscript::check_fact(Node source, Node relationType, const std::unordered_set<Node>& targets)
+Answer Zelph::check_fact(Node source, Node relationType, const std::unordered_set<Node>& targets)
 {
     bool known = false;
 
@@ -324,7 +324,7 @@ Answer Babelscript::check_fact(Node source, Node relationType, const std::unorde
     }
 }
 
-Node Babelscript::fact(Node source, Node relationType, std::unordered_set<Node> targets, long double probability)
+Node Zelph::fact(Node source, Node relationType, std::unordered_set<Node> targets, long double probability)
 {
     Answer answer = check_fact(source, relationType, targets);
 
@@ -388,7 +388,7 @@ Node Babelscript::fact(Node source, Node relationType, std::unordered_set<Node> 
     return answer.relation();
 }
 
-Node Babelscript::condition(Node op, std::unordered_set<Node> conditions)
+Node Zelph::condition(Node op, std::unordered_set<Node> conditions)
 {
     Node relation = _pImpl->create_hash(op, conditions);
     _pImpl->create(relation);
@@ -398,7 +398,7 @@ Node Babelscript::condition(Node op, std::unordered_set<Node> conditions)
     return relation;
 }
 
-Node Babelscript::parse_fact(Node rule, std::unordered_set<Node>& objects, Node parent)
+Node Zelph::parse_fact(Node rule, std::unordered_set<Node>& objects, Node parent)
 {
     Node subject = 0; // 0 means failure
     objects.clear();
@@ -427,7 +427,7 @@ Node Babelscript::parse_fact(Node rule, std::unordered_set<Node>& objects, Node 
     return empty_subject ? 0 : subject;
 }
 
-Node Babelscript::parse_relation(Node rule)
+Node Zelph::parse_relation(Node rule)
 {
     Node relation = 0; // 0 means failure
     Node subject  = 0;
@@ -453,7 +453,7 @@ Node Babelscript::parse_relation(Node rule)
     return relation;
 }
 
-void Babelscript::format_fact(std::wstring& result, const std::string& lang, Node fact, const Variables& variables, Node parent, std::shared_ptr<std::unordered_set<Node>> history)
+void Zelph::format_fact(std::wstring& result, const std::string& lang, Node fact, const Variables& variables, Node parent, std::shared_ptr<std::unordered_set<Node>> history)
 {
     utils::IncDec incDec(_pImpl->_format_fact_level);
     if (!history) history = std::make_shared<std::unordered_set<Node>>();
@@ -519,7 +519,7 @@ void Babelscript::format_fact(std::wstring& result, const std::string& lang, Nod
     boost::trim(result);
 }
 
-void Babelscript::add_nodes(Node current, std::unordered_set<Node>& touched, const std::unordered_set<Node>& conditions, const std::unordered_set<Node>& deductions, std::ofstream& dot, int max_depth)
+void Zelph::add_nodes(Node current, std::unordered_set<Node>& touched, const std::unordered_set<Node>& conditions, const std::unordered_set<Node>& deductions, std::ofstream& dot, int max_depth)
 {
     if (--max_depth > 0 && touched.count(current) == 0)
     {
@@ -579,7 +579,7 @@ void Babelscript::add_nodes(Node current, std::unordered_set<Node>& touched, con
     }
 }
 
-void Babelscript::gen_dot(Node start, std::string file_name, int max_depth)
+void Zelph::gen_dot(Node start, std::string file_name, int max_depth)
 {
     std::unordered_set<Node> conditions, deductions;
 
@@ -608,7 +608,7 @@ void Babelscript::gen_dot(Node start, std::string file_name, int max_depth)
     dot << "}" << std::endl;
 }
 
-void Babelscript::print(std::wstring msg, bool o)
+void Zelph::print(std::wstring msg, bool o)
 {
     std::lock_guard<std::mutex> lock(_pImpl->_mtx_print);
     _print(msg, o);
