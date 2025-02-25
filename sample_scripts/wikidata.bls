@@ -24,7 +24,7 @@
 #"has part"       is a transitive relation
 #"is part of"     is inverse of "has part"
 
-The following facts are not part of wikidata:
+# The following facts are not part of wikidata:
 #"has quality" is a transitive relation
 
 # The following (quite obvious) fact is not part of wikidata. Wikidata only includes the fact "is subclass of" "subject item of this property" "is for example"

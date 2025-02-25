@@ -42,6 +42,10 @@ unsuccessfulbuild
 **/packages/*
 **/build/*
 **/build-*
+download
+.idea
+*.index
+**/cmake-*
 demo_out.*
 sample_scripts/*.dot
 sample_scripts/*.png

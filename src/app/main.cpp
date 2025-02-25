@@ -1,47 +1,73 @@
+/*
+Copyright (c) 2025 acrion innovations GmbH
+Authors: Stefan Zipproth, s.zipproth@acrion.ch
+
+This file is part of zelph, see https://github.com/acrion/zelph and https://zelph.org
+
+zelph is offered under a commercial and under the AGPL license.
+For commercial licensing, contact us at https://acrion.ch/sales. For AGPL licensing, see below.
+
+AGPL licensing:
+
+zelph is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+zelph is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with zelph. If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include "interactive.hpp"
-#include <iostream>
-#include <fstream>
+
 #include <codecvt>
+#include <fstream>
+#include <iostream>
 
 using namespace babelscript::console;
 Interactive interactive;
 
 int main(int argc, char** argv)
 {
-  try
-  {
-    std::wstring exit_command=L".exit";
-
-    for (int i=1; i<argc; ++i)
+    try
     {
-      std::cout << "Importing file " << argv[i] << "..." << std::endl;
-      std::wifstream stream(argv[i]);
+        std::wstring exit_command = L".exit";
 
-      if (stream.fail()) throw std::runtime_error(std::string("Could not open file '") + argv[i] + "'");
+        for (int i = 1; i < argc; ++i)
+        {
+            std::cout << "Importing file " << argv[i] << "..." << std::endl;
+            std::wifstream stream(argv[i]);
 
-      for (std::wstring line; std::getline(stream, line); )
-      {
-        interactive.process(line);
-      }
-      interactive.run(true);
-    }
+            if (stream.fail()) throw std::runtime_error(std::string("Could not open file '") + argv[i] + "'");
 
-    if (argc>1) std::cout << "Ready." << std::endl;
-    std::cout << "babelscript " << Interactive::get_version() << std::endl;
-    std::cout << std::endl;
-    if (argc==1) std::cout << "You may specify script files that will be processed prior interactive mode." << std::endl;
-    std::wcout << L" -- interactive mode - type " << exit_command << L" to exit --" << std::endl;
-    std::cout << std::endl;
-    for (std::wstring line; std::getline(std::wcin, line) && line != exit_command; )
-    {
-      if (line.empty())
-        std::wcout << "type " << exit_command << L" to exit --" << std::endl;
-      else
-      {
-        interactive.process(line);
-        interactive.run(true);
-      }
-    }
+            for (std::wstring line; std::getline(stream, line);)
+            {
+                interactive.process(line);
+            }
+            interactive.run(true);
+        }
+
+        if (argc > 1) std::cout << "Ready." << std::endl;
+        std::cout << "babelscript " << Interactive::get_version() << std::endl;
+        std::cout << std::endl;
+        if (argc == 1) std::cout << "You may specify script files that will be processed prior interactive mode." << std::endl;
+        std::wcout << L" -- interactive mode - type " << exit_command << L" to exit --" << std::endl;
+        std::cout << std::endl;
+        for (std::wstring line; std::getline(std::wcin, line) && line != exit_command;)
+        {
+            if (line.empty())
+                std::wcout << "type " << exit_command << L" to exit --" << std::endl;
+            else
+            {
+                interactive.process(line);
+                interactive.run(true);
+            }
+        }
 
 #if 0
     n.set_name(n.core.RelationTypeCategory, L"Relationstyp", "de");
@@ -76,9 +102,9 @@ int main(int argc, char** argv)
     std::cout << "Ready." << std::endl;
     n.debug();
 #endif
-  }
-  catch (std::exception& ex)
-  {
-    std::cout << ex.what() << std::endl;
-  }
+    }
+    catch (std::exception& ex)
+    {
+        std::cout << ex.what() << std::endl;
+    }
 }

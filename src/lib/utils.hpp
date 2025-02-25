@@ -1,55 +1,85 @@
+/*
+Copyright (c) 2025 acrion innovations GmbH
+Authors: Stefan Zipproth, s.zipproth@acrion.ch
+
+This file is part of zelph, see https://github.com/acrion/zelph and https://zelph.org
+
+zelph is offered under a commercial and under the AGPL license.
+For commercial licensing, contact us at https://acrion.ch/sales. For AGPL licensing, see below.
+
+AGPL licensing:
+
+zelph is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+zelph is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with zelph. If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #pragma once
+
 #include <babelscript_export.h>
-#include <string>
+
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace babelscript
 {
-  namespace network
-  {
-    using Node = uint64_t; // todo: make sure this is identical with size_t
-    using Variables = std::map<Node, Node>;
-
-    namespace utils
+    namespace network
     {
-      std::shared_ptr<Variables> join(const Variables& v1, const Variables& v2);
-      std::string BABELSCRIPT_EXPORT str(std::wstring str);
-      std::wstring BABELSCRIPT_EXPORT wstr(std::string str);
+        using Node      = uint64_t; // todo: make sure this is identical with size_t
+        using Variables = std::map<Node, Node>;
 
-      template<typename T, typename U, typename V>
-      static T get(U container, V key, T return_if_not_found)
-      {
-        auto it = container.find(key);
-        return it == container.end() ? return_if_not_found : it->second;
-      }
-
-      template<typename T, typename U>
-      static T get(U container, T key)
-      {
-        auto it = container.find(key);
-        return it == container.end() ? key : it->second;
-      }
-
-      template<typename T>
-      static std::basic_string<T> concatenate(std::vector<std::basic_string<T>> list, T separator)
-      {
-        std::basic_string<T> connected;
-        for (std::basic_string<T> t : list)
+        namespace utils
         {
-          if (!connected.empty()) connected += separator;
-          connected += t;
-        }
-        return connected;
-      }
+            std::shared_ptr<Variables>      join(const Variables& v1, const Variables& v2);
+            std::string BABELSCRIPT_EXPORT  str(std::wstring str);
+            std::wstring BABELSCRIPT_EXPORT wstr(std::string str);
 
-	    struct IncDec
-      {
-        explicit IncDec(int& n) : _n(n) { ++_n; }
-        ~IncDec() { --_n; }
-        int& _n;
-      };
+            template <typename T, typename U, typename V>
+            static T get(U container, V key, T return_if_not_found)
+            {
+                auto it = container.find(key);
+                return it == container.end() ? return_if_not_found : it->second;
+            }
+
+            template <typename T, typename U>
+            static T get(U container, T key)
+            {
+                auto it = container.find(key);
+                return it == container.end() ? key : it->second;
+            }
+
+            template <typename T>
+            static std::basic_string<T> concatenate(std::vector<std::basic_string<T>> list, T separator)
+            {
+                std::basic_string<T> connected;
+                for (std::basic_string<T> t : list)
+                {
+                    if (!connected.empty()) connected += separator;
+                    connected += t;
+                }
+                return connected;
+            }
+
+            struct IncDec
+            {
+                explicit IncDec(int& n)
+                    : _n(n) { ++_n; }
+                ~IncDec() { --_n; }
+                int& _n;
+            };
+
+            std::wstring mark_identifier(const std::wstring& str);
+        }
     }
-  }
 }
