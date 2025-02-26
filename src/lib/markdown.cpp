@@ -42,10 +42,12 @@ namespace zelph
     static std::unordered_map<std::string, std::mutex> file_mutexes;
     static std::mutex                                  mutexes_mutex;
 
-    static std::wstring get_template(const std::string& id)
+    static std::string get_template(const std::string& id)
     {
-        std::wstringstream template_stream;
-        template_stream << L"https://www.wikidata.org/wiki/" << std::wstring(id.begin(), id.end()) << L"\n\n";
+        const std::string link = *id.begin() == 'P' ? "Property:" + id : id;
+
+        std::stringstream template_stream;
+        template_stream << "https://www.wikidata.org/wiki/" << link << "\n\n";
         return template_stream.str();
     }
 
@@ -62,6 +64,19 @@ namespace zelph
         {
             throw std::runtime_error("The given base directory path exists but is not a directory: " + _base_directory.string());
         }
+    }
+
+    std::wstring Markdown::get_wikidata_id(const std::wstring& token, const std::string& lang) const
+    {
+        // Get node for this token
+        uint64_t node = _zelph->get_node(token, "en");
+
+        if (node == 0)
+        {
+            node = _zelph->get_node(token, "zelph"); // fallback
+        }
+
+        return node == 0 ? L"" : _zelph->get_name(node, "wikidata", true);
     }
 
     std::pair<std::list<std::string>, std::wstring> Markdown::convert_to_md(const std::wstring& message)
@@ -86,26 +101,14 @@ namespace zelph
             std::wsmatch match = *i;
             std::wstring token = match[1].str();
 
-            // Get node for this token
-            uint64_t node = _zelph->get_node(token, "en");
-
-            if (node == 0)
+            const std::wstring wikiDataId = get_wikidata_id(token, "en");
+            if (wikiDataId.empty())
             {
-                node = _zelph->get_node(token, "zelph"); // fallback
-            }
-
-            // Check if node is valid
-            if (node != 0)
-            {
-                // Get wikidata ID for this node
-                std::wstring wikidataName = _zelph->get_name(node, "wikidata", true);
-
-                // Convert wstring to string and add to list
-                wikidataIds.push_back(network::utils::str(wikidataName));
+                std::cout << "-------- Could not find wikidata ID of '" << network::utils::str(token) << "'" << std::endl;
             }
             else
             {
-                std::cout << "-------- Could not find wikidata ID of '" << network::utils::str(token) << "'" << std::endl;
+                wikidataIds.push_back(network::utils::str(wikiDataId));
             }
         }
 
@@ -127,7 +130,7 @@ namespace zelph
             std::wstring tokenText = contentMatch[1].str();
 
             // Add the formatted Markdown link
-            result += L"[`" + tokenText + L"`](" + tokenText + L".md)";
+            result += L"[`" + tokenText + L"`](" + get_wikidata_id(tokenText, "en") + L".md)";
 
             // Move the start iterator past the match
             contentStart = contentMatch[0].second;
@@ -159,13 +162,12 @@ namespace zelph
 
             if (!std::filesystem::exists(file_path))
             {
-                std::wstring   template_content = get_template(id);
-                std::wofstream new_file(file_path);
+                std::ofstream new_file(file_path);
                 if (!new_file.is_open())
                 {
                     throw std::runtime_error("Failed to create file: " + file_path.string());
                 }
-                new_file << template_content;
+                new_file << get_template(id);
                 new_file.close();
             }
 
