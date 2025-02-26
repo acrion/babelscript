@@ -1,0 +1,4 @@
+site_name: wikidata
+theme: readthedocs
+nav:
+  - Home: index.md

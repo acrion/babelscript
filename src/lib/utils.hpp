@@ -54,6 +54,7 @@ namespace zelph
             std::shared_ptr<Variables> join(const Variables& v1, const Variables& v2);
             std::string ZELPH_EXPORT   str(std::wstring str);
             std::wstring ZELPH_EXPORT  wstr(std::string str);
+            std::wstring ZELPH_EXPORT   convert_unicode_escapes(const std::wstring& input);
 
             template <typename T, typename U, typename V>
             static T get(U container, V key, T return_if_not_found)

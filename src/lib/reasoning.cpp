@@ -48,7 +48,7 @@ void Reasoning::run(const bool print_deductions, const bool generate_markdown)
 
     if (_generate_markdown)
     {
-        _markdown = std::make_unique<Markdown>(std::filesystem::path("markdown") / "tree", this);
+        _markdown = std::make_unique<Markdown>(std::filesystem::path("mkdocs") / "docs" / "tree", this);
     }
 
     do

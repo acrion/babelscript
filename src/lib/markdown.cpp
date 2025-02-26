@@ -42,13 +42,9 @@ namespace zelph
     static std::unordered_map<std::string, std::mutex> file_mutexes;
     static std::mutex                                  mutexes_mutex;
 
-    static std::string get_template(const std::string& id)
+    static std::string get_wikidata_url(const std::string& id)
     {
-        const std::string link = *id.begin() == 'P' ? "Property:" + id : id;
-
-        std::stringstream template_stream;
-        template_stream << "https://www.wikidata.org/wiki/" << link << "\n\n";
-        return template_stream.str();
+        return "https://www.wikidata.org/wiki/" + ((*id.begin() == 'P') ? "Property:" + id : id);
     }
 
     Markdown::Markdown(const std::filesystem::path& base_directory, network::Zelph* const zelph)
@@ -66,7 +62,29 @@ namespace zelph
         }
     }
 
-    std::wstring Markdown::get_wikidata_id(const std::wstring& token, const std::string& lang) const
+    std::string Markdown::get_template(const std::string& id) const
+    {
+        std::string         name;
+        const network::Node node = _zelph->get_node(network::utils::wstr(id), "wikidata");
+
+        if (node != 0)
+        {
+            const std::wstring w_name = _zelph->get_name(node, "en", true);
+            name                      = network::utils::str(network::utils::convert_unicode_escapes(w_name));
+        }
+
+        if (name.empty())
+        {
+            name = id;
+        }
+
+        std::stringstream template_stream;
+        template_stream << "# [`" << name << "`]("
+                        << get_wikidata_url(id) << ")\n\n";
+        return template_stream.str();
+    }
+
+    std::string Markdown::get_wikidata_id(const std::wstring& token, const std::string& lang) const
     {
         // Get node for this token
         uint64_t node = _zelph->get_node(token, "en");
@@ -76,7 +94,7 @@ namespace zelph
             node = _zelph->get_node(token, "zelph"); // fallback
         }
 
-        return node == 0 ? L"" : _zelph->get_name(node, "wikidata", true);
+        return node == 0 ? "" : network::utils::str(_zelph->get_name(node, "wikidata", true));
     }
 
     std::pair<std::list<std::string>, std::wstring> Markdown::convert_to_md(const std::wstring& message)
@@ -101,14 +119,14 @@ namespace zelph
             std::wsmatch match = *i;
             std::wstring token = match[1].str();
 
-            const std::wstring wikiDataId = get_wikidata_id(token, "en");
+            const std::string wikiDataId = get_wikidata_id(token, "en");
             if (wikiDataId.empty())
             {
                 std::cout << "-------- Could not find wikidata ID of '" << network::utils::str(token) << "'" << std::endl;
             }
             else
             {
-                wikidataIds.push_back(network::utils::str(wikiDataId));
+                wikidataIds.push_back(wikiDataId);
             }
         }
 
@@ -129,15 +147,19 @@ namespace zelph
             // Get the token without «»
             std::wstring tokenText = contentMatch[1].str();
 
+            const std::string wikiDataId = get_wikidata_id(tokenText, "en");
+            const std::string url        = wikiDataId.empty() ? get_wikidata_url(network::utils::str(tokenText)) : wikiDataId + ".md";
+
             // Add the formatted Markdown link
-            result += L"[`" + tokenText + L"`](" + get_wikidata_id(tokenText, "en") + L".md)";
+            result += L"[`" + tokenText + L"`](" + network::utils::wstr(url) + L")";
 
             // Move the start iterator past the match
             contentStart = contentMatch[0].second;
         }
 
         // Add any remaining content after the last match
-        result += std::wstring(contentStart, contentEnd);
+        result = L"- " + result + std::wstring(contentStart, contentEnd);
+        result = network::utils::convert_unicode_escapes(result);
 
         return std::make_pair(wikidataIds, result);
     }
@@ -158,7 +180,7 @@ namespace zelph
 
             std::lock_guard<std::mutex> file_lock(*file_mutex);
 
-            std::wstring formatted_heading = L"# " + heading;
+            std::wstring formatted_heading = L"## " + heading;
 
             if (!std::filesystem::exists(file_path))
             {
@@ -171,7 +193,8 @@ namespace zelph
                 new_file.close();
             }
 
-            std::wifstream file(file_path);
+            std::wifstream file(file_path, std::ios::binary);
+            file.imbue(std::locale(""));
             if (!file.is_open())
             {
                 throw std::runtime_error("Failed to open file for reading: " + file_path.string());
@@ -187,7 +210,8 @@ namespace zelph
 
             std::vector<std::wstring> markdown_lines;
             std::wistringstream       markdown_stream(markdown_code);
-            std::wstring              markdown_line;
+            markdown_stream.imbue(std::locale(""));
+            std::wstring markdown_line;
             while (std::getline(markdown_stream, markdown_line))
             {
                 markdown_lines.push_back(markdown_line);

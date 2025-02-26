@@ -45,7 +45,8 @@ namespace zelph
 
     private:
         std::pair<std::list<std::string>, std::wstring> convert_to_md(const std::wstring& message);
-        std::wstring                                    get_wikidata_id(const std::wstring& token, const std::string& lang) const;
+        std::string                                     get_wikidata_id(const std::wstring& token, const std::string& lang) const;
+        std::string                                     get_template(const std::string& id) const;
 
         std::filesystem::path _base_directory;
         network::Zelph* const _zelph;

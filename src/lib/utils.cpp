@@ -27,6 +27,7 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 #include <codecvt>
 #include <locale>
+#include <regex>
 #include <stdexcept>
 
 namespace zelph
@@ -68,6 +69,44 @@ namespace zelph
             std::wstring wstr(std::string str)
             {
                 return std::wstring(str.begin(), str.end());
+            }
+
+            std::wstring convert_unicode_escapes(const std::wstring& input)
+            {
+                std::wstring result;
+                result.reserve(input.size());
+
+                for (size_t i = 0; i < input.size(); ++i)
+                {
+                    if (i + 5 < input.size() && input[i] == L'\\' && input[i + 1] == L'u')
+                    {
+                        std::wstring hexCode    = input.substr(i + 2, 4);
+                        bool         isValidHex = true;
+
+                        for (wchar_t c : hexCode)
+                        {
+                            if (!std::isxdigit(static_cast<unsigned char>(c)))
+                            {
+                                isValidHex = false;
+                                break;
+                            }
+                        }
+
+                        if (isValidHex)
+                        {
+                            int codePoint = std::stoi(std::string(hexCode.begin(), hexCode.end()), nullptr, 16);
+
+                            result.push_back(static_cast<wchar_t>(codePoint));
+
+                            i += 5;
+                            continue;
+                        }
+                    }
+
+                    result.push_back(input[i]);
+                }
+
+                return result;
             }
 
             std::wstring mark_identifier(const std::wstring& str)

@@ -54,4 +54,5 @@ log.txt
 xcode/*
 *.crdownload
 latest-all*.json
-markdown/tree
+mkdocs/docs/tree
+debug.dot

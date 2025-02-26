@@ -130,6 +130,17 @@ std::wstring Zelph::get_name(Node node, std::string lang, bool fallback)
     if (fallback)
     {
         std::lock_guard<std::mutex> lock(_pImpl->_mtx_name_of_node);
+        auto&                       name_of_node = _pImpl->_name_of_node["zelph"];
+        auto                        it           = name_of_node.find(node);
+        if (it != name_of_node.end())
+        {
+            return it->second;
+        }
+    }
+
+    if (fallback)
+    {
+        std::lock_guard<std::mutex> lock(_pImpl->_mtx_name_of_node);
         for (auto l : _pImpl->_name_of_node)
         {
             auto it2 = l.second.find(node);
