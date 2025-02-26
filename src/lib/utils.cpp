@@ -73,8 +73,10 @@ namespace zelph
             std::wstring mark_identifier(const std::wstring& str)
             {
                 if (str.empty()
-                    || (std::isupper(static_cast<unsigned char>(str.back())))
-                    || str.front() == L'(' || str.back() == L')')
+                    || std::isupper(static_cast<unsigned char>(str.back()))
+                    || str.front() == L'('
+                    || str.back() == L')'
+                    || str.front() == L'!')
                 {
                     return str;
                 }

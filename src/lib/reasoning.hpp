@@ -25,6 +25,7 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "markdown.hpp"
 #include "stopwatch.hpp"
 #include "zelph.hpp"
 
@@ -53,7 +54,7 @@ namespace zelph
         {
         public:
             explicit Reasoning(std::function<void(std::wstring, bool)>);
-            void run(bool print_deductions);
+            void run(const bool print_deductions, const bool generate_markdown);
             void apply_rule(const network::Node& rule, network::Node condition, size_t thread_index);
 
         private:
@@ -61,15 +62,17 @@ namespace zelph
             bool contradicts(const Variables& variables, const Variables& unequals);
             void deduce(const Variables& variables, Node parent);
 
-            bool                     _done{false};
-            Node                     _current_condition{0};
-            std::unordered_set<Node> _deductions;
-            std::vector<RulePos>     _next;
-            size_t                   _running{0};
-            bool                     _print_deductions{true};
-            bool                     _contradiction{false};
-            StopWatch                _stop_watch;
-            size_t                   _skipped{0};
+            bool                      _done{false};
+            Node                      _current_condition{0};
+            std::unordered_set<Node>  _deductions;
+            std::vector<RulePos>      _next;
+            std::unique_ptr<Markdown> _markdown;
+            size_t                    _running{0};
+            bool                      _print_deductions{true};
+            bool                      _generate_markdown{true};
+            bool                      _contradiction{false};
+            StopWatch                 _stop_watch;
+            size_t                    _skipped{0};
         };
     }
 }

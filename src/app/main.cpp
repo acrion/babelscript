@@ -49,7 +49,7 @@ int main(int argc, char** argv)
             {
                 interactive.process(line);
             }
-            interactive.run(true);
+            interactive.run(true, true);
         }
 
         if (argc > 1) std::cout << "Ready." << std::endl;
@@ -65,7 +65,7 @@ int main(int argc, char** argv)
             else
             {
                 interactive.process(line);
-                interactive.run(true);
+                interactive.run(true, true);
             }
         }
 

@@ -40,10 +40,16 @@ Reasoning::Reasoning(std::function<void(std::wstring, bool)> print)
 
 // #define PARALLEL_REASONING
 
-void Reasoning::run(bool print_deductions)
+void Reasoning::run(const bool print_deductions, const bool generate_markdown)
 {
-    _print_deductions = print_deductions;
-    _skipped          = 0;
+    _print_deductions  = print_deductions;
+    _generate_markdown = generate_markdown;
+    _skipped           = 0;
+
+    if (_generate_markdown)
+    {
+        _markdown = std::make_unique<Markdown>(std::filesystem::path("markdown") / "tree", this);
+    }
 
     do
     {
@@ -116,11 +122,21 @@ void Reasoning::apply_rule(const Node& rule, Node condition, size_t thread_index
         catch (const contradiction_error& error)
         {
             _contradiction = true;
-            if (_print_deductions)
+            if (_print_deductions || _generate_markdown)
             {
                 std::wstring output;
                 format_fact(output, _lang, error.get_fact(), error.get_variables(), error.get_parent());
-                print(L"! <= " + output, true);
+                std::wstring message = L"! ⇐ " + output;
+
+                if (_print_deductions)
+                {
+                    print(message, true);
+                }
+
+                if (_generate_markdown)
+                {
+                    _markdown->add(L"Contradictions", message);
+                }
             }
         }
     }
@@ -131,21 +147,21 @@ void Reasoning::apply_rule(const Node& rule, Node condition, size_t thread_index
 // rule& adfa
 void Reasoning::evaluate(RulePos rule)
 {
-    Node condition  = *rule.index;                  // points to the relation: normally 'and', connecting several conditions, or a the relation of a fact (which may consist of variables)
+    Node condition  = *rule.index;                  // points to the relation: normally 'and', connecting several conditions, or the relation of a fact (which may consist of variables)
     auto current_op = _pImpl->get_right(condition); // get the set of Nodes the relation points to, which is its type. Empty if the relation is a variable.
 
     // condition points to
-    //    (1) the rule itself (i. e. the relaton node pointing to core.Causes), and
-    //    (2) the type of relation, which may be any relation type (i. e. any node pointing having a core.IsA relation to core.RelationTypeCategory),
+    //    (1) the rule itself (i.e. the relaton node pointing to core.Causes), and
+    //    (2) the type of relation, which may be any relation type (i.e. any node pointing having a core.IsA relation to core.RelationTypeCategory),
     //        but especially core.And (which makes this rule node a set of conditions)
     if (current_op.count(core.And) == 1)
     {
         auto condition_back_link = filter(
             _pImpl->get_left(condition),
-            [&](Node nd)
+            [&](const Node nd)
             { return nd != rule.node; });
 
-        if (condition_back_link.size() > 0)
+        if (!condition_back_link.empty())
         {
             RulePos next(rule);
             if (++next.index != next.end) // if we are on first recursion level, this will always fail, since the top list of conditions always has length 1
@@ -287,7 +303,7 @@ void Reasoning::deduce(const Variables& variables, Node parent)
                             {
                                 try
                                 {
-                                    Node d = fact(source, rel, targets);
+                                    const Node d = fact(source, rel, targets);
 
                                     bool do_print = _print_deductions;
                                     if (!do_print)
@@ -311,7 +327,7 @@ void Reasoning::deduce(const Variables& variables, Node parent)
                                         }
                                     }
 
-                                    if (do_print)
+                                    if (do_print || _generate_markdown)
                                     {
                                         if (_skipped > 0) print(L" (skipped " + std::to_wstring(_skipped) + L" deductions)", true);
                                         _skipped = 0;
@@ -319,7 +335,18 @@ void Reasoning::deduce(const Variables& variables, Node parent)
                                         std::wstring input, output;
                                         format_fact(input, _lang, _current_condition, variables, parent);
                                         format_fact(output, _lang, d, {}, parent);
-                                        print(output + L" ⇐ " + input, true);
+
+                                        std::wstring message = output + L" ⇐ " + input;
+
+                                        if (do_print)
+                                        {
+                                            print(message, true);
+                                        }
+
+                                        if (_generate_markdown)
+                                        {
+                                            _markdown->add(L"Deductions", message);
+                                        }
                                     }
 
                                     _done = true;

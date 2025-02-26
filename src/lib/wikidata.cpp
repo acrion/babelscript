@@ -128,7 +128,7 @@ void Wikidata::process_entry(const std::wstring& line, const bool log, const siz
         size_t       id1 = line.find(L"\"", id0 + id_tag.size() + 1);
         std::wstring id(line.substr(id0 + id_tag.size(), id1 - id0 - id_tag.size()));
 
-        Node current = _pImpl->_n->node(id, "wikidata");
+        Node current = _pImpl->_n->node(id, "wikidata"); // we treat the id as an additional language named "wikidata"
 
         size_t                    language0;
         static const std::wstring language_tag(L"{\"language\":\"");
@@ -149,7 +149,7 @@ void Wikidata::process_entry(const std::wstring& line, const bool log, const siz
             id1 = line.find(L"\"", id0 + value_tag.size() + 1);
             std::wstring value(line.substr(id0 + value_tag.size(), id1 - id0 - value_tag.size()));
 
-            if (language == "en" || language == "de")
+            if (language == "en") // currently we only include the languages "en" and "wikidata", which is the id (see above comment).
             {
                 _pImpl->_n->set_name(current, value, language);
                 _pImpl->_n->print(id + L": " + utils::wstr(language) + L": " + value, false);

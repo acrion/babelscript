@@ -40,15 +40,15 @@ namespace zelph
             Interactive();
             ~Interactive();
             void               process(std::wstring line);
-            void               run(bool print_deductions);
+            void               run(const bool print_deductions, const bool generate_markdown) const;
             static std::string get_version();
+
+            Interactive(const Interactive&)            = delete;
+            Interactive& operator=(const Interactive&) = delete;
 
         private:
             class Impl;
             Impl* const _pImpl; // must stay at top of members list because of initialization order
-
-            Interactive(const Interactive&)            = delete;
-            Interactive& operator=(const Interactive&) = delete;
         };
     }
 }

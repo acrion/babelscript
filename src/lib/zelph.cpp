@@ -246,11 +246,11 @@ std::unordered_set<Node> Zelph::filter(Node fact, Node relationType, Node target
     return result;
 }
 
-std::unordered_set<Node> Zelph::filter(std::unordered_set<Node> source, std::function<bool(Node nd)> f)
+std::unordered_set<Node> Zelph::filter(std::unordered_set<Node> source, std::function<bool(const Node nd)> f)
 {
     std::unordered_set<Node> result;
 
-    for (Node nd : source)
+    for (const Node nd : source)
     {
         if (f(nd)) result.insert(nd);
     }
@@ -270,7 +270,7 @@ Answer Zelph::check_fact(Node source, Node relationType, const std::unordered_se
         const std::unordered_set<Node>& connectedToRelationType   = _pImpl->get_left(relation);
 
         known = connectedFromRelationType.count(source) == 1
-             && connectedToRelationType.count(source) == 1 // source must be connected with and from <--> relation (i. e. bidirectional, to distinguish it from targets)
+             && connectedToRelationType.count(source) == 1 // source must be connected with and from <--> relation (i.e. bidirectional, to distinguish it from targets)
              && [&]()
         {
             for (Node t : targets)
@@ -398,10 +398,10 @@ Node Zelph::condition(Node op, std::unordered_set<Node> conditions)
     return relation;
 }
 
-Node Zelph::parse_fact(Node rule, std::unordered_set<Node>& objects, Node parent)
+Node Zelph::parse_fact(Node rule, std::unordered_set<Node>& deductions, Node parent)
 {
     Node subject = 0; // 0 means failure
-    objects.clear();
+    deductions.clear();
     bool empty_subject = false;
     for (Node nd : _pImpl->get_left(rule))
     {
@@ -420,14 +420,14 @@ Node Zelph::parse_fact(Node rule, std::unordered_set<Node>& objects, Node parent
         else
         {
             assert(nd != parent); // indicates corrupt database
-            objects.insert(nd);
+            deductions.insert(nd);
         }
     }
 
     return empty_subject ? 0 : subject;
 }
 
-Node Zelph::parse_relation(Node rule)
+Node Zelph::parse_relation(const Node rule)
 {
     Node relation = 0; // 0 means failure
     Node subject  = 0;

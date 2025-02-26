@@ -203,15 +203,15 @@ void Interactive::Impl::process_command(const std::vector<std::wstring>& cmd)
     {
         if (cmd.size() < 2) throw std::runtime_error("Command .wikidata: Missing json file name");
 
-        std::wofstream log("wikidata.log");
+        std::ofstream log("wikidata.log");
         _n->set_print([&](std::wstring str, bool o)
                       {
-      log << str << std::endl;
+          log << utils::str(str) << std::endl;
 
-      if (o)
-      {
-        std::wcout << str << std::endl;
-      } });
+          if (o)
+          {
+            std::wcout << str << std::endl;
+          } });
 
         if (cmd.size() == 2)
         {
@@ -493,9 +493,9 @@ Node Interactive::Impl::process_rule(const std::vector<std::wstring>& tokens, st
     return _n->fact(combined_condition, _n->core.Causes, deduction_list);
 }
 
-void Interactive::run(bool print_deductions)
+void Interactive::run(const bool print_deductions, const bool generate_markdown) const
 {
-    _pImpl->_n->run(print_deductions);
+    _pImpl->_n->run(print_deductions, generate_markdown);
 }
 
 bool Interactive::Impl::is_var(std::wstring token)
@@ -528,6 +528,6 @@ extern "C" void zelph_process_c(const char* line, size_t len)
 
 extern "C" void zelph_run()
 {
-    interactive.run(true);
+    interactive.run(true, false);
 }
 #endif
