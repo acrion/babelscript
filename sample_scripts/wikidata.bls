@@ -27,26 +27,26 @@
 #"is part of"     is inverse of "has part"
 
 # The following facts are not part of wikidata:
-#"has quality" is a transitive relation
+"has quality" is a transitive relation
 
 # The following (quite obvious) fact is not part of wikidata. Wikidata only includes the fact "is subclass of" "subject item of this property" "is for example"
-#"is for example"  is inverse of "is a"
+"is for example"  is inverse of "is a"
 
 R is a transitive relation, X R Y, Y R Z => X R Z
 P is a transitive relation, P is inverse of Q => Q is a transitive relation
 X is a K, K is subclass of U => X is a U
 
-#X has quality E,   E is a K            => X has quality K
+X has quality E,   E is a K            => X has quality K
 X has quality E,   E is subclass of K  => X has quality K
-#K has quality E,   X is a K            => X has quality E
+K has quality E,   X is a K            => X has quality E
 K has quality E,   X is subclass of K  => X has quality E
-#X has part P,      P is a K            => X has part K
+X has part P,      P is a K            => X has part K
 K has part P,      X is subclass of K  => X has part P
 
-#X is opposite of Y, X is a K           => Y is a K
-#X is opposite of Y, X is subclass of K => Y is subclass of K
-#X is inverse of Y,  X is a K           => Y is a K
-#X is inverse of Y,  X is subclass of K => Y is subclass of K
+X is opposite of Y, X is a K           => Y is a K
+X is opposite of Y, X is subclass of K => Y is subclass of K
+X is inverse of Y,  X is a K           => Y is a K
+X is inverse of Y,  X is subclass of K => Y is subclass of K
 X is opposite of Y           => Y is opposite of X
 X is inverse of Y            => Y is inverse of X
 R is opposite of S, X R Y    => Y S X
@@ -67,14 +67,14 @@ X has quality E, E is a X           => !
 X has quality E, E is subclass of X => !
 X has quality E, E has part X       => !
 
-#X has part E, X is a E           => !
-#X has part E, X is subclass of E => !
-#X has part E, E is a X           => !
-#X has part E, E is subclass of X => !
+X has part E, X is a E           => !
+X has part E, X is subclass of E => !
+X has part E, E is a X           => !
+X has part E, E is subclass of X => !
 #(matter  has part  chemical substance), (chemical substance  is subclass of  matter)
 
 # The following contradiction requires that X cannot be at the same time an instance and a subclass:
-# X is a A, X is subclass of B => !
+X is a A, X is subclass of B => !
 # But this doesn't seem to make sense for wikidata, because there are X that are at the same time subclasses and instances, e. g. "black":
 # ! <= (Q23445  is a  Q1075), (Q23445  is subclass of  Q40890790)
 # ! <= (black  is a  color), (black  is subclass of  absorbed or reflected object light)

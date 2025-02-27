@@ -1,12 +1,12 @@
 #!/usr/bin/env raku
 # Zelph Markdown Link Processor
-# Purpose: Process markdown files to convert broken internal links to text references
+# Purpose: Process markdown files to convert broken internal links (due to interrupted md generation) to text references
 # Usage: ./replace_invalid_mkdocs_links.raku
 
 use v6;
 
-my $base-dir = 'mkdocs/docs/tree';
-# Get all markdown files in the current directory
+my $base-dir = 'docs/tree';
+# Get all markdown files in $base-dir
 my $md-files = dir($base-dir, :test(*.ends-with('.md'))).map(*.basename).Set;
 
 say "Found {$md-files.elems} markdown files.";
@@ -88,4 +88,4 @@ say "\nSummary:";
 say "Total files processed: $files-processed";
 say "Files changed: $files-changed";
 say "Total links modified: $links-changed";
-say "Tout est terminé! (Alles ist fertig!)";
+say "Ready.";
