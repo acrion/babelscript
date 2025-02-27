@@ -106,6 +106,7 @@ std::wstring Zelph::get_name(Node node, std::string lang, bool fallback)
         _process_node(node, lang);
     }
 
+    // return `node` in the requested language (if available)
     {
         std::lock_guard<std::mutex> lock(_pImpl->_mtx_name_of_node);
         auto&                       name_of_node = _pImpl->_name_of_node[lang];
@@ -116,7 +117,8 @@ std::wstring Zelph::get_name(Node node, std::string lang, bool fallback)
         }
     }
 
-    if (fallback && lang == "zelph")
+    // try English as fallback language
+    if (fallback)
     {
         std::lock_guard<std::mutex> lock(_pImpl->_mtx_name_of_node);
         auto&                       name_of_node = _pImpl->_name_of_node["en"];
@@ -127,6 +129,7 @@ std::wstring Zelph::get_name(Node node, std::string lang, bool fallback)
         }
     }
 
+    // try zelph as fallback language
     if (fallback)
     {
         std::lock_guard<std::mutex> lock(_pImpl->_mtx_name_of_node);
@@ -138,6 +141,7 @@ std::wstring Zelph::get_name(Node node, std::string lang, bool fallback)
         }
     }
 
+    // try an arbitrary language as fallback
     if (fallback)
     {
         std::lock_guard<std::mutex> lock(_pImpl->_mtx_name_of_node);
@@ -149,7 +153,7 @@ std::wstring Zelph::get_name(Node node, std::string lang, bool fallback)
         }
     }
 
-    return L"";
+    return L""; // return empty string if this node has no name (which can happen for internally generated nodes, see Interactive::Impl::process_fact and Interactive::Impl::process_rule)
 }
 
 std::map<Node, std::wstring> Zelph::get_nodes_in_language(std::string lang)

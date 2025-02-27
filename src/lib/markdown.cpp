@@ -79,7 +79,7 @@ namespace zelph
         }
 
         std::stringstream template_stream;
-        template_stream << "# [`" << name << "`]("
+        template_stream << "# [" << name << "]("
                         << get_wikidata_url(id) << ")\n\n";
         return template_stream.str();
     }
@@ -130,7 +130,7 @@ namespace zelph
             }
         }
 
-        // Replace all «token» with [`token`](token.md) in the markdown content
+        // Replace all «token» with [token](token.md) in the markdown content
         std::wstring::const_iterator contentStart = markdownContent.begin();
         std::wstring::const_iterator contentEnd   = markdownContent.end();
         std::wsmatch                 contentMatch;
@@ -148,10 +148,24 @@ namespace zelph
             std::wstring tokenText = contentMatch[1].str();
 
             const std::string wikiDataId = get_wikidata_id(tokenText, "en");
-            const std::string url        = wikiDataId.empty() ? get_wikidata_url(network::utils::str(tokenText)) : wikiDataId + ".md";
+            std::string       url;
+
+            if (wikiDataId.empty())
+            {
+                url = get_wikidata_url(network::utils::str(tokenText));
+            }
+            else
+            {
+                url = wikiDataId + ".md";
+
+                if (wikiDataId[0] == 'P')
+                {
+                    tokenText = L"*" + tokenText + L"*";
+                }
+            }
 
             // Add the formatted Markdown link
-            result += L"[`" + tokenText + L"`](" + network::utils::wstr(url) + L")";
+            result += L"[" + tokenText + L"](" + network::utils::wstr(url) + L")";
 
             // Move the start iterator past the match
             contentStart = contentMatch[0].second;

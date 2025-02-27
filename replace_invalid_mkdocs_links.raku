@@ -30,7 +30,7 @@ for $md-files.keys.sort -> $filename {
     my $original = $content;
     my $changes = 0;
     
-    my regex md-link { \[\`(.*?)\`\]\((.*?\.md)\) };
+    my regex md-link { \[ (.*?) \]\((.*?\.md)\) };
     
     my @matches = $content.match(/<md-link>/, :g);
     
@@ -50,14 +50,21 @@ for $md-files.keys.sort -> $filename {
                 $id-code = " ({$0}{$1})";
             }
             
-            my $full-match = "[`$link-text`]($file)";
-            
-            # Construct replacement - preserve the original link text and add the ID code
-            my $replacement = "`$link-text$id-code`";
-            
+             my $full-match = "[$link-text]($file)";
+
+            # Check if link text is surrounded by asterisks
+            my $replacement;
+            if $link-text ~~ /^\*(.*)\*$/ {
+                # If surrounded by asterisks, move the trailing asterisk to the end
+                my $inner-text = $0.Str;
+                $replacement = "*$inner-text$id-code*";
+            } else {
+                # Otherwise, construct the replacement normally
+                $replacement = "$link-text$id-code";
+            }
+
             # Replace this specific occurrence only
             my $new-content = $content.subst($full-match, $replacement, :x(1));
-            
             if $new-content ne $content {
                 $content = $new-content;
                 $changes++;
