@@ -112,17 +112,14 @@ namespace zelph
             std::wstring mark_identifier(const std::wstring& str)
             {
                 if (str.empty()
-                    || std::isupper(static_cast<unsigned char>(str.back()))
+                    || (str.length() == 1 && std::iswupper(str[0]))
                     || str.front() == L'('
-                    || str.back() == L')'
-                    || str.front() == L'!')
+                    || str.back() == L')')
                 {
                     return str;
                 }
-                else
-                {
-                    return L"«" + str + L"»";
-                }
+
+                return L"«" + str + L"»";
             }
         }
     }

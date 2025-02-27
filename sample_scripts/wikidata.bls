@@ -1,5 +1,6 @@
 .lang zelph
 
+.name !                wikidata Q363948
 .name ~                zelph "is a"
 .name ~                wikidata P31
 .name "is subclass of" wikidata P279

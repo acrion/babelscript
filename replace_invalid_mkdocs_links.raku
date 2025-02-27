@@ -1,7 +1,7 @@
 #!/usr/bin/env raku
 # Zelph Markdown Link Processor
 # Purpose: Process markdown files to convert broken internal links to text references
-# Usage: raku zelph-markdown-link-processor.raku
+# Usage: ./replace_invalid_mkdocs_links.raku
 
 use v6;
 
@@ -10,12 +10,6 @@ my $base-dir = 'mkdocs/docs/tree';
 my $md-files = dir($base-dir, :test(*.ends-with('.md'))).map(*.basename).Set;
 
 say "Found {$md-files.elems} markdown files.";
-
-say "Sample files: ", $md-files.keys.sort[0..5].join(", "), "...";
-
-# Debugging-Optionen
-my $debug = False;  # Set to True for more output
-my $dry-run = False;  # Set to True to avoid making changes
 
 my $files-processed = 0;
 my $files-changed = 0;
@@ -44,10 +38,12 @@ for $md-files.keys.sort -> $filename {
         my $link-text = ~$match<md-link>[0];
         my $file = ~$match<md-link>[1];
         
+        if $file.contains("://") {
+            next;
+        }
+        
         # Check if the referenced file exists
         if !($file ∈ $md-files) {
-            say "Found invalid link in $filename: [`$link-text`]($file)" if $debug;
-            
             # Extract file ID (P-number or Q-number) if present
             my $id-code = "";
             if $file ~~ /^ (P|Q) (\d+) \.md $/ {
@@ -57,7 +53,7 @@ for $md-files.keys.sort -> $filename {
             my $full-match = "[`$link-text`]($file)";
             
             # Construct replacement - preserve the original link text and add the ID code
-            my $replacement = "$link-text$id-code";
+            my $replacement = "`$link-text$id-code`";
             
             # Replace this specific occurrence only
             my $new-content = $content.subst($full-match, $replacement, :x(1));
@@ -65,9 +61,8 @@ for $md-files.keys.sort -> $filename {
             if $new-content ne $content {
                 $content = $new-content;
                 $changes++;
-                say "  Replaced with: $replacement" if $debug;
             } else {
-                say "  WARNING: Failed to replace: $full-match" if $debug;
+                say "  WARNING: Failed to replace: $full-match"
             }
         }
     }
@@ -77,12 +72,8 @@ for $md-files.keys.sort -> $filename {
         $files-changed++;
         $links-changed += $changes;
         
-        if !$dry-run {
-            say "Modified $changes links in $filename";
-            spurt($base-dir ~ "/" ~ $filename, $content);
-        } else {
-            say "Would modify $changes links in $filename (dry run)";
-        }
+        say "Modified $changes links in $filename";
+        spurt($base-dir ~ "/" ~ $filename, $content);
     }
 }
 

@@ -126,7 +126,7 @@ void Reasoning::apply_rule(const Node& rule, Node condition, size_t thread_index
             {
                 std::wstring output;
                 format_fact(output, _lang, error.get_fact(), error.get_variables(), error.get_parent());
-                std::wstring message = L"! ⇐ " + output;
+                std::wstring message = L"«!» ⇐ " + output;
 
                 if (_print_deductions)
                 {
