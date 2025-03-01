@@ -60,7 +60,7 @@ namespace zelph
                 return result;
             }
 
-            std::string str(std::wstring str)
+            std::string str(const std::wstring& str)
             {
                 std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
                 return converter.to_bytes(str);

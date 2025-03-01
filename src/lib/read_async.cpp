@@ -66,7 +66,7 @@ public:
     std::condition_variable _cv, _cv2;
 };
 
-ReadAsync::ReadAsync(fs::path file_name, size_t sufficient_size)
+ReadAsync::ReadAsync(const fs::path& file_name, size_t sufficient_size)
     : _pImpl(new Impl(file_name, sufficient_size))
 {
 }
@@ -76,13 +76,13 @@ ReadAsync::~ReadAsync()
     delete _pImpl;
 }
 
-std::string ReadAsync::error_text()
+std::string ReadAsync::error_text() const
 {
     std::lock_guard<std::mutex> lck(_pImpl->_mtx);
     return _pImpl->_error_text;
 }
 
-bool ReadAsync::get_line(std::wstring& line, std::streamoff& streampos)
+bool ReadAsync::get_line(std::wstring& line, std::streamoff& streampos) const
 {
     std::unique_lock<std::mutex> lock(_pImpl->_mtx);
     _pImpl->_cv.wait(lock, [&]
@@ -140,11 +140,13 @@ void ReadAsync::Impl::read_thread(fs::path file_name)
         return;
     }
 
+    // ReSharper disable once CppDFAUnreadVariable
     std::streamoff streampos = 0;
 
     for (std::wstring line; std::getline(stream, line);)
     {
         put_line({line, streampos});
+        // ReSharper disable once CppDFAUnusedValue
         streampos = stream.tellg();
     }
 

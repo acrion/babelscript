@@ -33,12 +33,12 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 using namespace zelph::network;
 
-const std::string Zelph::get_version()
+std::string Zelph::get_version()
 {
     return "2.0";
 }
 
-Zelph::Zelph(std::function<void(std::wstring, bool)> print)
+Zelph::Zelph(const std::function<void(const std::wstring&, const bool)>& print)
     : _pImpl{new Impl}
     , core({_pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create(), _pImpl->create()})
     , _print(print)
@@ -53,12 +53,12 @@ Zelph::~Zelph()
     delete _pImpl;
 }
 
-Node Zelph::var()
+Node Zelph::var() const
 {
     return _pImpl->var();
 }
 
-void Zelph::set_name(Node node, std::wstring name, std::string lang)
+void Zelph::set_name(const Node node, const std::wstring& name, std::string lang) const
 {
     if (lang.empty()) lang = _lang;
 #if _DEBUG
@@ -71,7 +71,7 @@ void Zelph::set_name(Node node, std::wstring name, std::string lang)
     _pImpl->_name_of_node[lang][node] = name;
 }
 
-Node Zelph::node(std::wstring name, std::string lang)
+Node Zelph::node(const std::wstring& name, std::string lang) const
 {
     if (lang.empty()) lang = _lang;
 
@@ -90,14 +90,14 @@ Node Zelph::node(std::wstring name, std::string lang)
     return new_node;
 }
 
-bool Zelph::has_name(Node node, std::string lang)
+bool Zelph::has_name(const Node node, const std::string& lang) const
 {
     auto& name_of_node = _pImpl->_name_of_node[lang];
     auto  it           = name_of_node.find(node);
     return it != name_of_node.end();
 }
 
-std::wstring Zelph::get_name(Node node, std::string lang, bool fallback)
+std::wstring Zelph::get_name(const Node node, std::string lang, const bool fallback) const
 {
     if (lang.empty()) lang = _lang;
 
@@ -156,7 +156,7 @@ std::wstring Zelph::get_name(Node node, std::string lang, bool fallback)
     return L""; // return empty string if this node has no name (which can happen for internally generated nodes, see Interactive::Impl::process_fact and Interactive::Impl::process_rule)
 }
 
-std::map<Node, std::wstring> Zelph::get_nodes_in_language(std::string lang)
+std::map<Node, std::wstring> Zelph::get_nodes_in_language(const std::string& lang) const
 {
     return _pImpl->_name_of_node[lang];
 }
@@ -188,7 +188,7 @@ std::string Zelph::get_name_hex(Node node, bool prepend_num)
     return name;
 }
 
-Node Zelph::get_node(std::wstring name, std::string lang)
+Node Zelph::get_node(const std::wstring& name, std::string lang) const
 {
     if (lang.empty()) lang = _lang;
     std::lock_guard<std::mutex> lock(_pImpl->_mtx_node_of_name);
@@ -211,7 +211,7 @@ Node Zelph::get_node(std::wstring name, std::string lang)
     }
 }
 
-std::unordered_set<Node> Zelph::get_sources(Node relationType, Node target, bool exclude_vars)
+std::unordered_set<Node> Zelph::get_sources(const Node relationType, const Node target, const bool exclude_vars) const
 {
     std::unordered_set<Node> sources;
 
@@ -224,7 +224,7 @@ std::unordered_set<Node> Zelph::get_sources(Node relationType, Node target, bool
     return sources;
 }
 
-std::unordered_set<Node> Zelph::filter(std::unordered_set<Node> source, Node target)
+std::unordered_set<Node> Zelph::filter(const std::unordered_set<Node>& source, const Node target) const
 {
     std::unordered_set<Node> result;
 
@@ -239,7 +239,7 @@ std::unordered_set<Node> Zelph::filter(std::unordered_set<Node> source, Node tar
     return result;
 }
 
-std::unordered_set<Node> Zelph::filter(Node fact, Node relationType, Node target)
+std::unordered_set<Node> Zelph::filter(const Node fact, const Node relationType, const Node target) const
 {
     std::unordered_set<Node> source     = _pImpl->get_right(fact);
     std::unordered_set<Node> left_nodes = _pImpl->get_left(fact);
@@ -261,7 +261,7 @@ std::unordered_set<Node> Zelph::filter(Node fact, Node relationType, Node target
     return result;
 }
 
-std::unordered_set<Node> Zelph::filter(std::unordered_set<Node> source, std::function<bool(const Node nd)> f)
+std::unordered_set<Node> Zelph::filter(const std::unordered_set<Node>& source, const std::function<bool(const Node nd)>& f)
 {
     std::unordered_set<Node> result;
 
@@ -273,7 +273,7 @@ std::unordered_set<Node> Zelph::filter(std::unordered_set<Node> source, std::fun
     return result;
 }
 
-Answer Zelph::check_fact(Node source, Node relationType, const std::unordered_set<Node>& targets)
+Answer Zelph::check_fact(const Node source, const Node relationType, const std::unordered_set<Node>& targets)
 {
     bool known = false;
 
@@ -331,7 +331,7 @@ Answer Zelph::check_fact(Node source, Node relationType, const std::unordered_se
 
     if (known)
     {
-        return Answer(_pImpl->probability(relation, relationType), relation);
+        return {_pImpl->probability(relation, relationType), relation};
     }
     else
     {
@@ -339,9 +339,9 @@ Answer Zelph::check_fact(Node source, Node relationType, const std::unordered_se
     }
 }
 
-Node Zelph::fact(Node source, Node relationType, std::unordered_set<Node> targets, long double probability)
+Node Zelph::fact(const Node source, const Node relationType, const std::unordered_set<Node>& targets, const long double probability)
 {
-    Answer answer = check_fact(source, relationType, targets);
+    const Answer answer = check_fact(source, relationType, targets);
 
     if (answer.is_known())
     {
@@ -380,7 +380,7 @@ Node Zelph::fact(Node source, Node relationType, std::unordered_set<Node> target
 
         _pImpl->connect(source, answer.relation());
         _pImpl->connect(answer.relation(), source);
-        for (Node t : targets)
+        for (const Node t : targets)
         {
             if (t == source)
             {
@@ -389,8 +389,8 @@ Node Zelph::fact(Node source, Node relationType, std::unordered_set<Node> target
                 // or
                 // chemical substance  has part  chemical substance ⇐ (matter  has part  chemical substance), (chemical substance  is subclass of  matter)
 
-                std::wstring name_subject_object = get_name(source, _lang, true);
-                std::wstring name_relationType   = get_name(relationType, _lang, true);
+                const std::wstring name_subject_object = get_name(source, _lang, true);
+                const std::wstring name_relationType   = get_name(relationType, _lang, true);
 
                 throw std::runtime_error("fact(): facts with same subject and object are not supported: " + utils::str(name_subject_object) + " " + utils::str(name_relationType) + " " + utils::str(name_subject_object));
             }
@@ -403,7 +403,7 @@ Node Zelph::fact(Node source, Node relationType, std::unordered_set<Node> target
     return answer.relation();
 }
 
-Node Zelph::condition(Node op, std::unordered_set<Node> conditions)
+Node Zelph::condition(Node op, const std::unordered_set<Node>& conditions) const
 {
     Node relation = _pImpl->create_hash(op, conditions);
     _pImpl->create(relation);
@@ -413,7 +413,7 @@ Node Zelph::condition(Node op, std::unordered_set<Node> conditions)
     return relation;
 }
 
-Node Zelph::parse_fact(Node rule, std::unordered_set<Node>& deductions, Node parent)
+Node Zelph::parse_fact(Node rule, std::unordered_set<Node>& deductions, Node parent) const
 {
     Node subject = 0; // 0 means failure
     deductions.clear();
@@ -450,8 +450,8 @@ Node Zelph::parse_relation(const Node rule)
     {
         if (check_fact(nd, core.IsA, {core.RelationTypeCategory}).is_correct())
         {
-            if (_pImpl->get_right(nd).count(rule) == 1) // in case nd is the subject of the rule, it may be also a relation, but not the one of the current rule so exclude it by checking for bidirectional connection
-                subject = nd;                           // the rule has a subject that is a relation. We don't know yet, if it is a rule that has same subject and predicate.
+            if (_pImpl->get_right(nd).count(rule) == 1) // In case nd is the subject of the rule, it may be also a relation, but not the one of the current rule. So exclude it by checking for bidirectional connection.
+                subject = nd;                           // The rule has a subject that is a relation. We don't know yet if it is a rule that has same subject and predicate.
             else if (relation)
                 return 0; // there may be only 1 relation
             else
@@ -623,7 +623,7 @@ void Zelph::gen_dot(Node start, std::string file_name, int max_depth)
     dot << "}" << std::endl;
 }
 
-void Zelph::print(std::wstring msg, bool o)
+void Zelph::print(const std::wstring& msg, const bool o) const
 {
     std::lock_guard<std::mutex> lock(_pImpl->_mtx_print);
     _print(msg, o);

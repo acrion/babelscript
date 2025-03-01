@@ -39,7 +39,7 @@ namespace zelph
         public:
             Interactive();
             ~Interactive();
-            void               process(std::wstring line);
+            void               process(std::wstring line) const;
             void               run(const bool print_deductions, const bool generate_markdown) const;
             static std::string get_version();
 

@@ -37,42 +37,39 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 #include <unordered_set>
 #include <vector>
 
-namespace zelph
+namespace zelph::network
 {
-    namespace network
+    struct RulePos
     {
-        struct RulePos
-        {
-            Node                               node;
-            std::unordered_set<Node>::iterator end;
-            std::unordered_set<Node>::iterator index;
-            std::shared_ptr<Variables>         variables{std::make_shared<Variables>()};
-            std::shared_ptr<Variables>         unequals{std::make_shared<Variables>()};
-        };
+        Node                               node;
+        std::unordered_set<Node>::iterator end;
+        std::unordered_set<Node>::iterator index;
+        std::shared_ptr<Variables>         variables{std::make_shared<Variables>()};
+        std::shared_ptr<Variables>         unequals{std::make_shared<Variables>()};
+    };
 
-        class ZELPH_EXPORT Reasoning : public Zelph
-        {
-        public:
-            explicit Reasoning(std::function<void(std::wstring, bool)>);
-            void run(const bool print_deductions, const bool generate_markdown);
-            void apply_rule(const network::Node& rule, network::Node condition, size_t thread_index);
+    class ZELPH_EXPORT Reasoning : public Zelph
+    {
+    public:
+        explicit Reasoning(const std::function<void(const std::wstring&, const bool)>&);
+        void run(const bool print_deductions, const bool generate_markdown);
+        void apply_rule(const network::Node& rule, network::Node condition, size_t thread_index);
 
-        private:
-            void evaluate(RulePos rule);
-            bool contradicts(const Variables& variables, const Variables& unequals);
-            void deduce(const Variables& variables, Node parent);
+    private:
+        void evaluate(RulePos rule);
+        bool contradicts(const Variables& variables, const Variables& unequals) const;
+        void deduce(const Variables& variables, Node parent);
 
-            bool                      _done{false};
-            Node                      _current_condition{0};
-            std::unordered_set<Node>  _deductions;
-            std::vector<RulePos>      _next;
-            std::unique_ptr<Markdown> _markdown;
-            size_t                    _running{0};
-            bool                      _print_deductions{true};
-            bool                      _generate_markdown{true};
-            bool                      _contradiction{false};
-            StopWatch                 _stop_watch;
-            size_t                    _skipped{0};
-        };
-    }
+        bool                                _done{false};
+        Node                                _current_condition{0};
+        std::unordered_set<Node>            _deductions;
+        std::vector<RulePos>                _next;
+        std::unique_ptr<wikidata::Markdown> _markdown;
+        size_t                              _running{0};
+        bool                                _print_deductions{true};
+        bool                                _generate_markdown{true};
+        bool                                _contradiction{false};
+        StopWatch                           _stop_watch;
+        size_t                              _skipped{0};
+    };
 }

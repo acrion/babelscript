@@ -29,26 +29,23 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 #include <zelph_export.h>
 
-namespace zelph
+namespace zelph::network
 {
-    namespace network
+    class ZELPH_EXPORT StopWatch
     {
-        class ZELPH_EXPORT StopWatch
-        {
-        public:
-            StopWatch();
-            ~StopWatch();
-            StopWatch(const StopWatch& stopWatch);
-            StopWatch& operator=(const StopWatch&);
+    public:
+        StopWatch();
+        ~StopWatch();
+        StopWatch(const StopWatch& stopWatch);
+        StopWatch& operator=(const StopWatch&);
 
-            bool     is_running();
-            void     stop();
-            void     start();
-            uint64_t duration();
+        bool     is_running();
+        void     stop();
+        void     start();
+        uint64_t duration();
 
-        private:
-            class CImpl;
-            CImpl* const _pImpl{nullptr};
-        };
-    }
+    private:
+        class CImpl;
+        CImpl* const _pImpl{nullptr};
+    };
 }

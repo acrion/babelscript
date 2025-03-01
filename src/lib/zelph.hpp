@@ -42,36 +42,36 @@ namespace zelph
         class ZELPH_EXPORT Zelph
         {
         public:
-            explicit Zelph(std::function<void(std::wstring, bool)> print);
+            explicit Zelph(const std::function<void(const std::wstring&, const bool)>& print);
             ~Zelph();
 
-            Node var();
+            Node var() const;
 
             void                         set_lang(const std::string& lang) { _lang = lang; }
             void                         set_print(std::function<void(std::wstring, bool)> print) { _print = print; }
-            void                         set_process_node(std::function<void(Node, std::string)> process_node) { _process_node = process_node; }
+            void                         set_process_node(std::function<void(const Node, const std::string&)> process_node) { _process_node = process_node; }
             std::string                  lang() { return _lang; }
-            Node                         node(std::wstring name, std::string lang = "");
-            bool                         has_name(Node node, std::string lang);
-            std::wstring                 get_name(Node node, std::string lang = "", bool fallback = false);
-            std::map<Node, std::wstring> get_nodes_in_language(std::string lang);
-            Node                         get_node(std::wstring name, std::string lang = "");
+            Node                         node(const std::wstring& name, std::string lang = "") const;
+            bool                         has_name(Node node, const std::string& lang) const;
+            std::wstring                 get_name(const Node node, std::string lang = "", const bool fallback = false) const;
+            std::map<Node, std::wstring> get_nodes_in_language(const std::string& lang) const;
+            Node                         get_node(const std::wstring& name, std::string lang = "") const;
             std::string                  get_name_hex(Node node, bool prepend_num = true);
-            void                         set_name(Node node, std::wstring name, std::string lang = "");
+            void                         set_name(Node node, const std::wstring& name, std::string lang = "") const;
 
-            std::unordered_set<Node>        get_sources(Node relationType, Node target, bool exclude_vars = false);
-            Node                            parse_fact(Node rule, std::unordered_set<Node>& deductions, Node parent = 0);
+            std::unordered_set<Node>        get_sources(Node relationType, Node target, bool exclude_vars = false) const;
+            Node                            parse_fact(Node rule, std::unordered_set<Node>& deductions, Node parent = 0) const;
             Node                            parse_relation(const Node rule);
             void                            format_fact(std::wstring& result, const std::string& lang, Node fact, const Variables& variables = {}, Node parent = 0, std::shared_ptr<std::unordered_set<Node>> history = nullptr);
-            std::unordered_set<Node>        filter(std::unordered_set<Node> source, Node target);
-            std::unordered_set<Node>        filter(Node fact, Node relationType, Node target);
-            static std::unordered_set<Node> filter(std::unordered_set<Node> source, std::function<bool(const Node nd)> f);
+            std::unordered_set<Node>        filter(const std::unordered_set<Node>& source, Node target) const;
+            std::unordered_set<Node>        filter(Node fact, Node relationType, Node target) const;
+            static std::unordered_set<Node> filter(const std::unordered_set<Node>& source, const std::function<bool(const Node nd)>& f);
             Answer                          check_fact(Node source, Node relationType, const std::unordered_set<Node>& targets);
-            Node                            fact(Node source, Node relationType, std::unordered_set<Node> targets, long double probability = 1);
-            Node                            condition(Node op, std::unordered_set<Node> conditions);
+            Node                            fact(Node source, Node relationType, const std::unordered_set<Node>& targets, long double probability = 1);
+            Node                            condition(Node op, const std::unordered_set<Node>& conditions) const;
             void                            gen_dot(Node start, std::string file_name, int max_depth);
-            void                            print(std::wstring, bool);
-            static const std::string        get_version();
+            void                            print(const std::wstring&, const bool) const;
+            static std::string              get_version();
 
             // member list
             class Impl;

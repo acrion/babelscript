@@ -36,19 +36,22 @@ namespace zelph
         class Zelph;
     }
 
-    class Markdown
+    namespace wikidata
     {
-    public:
-        Markdown(const std::filesystem::path& base_directory, network::Zelph* const zelph);
+        class Markdown
+        {
+        public:
+            Markdown(const std::filesystem::path& base_directory, network::Zelph* const zelph);
 
-        void add(const std::wstring& heading, const std::wstring& message);
+            void add(const std::wstring& heading, const std::wstring& message) const;
 
-    private:
-        std::pair<std::list<std::string>, std::wstring> convert_to_md(const std::wstring& message);
-        std::string                                     get_wikidata_id(const std::wstring& token, const std::string& lang) const;
-        std::string                                     get_template(const std::string& id) const;
+        private:
+            std::pair<std::list<std::string>, std::wstring> convert_to_md(const std::wstring& message) const;
+            std::string                                     get_wikidata_id(const std::wstring& token, const std::string& lang) const;
+            std::string                                     get_template(const std::string& id) const;
 
-        std::filesystem::path _base_directory;
-        network::Zelph* const _zelph;
-    };
+            std::filesystem::path _base_directory;
+            network::Zelph* const _zelph;
+        };
+    }
 }

@@ -48,15 +48,15 @@ using boost::tokenizer;
 class Wikidata::Impl
 {
 public:
-    Impl(network::Zelph* n, fs::path file_name)
+    Impl(network::Zelph* n, const fs::path& file_name)
         : _n(n)
         , _file_name(file_name)
     {
     }
 
     bool     read_index_file();
-    void     write_index_file();
-    fs::path index_file_name();
+    void     write_index_file() const;
+    fs::path index_file_name() const;
 
     network::Zelph*                       _n{nullptr};
     fs::path                              _file_name;
@@ -66,10 +66,10 @@ public:
     std::streamoff                        _last_index{0};
 };
 
-Wikidata::Wikidata(Zelph* n, fs::path file_name)
+Wikidata::Wikidata(Zelph* n, const fs::path& file_name)
     : _pImpl(new Impl(n, file_name))
 {
-    n->set_process_node([this](Node node, std::string lang)
+    n->set_process_node([this](const Node node, const std::string& lang)
                         { return this->process_node(node, lang); });
 }
 
@@ -226,7 +226,7 @@ void Wikidata::process_entry(const std::wstring& line, const bool log, const siz
     _running = _running & ~(1ull << thread_index);
 }
 
-void Wikidata::generate_index()
+void Wikidata::generate_index() const
 {
     if (!_pImpl->read_index_file())
     {
@@ -283,9 +283,11 @@ void Wikidata::generate_index()
             throw std::runtime_error(read_async.error_text());
         }
     }
+
+    _pImpl->_n->print(L"Total number of wikidata items in " + _pImpl->_file_name.wstring() + L": " + std::to_wstring(_pImpl->_index.size()), true);
 }
 
-void Wikidata::index_entry(const std::wstring& line, const std::streamoff streampos)
+void Wikidata::index_entry(const std::wstring& line, const std::streamoff streampos) const
 {
     static const std::wstring id_tag(L"\"id\":\"");
     size_t                    id0 = line.find(id_tag);
@@ -308,7 +310,7 @@ void Wikidata::traverse(int /*max_depth*/, std::wstring start_entry)
     if (start_entry.empty())
     {
         std::wifstream stream(_pImpl->_file_name);
-        for (int i = 0; i < 4; ++i)
+        for (int i = 0; i < 4; ++i) // TODO: Do not repeat, but introduce dedicated command to trigger processing (which may be manually executed several times).
             for (const auto& it : _pImpl->_n->get_nodes_in_language("wikidata"))
             {
                 const Node         node  = it.first;
@@ -341,7 +343,7 @@ void Wikidata::traverse(int /*max_depth*/, std::wstring start_entry)
     }
 }
 
-void Wikidata::process_name(std::wstring wikidata_name)
+void Wikidata::process_name(const std::wstring& wikidata_name)
 {
     if (_pImpl->_index.count(utils::str(wikidata_name)) != 0)
     {
@@ -354,7 +356,7 @@ void Wikidata::process_name(std::wstring wikidata_name)
     }
 }
 
-void Wikidata::process_node(Node node, std::string lang)
+void Wikidata::process_node(const Node node, const std::string& lang)
 {
     if (lang != "wikidata")
     {
@@ -387,7 +389,7 @@ bool Wikidata::Impl::read_index_file()
     return true;
 }
 
-void Wikidata::Impl::write_index_file()
+void Wikidata::Impl::write_index_file() const
 {
     _n->print(L"Writing index file " + index_file_name().wstring() + L"...", true);
     std::ofstream                 stream(index_file_name());
@@ -396,7 +398,7 @@ void Wikidata::Impl::write_index_file()
     _n->print(L"Finished writing", true);
 }
 
-fs::path Wikidata::Impl::index_file_name()
+fs::path Wikidata::Impl::index_file_name() const
 {
     return _file_name.parent_path() / (_file_name.stem().string() + ".index");
 }

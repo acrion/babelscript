@@ -37,7 +37,7 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 #include <unordered_map>
 #include <vector>
 
-namespace zelph
+namespace zelph::wikidata
 {
     static std::unordered_map<std::string, std::mutex> file_mutexes;
     static std::mutex                                  mutexes_mutex;
@@ -97,7 +97,7 @@ namespace zelph
         return node == 0 ? "" : network::utils::str(_zelph->get_name(node, "wikidata", true));
     }
 
-    std::pair<std::list<std::string>, std::wstring> Markdown::convert_to_md(const std::wstring& message)
+    std::pair<std::list<std::string>, std::wstring> Markdown::convert_to_md(const std::wstring& message) const
     {
         std::list<std::string> wikidataIds;
         std::wstring           markdownContent = message;
@@ -116,8 +116,8 @@ namespace zelph
         // Process each token
         for (std::wsregex_iterator i = tokensBegin; i != tokensEnd; ++i)
         {
-            std::wsmatch match = *i;
-            std::wstring token = match[1].str();
+            const std::wsmatch& match = *i;
+            std::wstring        token = match[1].str();
 
             const std::string wikiDataId = get_wikidata_id(token, "en");
             if (wikiDataId.empty())
@@ -178,7 +178,7 @@ namespace zelph
         return std::make_pair(wikidataIds, result);
     }
 
-    void Markdown::add(const std::wstring& heading, const std::wstring& message)
+    void Markdown::add(const std::wstring& heading, const std::wstring& message) const
     {
         auto [ids, markdown_code] = convert_to_md(message);
 
@@ -234,7 +234,7 @@ namespace zelph
             bool markdown_exists = false;
             if (!markdown_lines.empty())
             {
-                for (int i = 0; i <= (int)lines.size() - (int)markdown_lines.size(); ++i)
+                for (int i = 0; i <= static_cast<int>(lines.size()) - static_cast<int>(markdown_lines.size()); ++i)
                 {
                     bool match = true;
                     for (size_t j = 0; j < markdown_lines.size(); ++j)

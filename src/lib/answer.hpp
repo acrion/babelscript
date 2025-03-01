@@ -55,11 +55,11 @@ namespace zelph
             Answer(long double probability, Node relation);
             explicit Answer(Node relation);
 
-            Node relation();
-            bool is_known();
-            bool is_correct();
-            bool is_wrong();
-            bool is_impossible();
+            Node relation() const;
+            bool is_known() const;
+            bool is_correct() const;
+            bool is_wrong() const;
+            bool is_impossible() const;
         };
     }
 }

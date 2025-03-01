@@ -39,7 +39,7 @@ namespace zelph
         class Unification
         {
         public:
-            Unification(Zelph* n, Node condition, Node parent, std::shared_ptr<Variables> variables, std::shared_ptr<Variables> unequals);
+            Unification(Zelph* n, Node condition, Node parent, const std::shared_ptr<Variables>& variables, const std::shared_ptr<Variables>& unequals);
             std::shared_ptr<Variables> Next();
             std::shared_ptr<Variables> Unequals();
 

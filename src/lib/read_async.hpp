@@ -42,10 +42,10 @@ namespace zelph
         class ReadAsync
         {
         public:
-            ReadAsync(fs::path file_name, size_t sufficient_size = 2);
+            ReadAsync(const fs::path& file_name, size_t sufficient_size = 2);
             ~ReadAsync();
-            bool        get_line(std::wstring& line, std::streamoff& streampos);
-            std::string error_text();
+            bool        get_line(std::wstring& line, std::streamoff& streampos) const;
+            std::string error_text() const;
 
         private:
             class Impl;

@@ -55,27 +55,27 @@ Answer::Answer(Node relation)
 {
 }
 
-Node Answer::relation()
+Node Answer::relation() const
 {
     return _relation;
 }
 
-bool Answer::is_known()
+bool Answer::is_known() const
 {
     return state == State::Known;
 }
 
-bool Answer::is_correct()
+bool Answer::is_correct() const
 {
     return state == State::Known && _probability > 0.5L;
 }
 
-bool Answer::is_wrong()
+bool Answer::is_wrong() const
 {
     return state == State::Known && _probability < 0.5L;
 }
 
-bool Answer::is_impossible()
+bool Answer::is_impossible() const
 {
     return state == State::Known && _probability == 0;
 }

@@ -29,7 +29,7 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 using namespace zelph::network;
 
-Unification::Unification(Zelph* n, Node condition, Node parent, std::shared_ptr<Variables> variables, std::shared_ptr<Variables> unequals)
+Unification::Unification(Zelph* n, Node condition, Node parent, const std::shared_ptr<Variables>& variables, const std::shared_ptr<Variables>& unequals)
     : _n(n)
     , _parent(parent)
     , _variables(variables)
@@ -77,7 +77,7 @@ bool Unification::increment_fact_index()
                 return false; // there is a relation without any facts that use it (might happen if it has been explicitly defined via fact(r, core.IsA, core.RelationType))
             else
             {
-                _fact_index             = _facts_of_current_relation->second.begin(); // used to iterate over all facts the have relation type *_relation_index
+                _fact_index             = _facts_of_current_relation->second.begin(); // used to iterate over all facts that have relation type *_relation_index
                 _fact_index_initialized = true;
             }
         }

@@ -43,6 +43,7 @@ unsuccessfulbuild
 **/build/*
 **/build-*
 download
+backup
 .idea
 *.index
 **/cmake-*
@@ -55,4 +56,5 @@ xcode/*
 *.crdownload
 latest-all*.json
 mkdocs/docs/tree
-debug.dot
+/*.svg
+/*.dot

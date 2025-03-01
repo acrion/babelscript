@@ -158,17 +158,17 @@ namespace zelph
                 return _last_var;
             }
 
-            bool is_var(Node a)
+            static bool is_var(Node a)
             {
                 return a > mask_node;
             }
 
-            bool is_hash(Node a)
+            static bool is_hash(Node a)
             {
                 return (a & mark_hash) == mark_hash;
             }
 
-            void create(Node a)
+            void create(const Node a)
             {
                 std::lock_guard<std::mutex> lock(_mtx_left);
                 std::lock_guard<std::mutex> lock2(_mtx_right);
@@ -187,17 +187,17 @@ namespace zelph
                 _right[a] = std::unordered_set<Node>();
             }
 
-            Node create_hash(Node a, Node b)
+            static Node create_hash(const Node a, const Node b)
             {
                 return mask_node & (mark_hash ^ mod(a) ^ rol(mod(b), shift_inc));
             }
 
-            Node create_hash(Node a, Node b, Node c)
+            static Node create_hash(const Node a, const Node b, const Node c)
             {
                 return mask_node & (mark_hash ^ mod(a) ^ rol(mod(b), shift_inc) ^ rol(mod(c), 2 * shift_inc));
             }
 
-            Node create_hash(const std::unordered_set<Node>& vec)
+            static Node create_hash(const std::unordered_set<Node>& vec)
             {
                 Node     result = mark_hash ^ rol(vec.size(), 56);
                 uint64_t c      = 48;
@@ -209,14 +209,14 @@ namespace zelph
                 return result & mask_node; // exclude values that denote variables
             }
 
-            Node create_hash(const Node head, const std::unordered_set<Node>& vec)
+            static Node create_hash(const Node head, const std::unordered_set<Node>& vec)
             {
                 return (create_hash(vec)
                         ^ rol(mod(head), 32))
                      & mask_node;
             }
 
-            Node create_hash(const Node head1, const Node head2, const std::unordered_set<Node>& vec)
+            static Node create_hash(const Node head1, const Node head2, const std::unordered_set<Node>& vec)
             {
                 //        Node c1  = create_hash(vec);
                 //        Node c2b = mod(head1);
@@ -232,34 +232,34 @@ namespace zelph
                      & mask_node;
             }
 
-            typename std::map<Node, std::unordered_set<Node>>::iterator find_right(Node a)
+            std::map<Node, std::unordered_set<Node>>::iterator find_right(const Node a)
             {
                 std::lock_guard<std::mutex> lock(_mtx_left);
                 return _left.find(a);
             }
-            typename std::map<Node, std::unordered_set<Node>>::iterator find_left(Node b)
+            std::map<Node, std::unordered_set<Node>>::iterator find_left(const Node b)
             {
                 std::lock_guard<std::mutex> lock(_mtx_right);
                 return _right.find(b);
             }
-            typename std::map<Node, std::unordered_set<Node>>::iterator left_end()
+            std::map<Node, std::unordered_set<Node>>::iterator left_end()
             {
                 std::lock_guard<std::mutex> lock(_mtx_left);
                 return _left.end();
             }
-            typename std::map<Node, std::unordered_set<Node>>::iterator right_end()
+            std::map<Node, std::unordered_set<Node>>::iterator right_end()
             {
                 std::lock_guard<std::mutex> lock(_mtx_right);
                 return _right.end();
             }
 
-            const std::unordered_set<Node>& get_left(Node b)
+            const std::unordered_set<Node>& get_left(const Node b)
             {
                 std::lock_guard<std::mutex> lock(_mtx_left);
                 auto                        it = _right.find(b);
                 return it == _right.end() ? _empty : it->second;
             }
-            const std::unordered_set<Node>& get_right(Node b)
+            const std::unordered_set<Node>& get_right(const Node b)
             {
                 std::lock_guard<std::mutex> lock(_mtx_right);
                 auto                        it = _left.find(b);
@@ -294,18 +294,18 @@ namespace zelph
     #pragma warning(push)
     #pragma warning(disable : 4146)
 #endif
-            static inline uint64_t rol(uint64_t n, uint64_t c = 1)
+            static inline uint64_t rol(const uint64_t n, uint64_t c = 1)
             {
-                const uint64_t mask = 8 * sizeof(n) - 1;
+                constexpr uint64_t mask = 8 * sizeof(n) - 1;
                 c &= mask;
                 // uint64_t wrapped = n >> ((-c)&mask);
                 uint64_t wrapped = (n & mask_highest_2_bits) >> (((-c) & mask) - 2); // we want to wrap already at bit 61 (not 63), since mask_node clears bit 63 (which marks vars) and we use bit 62 to denote hashes (mark_hash)
                 return ((n << c) | wrapped) & mask_highest_2_bits;
             }
 
-            static inline uint64_t ror(uint64_t n, uint64_t c = 1)
+            static inline uint64_t ror(const uint64_t n, uint64_t c = 1)
             {
-                const uint64_t mask = 8 * sizeof(n) - 1;
+                constexpr uint64_t mask = 8 * sizeof(n) - 1;
                 c &= mask;
                 return (n >> c) | (n << ((-c) & mask));
             }

@@ -52,7 +52,7 @@ namespace zelph
         namespace utils
         {
             std::shared_ptr<Variables> join(const Variables& v1, const Variables& v2);
-            std::string ZELPH_EXPORT   str(std::wstring str);
+            std::string ZELPH_EXPORT   str(const std::wstring& str);
             std::wstring ZELPH_EXPORT  wstr(std::string str);
             std::wstring ZELPH_EXPORT   convert_unicode_escapes(const std::wstring& input);
 

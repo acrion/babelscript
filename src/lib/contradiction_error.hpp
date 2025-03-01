@@ -29,41 +29,38 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 #include <exception>
 
-namespace zelph
+namespace zelph::network
 {
-    namespace network
+    class contradiction_error final : public std::exception
     {
-        class contradiction_error : public std::exception
+    public:
+        // cppcheck-suppress passedByValue
+        contradiction_error(const Node fact, const Variables& variables, const Node parent)
+            : std::exception()
+            , _fact(fact)
+            , _variables(variables)
+            , _parent(parent)
         {
-        public:
-            // cppcheck-suppress passedByValue
-            contradiction_error(Node fact, const Variables variables, Node parent)
-                : std::exception()
-                , _fact(fact)
-                , _variables(variables)
-                , _parent(parent)
-            {
-            }
+        }
 
-            Node get_fact() const
-            {
-                return _fact;
-            }
+        Node get_fact() const
+        {
+            return _fact;
+        }
 
-            const Variables& get_variables() const
-            {
-                return _variables;
-            }
+        const Variables& get_variables() const
+        {
+            return _variables;
+        }
 
-            Node get_parent() const
-            {
-                return _parent;
-            }
+        Node get_parent() const
+        {
+            return _parent;
+        }
 
-        private:
-            Node      _fact;
-            Variables _variables;
-            Node      _parent;
-        };
-    }
+    private:
+        Node      _fact;
+        Variables _variables;
+        Node      _parent;
+    };
 }

@@ -33,7 +33,7 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
 using namespace zelph::network;
 
-Reasoning::Reasoning(std::function<void(std::wstring, bool)> print)
+Reasoning::Reasoning(const std::function<void(const std::wstring&, const bool)>& print)
     : Zelph(print)
 {
 }
@@ -48,7 +48,7 @@ void Reasoning::run(const bool print_deductions, const bool generate_markdown)
 
     if (_generate_markdown)
     {
-        _markdown = std::make_unique<Markdown>(std::filesystem::path("mkdocs") / "docs" / "tree", this);
+        _markdown = std::make_unique<wikidata::Markdown>(std::filesystem::path("mkdocs") / "docs" / "tree", this);
     }
 
     do
@@ -144,7 +144,6 @@ void Reasoning::apply_rule(const Node& rule, Node condition, size_t thread_index
     _running = _running & ~(1ull << thread_index);
 }
 
-// rule& adfa
 void Reasoning::evaluate(RulePos rule)
 {
     Node condition  = *rule.index;                  // points to the relation: normally 'and', connecting several conditions, or the relation of a fact (which may consist of variables)
@@ -187,15 +186,15 @@ void Reasoning::evaluate(RulePos rule)
             {
                 evaluate(next);
             }
-            else if (_next.size() > 0)
+            else if (!_next.empty())
             {
                 next = RulePos(_next.back());
                 _next.pop_back();
                 evaluate(next);
             }
-            else if (!contradicts(*joined, *joined_unequals) && joined->size() > 0)
+            else if (!contradicts(*joined, *joined_unequals) && !joined->empty())
             {
-                if (_deductions.size() > 0)
+                if (!_deductions.empty())
                 {
                     deduce(*joined, rule.node);
                 }
@@ -210,7 +209,7 @@ void Reasoning::evaluate(RulePos rule)
     }
 }
 
-bool Reasoning::contradicts(const Variables& variables, const Variables& unequals)
+bool Reasoning::contradicts(const Variables& variables, const Variables& unequals) const
 {
     for (auto& var : unequals)
     {
@@ -241,9 +240,9 @@ bool Reasoning::contradicts(const Variables& variables, const Variables& unequal
     return false; // no contradiction
 }
 
-void Reasoning::deduce(const Variables& variables, Node parent)
+void Reasoning::deduce(const Variables& variables, const Node parent)
 {
-    for (Node deduction : _deductions)
+    for (const Node deduction : _deductions)
     {
         if (deduction == core.Contradiction)
         {
@@ -263,11 +262,11 @@ void Reasoning::deduce(const Variables& variables, Node parent)
                 std::unordered_set<Node> var_targets;
                 Node                     var_source = parse_fact(deduction, var_targets, parent);
 
-                if (var_targets.size() > 0)
+                if (!var_targets.empty())
                 {
-                    Node source = _pImpl->is_var(var_source)
-                                    ? utils::get(variables, var_source, 0ull)
-                                    : var_source;
+                    const Node source = _pImpl->is_var(var_source)
+                                          ? utils::get(variables, var_source, 0ull)
+                                          : var_source;
 
                     if (source)
                     {

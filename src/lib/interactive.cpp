@@ -36,35 +36,34 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 #include <fstream>
 #include <iostream>
 
-using namespace zelph::console;
-using namespace zelph::network;
+using namespace zelph;
 using boost::escaped_list_separator;
 using boost::tokenizer;
 
-class Interactive::Impl
+class console::Interactive::Impl
 {
 public:
     Impl()
-        : _n(new Reasoning([](std::wstring str, bool)
-                           { std::cout << utils::str(str) << std::endl; }))
+        : _n(new network::Reasoning([](const std::wstring& str, const bool)
+                                    { std::cout << network::utils::str(str) << std::endl; }))
     {
         _n->set_lang("zelph");
     }
 
     void          process_command(const std::vector<std::wstring>& cmd);
-    network::Node process_fact(const std::vector<std::wstring>& tokens, boost::bimap<std::wstring, Node>& variables);
-    network::Node process_rule(const std::vector<std::wstring>& tokens, std::wstring& line, boost::bimaps::bimap<std::wstring, zelph::network::Node>& variables, const std::wstring& And, const std::wstring& Causes);
-    void          process_token(std::vector<std::wstring>& tokens, bool& is_rule, std::wstring& first_var, std::wstring& assigns_to_var, const std::wstring& token, const std::wstring& And, const std::wstring& Causes);
+    network::Node process_fact(const std::vector<std::wstring>& tokens, boost::bimap<std::wstring, network::Node>& variables);
+    network::Node process_rule(const std::vector<std::wstring>& tokens, const std::wstring& line, boost::bimaps::bimap<std::wstring, zelph::network::Node>& variables, const std::wstring& And, const std::wstring& Causes);
+    void          process_token(std::vector<std::wstring>& tokens, bool& is_rule, const std::wstring& first_var, std::wstring& assigns_to_var, const std::wstring& token, const std::wstring& And, const std::wstring& Causes) const;
     static bool   is_var(std::wstring token);
 
     std::shared_ptr<Wikidata> _wikidata;
-    Reasoning* const          _n;
+    network::Reasoning* const _n;
 
     Impl(const Impl&)            = delete;
     Impl& operator=(const Impl&) = delete;
 };
 
-Interactive::Interactive()
+console::Interactive::Interactive()
     : _pImpl(new Impl)
 {
     _pImpl->_n->set_name(_pImpl->_n->core.RelationTypeCategory, L"->", "zelph");
@@ -75,17 +74,17 @@ Interactive::Interactive()
     _pImpl->_n->set_name(_pImpl->_n->core.Contradiction, L"!", "zelph");
 }
 
-Interactive::~Interactive()
+console::Interactive::~Interactive()
 {
     delete _pImpl;
 }
 
-std::string Interactive::get_version()
+std::string console::Interactive::get_version()
 {
-    return Zelph::get_version();
+    return network::Zelph::get_version();
 }
 
-void Interactive::process(std::wstring line)
+void console::Interactive::process(std::wstring line) const
 {
     try
     {
@@ -153,9 +152,9 @@ void Interactive::process(std::wstring line)
             {
                 bool contains_variable = false;
 
-                for (size_t i = 0; i < tokens.size(); ++i)
+                for (const auto& token : tokens)
                 {
-                    if (Impl::is_var(tokens[i]))
+                    if (Impl::is_var(token))
                     {
                         contains_variable = true;
                         break;
@@ -171,42 +170,42 @@ void Interactive::process(std::wstring line)
     }
     catch (std::exception& ex)
     {
-        throw std::runtime_error("Error in line \"" + utils::str(line) + "\": " + ex.what());
+        throw std::runtime_error("Error in line \"" + network::utils::str(line) + "\": " + ex.what());
     }
 }
 
-void Interactive::Impl::process_command(const std::vector<std::wstring>& cmd)
+void console::Interactive::Impl::process_command(const std::vector<std::wstring>& cmd)
 {
     if (cmd[0] == L".lang")
     {
         if (cmd.size() < 2) throw std::runtime_error("Command .lang: Missing language identifier");
-        _n->set_lang(utils::str(cmd[1]));
+        _n->set_lang(network::utils::str(cmd[1]));
     }
     else if (cmd[0] == L".name")
     {
         if (cmd.size() == 1) throw std::runtime_error("Command .name: Missing current name. Usage: .name <current name in " + _n->lang() + "> <language identifier> <name in that language>");
         if (cmd.size() == 2) throw std::runtime_error("Command .name: Missing language identifier. Usage: .name <current name in " + _n->lang() + "> <language identifier> <name in that language>");
-        if (cmd.size() == 3) throw std::runtime_error("Command .name: Missing " + utils::str(cmd[2]) + " name of " + utils::str(cmd[1]) + ". Usage: .name <current name in " + _n->lang() + "> <language identifier> <name in that language>");
-        _n->set_name(_n->node(cmd[1]), cmd[3], utils::str(cmd[2]));
+        if (cmd.size() == 3) throw std::runtime_error("Command .name: Missing " + network::utils::str(cmd[2]) + " name of " + network::utils::str(cmd[1]) + ". Usage: .name <current name in " + _n->lang() + "> <language identifier> <name in that language>");
+        _n->set_name(_n->node(cmd[1]), cmd[3], network::utils::str(cmd[2]));
     }
     else if (cmd[0] == L".dot")
     {
         if (cmd.size() == 1) throw std::runtime_error("Command .dot: Missing node name to visualize");
-        Node nd = _n->get_node(cmd[1]);
-        if (nd == 0) throw std::runtime_error("Command .dot: Unknown node '" + utils::str(cmd[1]) + "'");
+        network::Node nd = _n->get_node(cmd[1]);
+        if (nd == 0) throw std::runtime_error("Command .dot: Unknown node '" + network::utils::str(cmd[1]) + "'");
         if (cmd.size() < 3) throw std::runtime_error("Command .dot: Missing maximum depth");
-        int max_depth = std::atoi(utils::str(cmd[2]).c_str());
+        int max_depth = std::stoi(network::utils::str(cmd[2]));
         if (max_depth < 2) throw std::runtime_error("Command .dot: Maximum depth must be greater than 1");
-        _n->gen_dot(nd, utils::str(cmd[1]) + ".dot", max_depth);
+        _n->gen_dot(nd, network::utils::str(cmd[1]) + ".dot", max_depth);
     }
     else if (cmd[0] == L".wikidata")
     {
         if (cmd.size() < 2) throw std::runtime_error("Command .wikidata: Missing json file name");
 
         std::ofstream log("wikidata.log");
-        _n->set_print([&](std::wstring str, bool o)
+        _n->set_print([&](const std::wstring& str, bool o)
                       {
-          log << utils::str(str) << std::endl;
+          log << network::utils::str(str) << std::endl;
 
           if (o)
           {
@@ -215,7 +214,7 @@ void Interactive::Impl::process_command(const std::vector<std::wstring>& cmd)
 
         if (cmd.size() == 2)
         {
-            StopWatch watch;
+            network::StopWatch watch;
             watch.start();
             {
                 _wikidata = std::make_shared<Wikidata>(_n, cmd[1]);
@@ -225,7 +224,7 @@ void Interactive::Impl::process_command(const std::vector<std::wstring>& cmd)
         }
         else if (cmd.size() == 3)
         {
-            int max_depth = std::atoi(utils::str(cmd[2]).c_str());
+            int max_depth = std::stoi(network::utils::str(cmd[2]));
             _n->print(L"Link distance=" + std::to_wstring(max_depth), true);
             _wikidata = std::make_shared<Wikidata>(_n, cmd[1]);
             _wikidata->generate_index();
@@ -233,8 +232,8 @@ void Interactive::Impl::process_command(const std::vector<std::wstring>& cmd)
         }
         else if (cmd.size() == 4)
         {
-            int          max_depth   = std::atoi(utils::str(cmd[2]).c_str());
-            std::wstring start_entry = cmd[3];
+            int                 max_depth   = std::stoi(network::utils::str(cmd[2]));
+            const std::wstring& start_entry = cmd[3];
             _n->print(L"Link distance=" + std::to_wstring(max_depth) + L", start entry='" + start_entry + L"'", true);
             _wikidata = std::make_shared<Wikidata>(_n, cmd[1]);
             _wikidata->generate_index();
@@ -245,29 +244,29 @@ void Interactive::Impl::process_command(const std::vector<std::wstring>& cmd)
             throw std::runtime_error("Command .wikidata: You need to specify the json file to import and optionally add the maximum link distance and the start entry to be imported");
         }
 
-        _n->set_print([](std::wstring str, bool)
-                      { std::cout << utils::str(str) << std::endl; });
+        _n->set_print([](const std::wstring& str, bool)
+                      { std::cout << network::utils::str(str) << std::endl; });
     }
     else
     {
-        throw std::runtime_error(utils::str(L"Unknown command " + cmd[0]));
+        throw std::runtime_error(network::utils::str(L"Unknown command " + cmd[0]));
     }
 }
 
-void Interactive::Impl::process_token(std::vector<std::wstring>& tokens, bool& is_rule, std::wstring& first_var, std::wstring& assigns_to_var, const std::wstring& token, const std::wstring& And, const std::wstring& Causes)
+void console::Interactive::Impl::process_token(std::vector<std::wstring>& tokens, bool& is_rule, const std::wstring& first_var, std::wstring& assigns_to_var, const std::wstring& token, const std::wstring& And, const std::wstring& Causes) const
 {
     if (!token.empty())
     {
         std::wstring current;
 
-        if (boost::algorithm::starts_with(token, And)) // we allow the and symbol - usually a comma - to be connected with the following token
+        if (boost::algorithm::starts_with(token, And)) // we allow the "and" symbol - usually a comma - to be connected with the following token
         {
             current = token.substr(And.size());
             tokens.push_back(And);
             tokens.push_back(current);
         }
 
-        if (boost::algorithm::ends_with(token, And)) // we allow the and symbol - usually a comma - to be connected with the preceding token
+        if (boost::algorithm::ends_with(token, And)) // we allow the "and" symbol - usually a comma - to be connected with the preceding token
         {
             if (current.empty())
             {
@@ -286,7 +285,7 @@ void Interactive::Impl::process_token(std::vector<std::wstring>& tokens, bool& i
         if (current == Causes)
         {
             if (is_rule)
-                throw std::runtime_error("Line contains two times " + utils::str(_n->get_name(_n->core.Causes))); // this is just a parser restriction to distinguish between condition and deduction, might be useful to support it
+                throw std::runtime_error("Line contains two times " + network::utils::str(_n->get_name(_n->core.Causes))); // this is just a parser restriction to distinguish between condition and deduction, might be useful to support it
             else
                 is_rule = true;
         }
@@ -298,7 +297,7 @@ void Interactive::Impl::process_token(std::vector<std::wstring>& tokens, bool& i
     }
 }
 
-Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, boost::bimap<std::wstring, Node>& variables)
+network::Node console::Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, boost::bimap<std::wstring, network::Node>& variables)
 {
     class C
     {
@@ -348,7 +347,7 @@ Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, bo
         }
         else
         {
-            throw std::runtime_error(utils::str(L"Fact '" + *tokens.begin() + L"' consists of only 1 token, which is only allowed for contradiction '" + _n->get_name(_n->core.Contradiction) + L"'"));
+            throw std::runtime_error(network::utils::str(L"Fact '" + *tokens.begin() + L"' consists of only 1 token, which is only allowed for contradiction '" + _n->get_name(_n->core.Contradiction) + L"'"));
         }
     }
 
@@ -357,35 +356,35 @@ Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, bo
 
     for (size_t i = 0; i < tokens.size(); ++i)
     {
-        std::wstring token = tokens[i];
+        const std::wstring& token = tokens[i];
 
         if (is_var(token))
         {
             auto var = variables.left.find(token);
             if (var == variables.left.end())
             {
-                Node node = _n->var();
+                network::Node node = _n->var();
                 _n->set_name(node, token, _n->lang());
                 variables.left.insert(boost::bimap<std::wstring, network::Node>::left_value_type(token, node));
 
                 if (variables.left.find(token) == variables.left.end())
                 {
-                    throw std::runtime_error(utils::str(L"Variable " + token + L" has been set to a different node."));
+                    throw std::runtime_error(network::utils::str(L"Variable " + token + L" has been set to a different node."));
                 }
 
-                combined.push_back(C(this, node, token));
+                combined.emplace_back(this, node, token);
             }
             else
             {
-                combined.push_back(C(this, var->second, token));
+                combined.emplace_back(this, var->second, token);
             }
         }
         else
         {
             // Find the longest sequence of words that makes sense to start searching a sequence that matches a relation name.
-            // We start at the longest to prefer longer word combinations over shorter, e. g. "is a" is found before "is".
+            // We start at the longest to prefer longer word combinations over shorter, e.g. "is a" is found before "is".
             size_t max_len = tokens.size() - i;
-            if (combined.size() == 0)
+            if (combined.empty())
                 max_len -= 2;
             else                                     // we are at the object and will need predicate and subject, so reduce by 2
                 if (combined.size() == 1) --max_len; // we are at the predicate and will need the subject, so reduce by 1
@@ -398,12 +397,12 @@ Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, bo
             for (; len >= 1; --len)
             {
                 std::vector<std::wstring> test;
-                test.insert(test.end(), tokens.begin() + i, tokens.begin() + i + len);
-                std::wstring  connected = utils::concatenate(test, L' ');
+                test.insert(test.end(), tokens.begin() + static_cast<long>(i), tokens.begin() + static_cast<long>(i) + static_cast<long>(len));
+                std::wstring  connected = network::utils::concatenate(test, L' ');
                 network::Node node      = _n->get_node(connected, _n->lang());
                 if (node)
                 {
-                    combined.push_back(C(this, node, connected));
+                    combined.emplace_back(this, node, connected);
                     done = true;
                     break;
                 }
@@ -415,7 +414,7 @@ Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, bo
             }
             else
             {
-                combined.push_back(C(this, 0, token));
+                combined.emplace_back(this, 0, token);
                 done_all = false;
             }
         }
@@ -434,20 +433,20 @@ Node Interactive::Impl::process_fact(const std::vector<std::wstring>& tokens, bo
 
         if (i != combined.size())
         {
-            throw std::runtime_error(utils::str(L"cannot match fact or condition (use quotation marks?): " + temp[0]._token + L"  " + temp[1]._token + L"  " + temp[2]._token + L" ..."));
+            throw std::runtime_error(network::utils::str(L"cannot match fact or condition (use quotation marks?): " + temp[0]._token + L"  " + temp[1]._token + L"  " + temp[2]._token + L" ..."));
         }
 
         combined = std::move(temp);
     }
 
-    std::unordered_set<Node> objects;
+    std::unordered_set<network::Node> objects;
     for (size_t i = 2; i < combined.size(); ++i)
         objects.insert(combined[i]);
 
     return _n->fact(combined[0], combined[1], objects);
 }
 
-Node Interactive::Impl::process_rule(const std::vector<std::wstring>& tokens, std::wstring& line, boost::bimaps::bimap<std::wstring, zelph::network::Node>& variables, const std::wstring& And, const std::wstring& Causes)
+network::Node console::Interactive::Impl::process_rule(const std::vector<std::wstring>& tokens, const std::wstring& line, boost::bimaps::bimap<std::wstring, zelph::network::Node>& variables, const std::wstring& And, const std::wstring& Causes)
 {
     std::vector<std::vector<std::wstring>> conditions, deductions;
     bool                                   is_deduction = false;
@@ -458,9 +457,9 @@ Node Interactive::Impl::process_rule(const std::vector<std::wstring>& tokens, st
         while (i < tokens.size() && tokens[i] != And && tokens[i] != Causes)
             tokens_for_fact.push_back(tokens[i++]);
 
-        if (tokens_for_fact.size() == 0)
+        if (tokens_for_fact.empty())
         {
-            throw std::runtime_error("Found empty condition or deduction in " + utils::str(line));
+            throw std::runtime_error("Found empty condition or deduction in " + network::utils::str(line));
         }
 
         if (is_deduction)
@@ -471,21 +470,21 @@ Node Interactive::Impl::process_rule(const std::vector<std::wstring>& tokens, st
         if (i < tokens.size() && tokens[i] == Causes) is_deduction = true;
     }
 
-    if (conditions.size() == 0) throw std::runtime_error("Found rule without condition in " + utils::str(line));
-    if (deductions.size() == 0) throw std::runtime_error("Found rule without condition in " + utils::str(line));
+    if (conditions.empty()) throw std::runtime_error("Found rule without condition in " + network::utils::str(line));
+    if (deductions.empty()) throw std::runtime_error("Found rule without condition in " + network::utils::str(line));
 
     std::unordered_set<network::Node> condition_nodes;
-    for (auto condition : conditions)
+    for (const auto& condition : conditions)
     {
         condition_nodes.insert(process_fact(condition, variables));
     }
 
-    network::Node combined_condition = conditions.size() == 1
-                                         ? *condition_nodes.begin()
-                                         : _n->condition(_n->core.And, condition_nodes);
+    const network::Node combined_condition = conditions.size() == 1
+                                               ? *condition_nodes.begin()
+                                               : _n->condition(_n->core.And, condition_nodes);
 
     std::unordered_set<network::Node> deduction_list;
-    for (auto deduction : deductions)
+    for (const auto& deduction : deductions)
     {
         deduction_list.insert(process_fact(deduction, variables));
     }
@@ -493,12 +492,12 @@ Node Interactive::Impl::process_rule(const std::vector<std::wstring>& tokens, st
     return _n->fact(combined_condition, _n->core.Causes, deduction_list);
 }
 
-void Interactive::run(const bool print_deductions, const bool generate_markdown) const
+void console::Interactive::run(const bool print_deductions, const bool generate_markdown) const
 {
     _pImpl->_n->run(print_deductions, generate_markdown);
 }
 
-bool Interactive::Impl::is_var(std::wstring token)
+bool console::Interactive::Impl::is_var(std::wstring token)
 {
     static const std::wstring variable_names(L"ABCDEFGHIJKLMNOPQRSTUVWXYZ_");
 
