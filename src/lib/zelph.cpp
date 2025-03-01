@@ -300,7 +300,7 @@ Answer Zelph::check_fact(const Node source, const Node relationType, const std::
         }(); // no target must be connected from relation
 
         if (!_pImpl->_format_fact_level && !known && !_pImpl->is_var(source) && !_pImpl->is_var(relationType) && [&]()
-            { for (Node t : targets) if (_pImpl->is_var(t)) return false; return true; }())
+            { for (const Node t : targets) if (_pImpl->is_var(t)) return false; return true; }())
         {
             const bool relationConnectsToSource              = connectedFromRelationType.count(source) == 1;
             const bool sourceConnectsToRelation              = connectedToRelationType.count(source) == 1;
@@ -317,6 +317,7 @@ Answer Zelph::check_fact(const Node source, const Node relationType, const std::
                 return true;
             }();
 
+            // inconsistent state => debug output
             std::wstring output;
             format_fact(output, _lang, relation);
             print(output, true);

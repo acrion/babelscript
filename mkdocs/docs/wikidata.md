@@ -330,3 +330,169 @@ Ready.
 ```
 
  
+Ein zweiter besonderer Designaspekt von zelph ist die Abbildung des Relationstyps.
+Wenn in einem semantischen Netzwerk A und B durch eine Relation miteinander verbunden
+sind (A --> B), dann wird üblicherweise der Pfeil beschriftet, es wird also ein Label vergeben.
+
+``` mermaid
+graph TD;
+    "white" -- is opposite of --> "black";
+```
+
+So ein Relations-Label ist also normalerweise etwas, das sich von Knoten unterscheidet.
+In zelph ist das nicht so: Der Typ einer Relation ist einfach ein weiterer Knoten.
+Auf zelph-Ebene gibt einen Standard-Relations-Typ `~`, was eine Kategorie-Beziehung
+zwischen A und B darstellt. Es gibt zwei Abweichungen von diesem Standard:
+
+- Fakten (wie im Folgenden erläutert)
+- Regeln (weiter unten erläutert)
+
+Dies ist eine Metaebene, die für die eigentlichen Fakten, die zelph Netzwerk abbildet, nicht relevant ist.
+Denn ein Relationstyp zwischen A und B, der keine zelph-Kategorie-Beziehung ist,
+wird in zelph abgebildet, indem ein spezieller Relations-Knoten erzeugt wird.
+Beispiel: In einem zelph-Skript kann man schreiben:
+
+```
+is opposite of ~ ->
+> «is opposite of» «~» «->»
+white is opposite of black
+> «white» «is opposite of» «black»
+```
+
+Hinter `>` sieht man jeweils die Antworten von zelph auf die beiden Eingabezeilen. Die erste Zeile `is opposite of ~ ->` kann
+auch weggelassen werden, da sich zelph aufgrund der Syntax erschliesst, dass es sich um eine Relation (`->`) handeln muss:
+
+```
+white "is opposite of" black
+> «white» «is opposite of» «black»
+```
+
+Im Unterschied zum ersten Beispiel, wo wir "is opposite of" explizit als Relation bekannt geben, muss hier
+"is opposite of" in Anführungszeichen geschrieben werden, da es Leerzeichen enthält. Sobald der Name dieses
+Relations-Knotens bekannt ist, sind keine Anführungszeichen mehr notwendig.
+
+Nun zur internen Abbildung dieser Relationen im zelph-Netzwerk:
+
+Die Zeile `is opposite of ~ ->` (die im zweiten Beispiel intern automatisch ausgeführt wird)
+erzeugt zwei neue Knoten im zelph-Netzwerk:
+
+``` mermaid
+graph TD;
+    "is opposite of ~ ->" <--> "is opposite of";
+    "is opposite of ~ ->" <-- "->";
+    "is opposite of ~ ->" --> "~";
+```
+
+Der Knoten "is opposite of ~ ->" repräsentiert diese spezielle Relation (daher ist er so benannt, wie die Eingabezeile).
+Die Relationen zu den anderen Knoten kodieren seine Bedeutung. Dabei gilt für die Richtung der Relation:
+
+| Element        | Relationsrichtung   |
+|----------------|---------------------|
+| Subjekt        | beidseitig          |
+| Objekt         | rückwärts           |
+| Relationstyp   | vorwärts            |
+
+Diese Semantik nutzt zelph in mehreren Zusammenhängen, zum Beispiel der Unifikation von Regeln.
+Sie ist erforderlich, weil zelph, wie oben erläutert, Relationstypen nicht als Labels an Pfeilen kodiert, sondern
+wie gleichberechtigte Knoten. Dies hat den Vorteil, dass Aussagen über Aussagen erleichtert werden, zum Beispiel
+die Aussage, dass eine Relation transitiv ist. Dies wird bei der Unifikation von Regeln genutzt.
+
+Die Knoten `->` und `~` sind vordefinierte zelph-Knoten.
+`->` repräsentiert die Kategorie aller Relationen. `~` repräsentiert eine Teilmenge dieser Kategorie, nämlich die Kategorie der Kategorie-Relationen.
+Jede Relation, die sich von der Standard-Relation `~` unterscheidet (wie "is opposite of") ist über eine `~`-Relation mit `->` verknüpft.
+Zum Beispiel sagt die Relation zwischen "is opposite of ~ ->" und "->" aus, dass "is opposite of ~ ->" zur Kategorie der Relationen gehört.
+
+Die zweite Zeile "white is opposite of black" erzeugt drei neue Knoten:
+
+``` mermaid
+graph TD;
+    "white is opposite of black" <--> "white";
+    "white is opposite of black" <-- "black";
+    "white is opposite of black" --> "is opposite of";
+```
+
+In beiden Beispielen ist der Relationsknoten so benannt, wie die Relation, die durch das Netzwerk umgesetzt wird:
+"is opposite of ~ ->" bzw. "white is opposite of black" - was der Nutzer-Eingabe entspricht. Dieser spezielle Knoten
+repräsentiert genau diese spezielle Relation. Damit zelph weiss, um welche Relation es geht, ist er mit dieser
+verknüpft, zeigt also auf "~" bzw. "is opposite of". Im zweiten Beispiel muss zusätzlich kodiert werden, dass es sich
+beim Knoten "is opposite of" um eine Relation handelt. Dies geschieht wiederum durch eine Verknüpfung zu einem Relationsknoten
+"is opposite of ~ ->". 
+
+Dieses Design schliesst aus, dass Subjekt und Objekt einer Relation identisch sind.
+Hierfür gibt es Beispiele in wikidata, z.B. "South Africa (Q258)" "country (P17)" "South Africa (Q258)".
+"South Africa" ist also in wikidata über die Relation (Property) "Country" mit sich selbst verknüpft.
+Diese Beispiele in wikidata sind selten und werden beim Import ignoriert und eine entsprechende Warnung erscheint.
+
+# Regeln
+
+Regeln in der Skriptsprache enthalten immer die Zeichen `=>`. Vor dem Zeichen stehen eine
+oder mehrere Bedingungen (durch Kommata getrennt), die alle zutreffen müssen (and-Verknüpfung). 
+Hinter dem Zeichen steht eine Konsequenz, falls die Regel greift. Alternativ steht durch 
+ein `!`, was auf einen Widerspruch hinweist. Wird ein Widerspruch erkannt, während ein fact
+eingegeben wird (durch die Skriptsprache, oder beim Import von wikidata-Daten), so wird die
+entsprechende Relation (das fact) nicht ins semantische Netzwerk eingetragen. Stattdessen wird ein
+Fakt eingetragen, dass diesen Widerspruch beschreibt (wodurch er beim Markdown-Export der Fakten einsehbar ist).
+
+Beispiel für eine Regel:
+
+```
+R ~ transitive relation, X R Y, Y R Z => X R Z
+> ((Y R Z), (X R Y), (R «~» «transitive relation»)) «=>» (X R Z)
+```
+
+Nach dem `>` sieht man wieder die Ausgabe von zelph, die in diesem Fall einfach nur die Eingabe der Regel bestätigt.
+
+Nun geben wir bekannt, dass die Relation `>` (grösser) zur Kategorie (`~`) der transitiven Relationen gehört:
+
+```
+> ~ transitive relation
+> «>» «~» «transitive relation»
+```
+
+Nun geben wir drei Elemente bekannt, für die die `>` Relation gilt: 
+
+
+```
+6 > 5
+> «6» «>» «5»
+5 > 4
+> «5» «>» «4»
+«6» «>» «4» ⇐ («5» «>» «4»), («6» «>» «5»), («>» «~» «transitive relation»)
+```
+
+Nach der Eingabe von `5 > 4` greift der Unifikations-Mechanismus von zelph und fügt ein
+neues Fakt ein: `6 > 4`.
+
+Bei der Anwendung auf Wikidata-Daten werden also nicht nur Fakten geprüft, sondern es finden auch
+komplexe Anwendungen von logischen Verknüpfungen statt, die in wikidata selbst kodiert sind.
+Das ist möglich, weil zelph für jeden Knoten Namen in mehreren Sprachen ermöglicht. Obige Skripte
+sind in der Sprache "zelph" geschrieben, aber aufgrund des Skripts `wikidata.zlp` kann zelph
+zuordnen, dass der Knoten "transitive relation" identisch ist mit dem wikidata-Knoten Q64861,
+der zum Beispiel mit der Wikidata-Property P5136 ("less than") verknüpft ist. Auf diese Weise
+wird geprüft, ob sich aus den Daten von wikidata Widersprüche ergeben und es werden viele
+neue Fakten generiert. Dafür muss natürlich `wikidata.zlp` den [Wikidata usage instructions](https://www.wikidata.org/wiki/Property:P2559)
+entsprechen - aber das Skript ist nicht Teil von zelph, sondern kann gepflegt und 
+ausgebaut werden, was weitere spannende Erkenntnisse nach sich ziehen dürfte.
+
+
+Der Import von Wikidata-Daten geschieht über das Kommando `.wikidata`, zum Beispiel
+
+```
+.wikidata download/wikidata-20250127-all.json
+```
+
+Hierbei legt zelph zunächst eine `.index`-Datei im gleichen Verzeichnis an, die zukünftige Ladevorgänge beschleunigt.
+
+Anschliessend kann man den Inferenz-Mechanismus starten. Entweder über
+
+```
+.run
+```
+
+oder über 
+
+```
+.run-md
+```
+
+Letzteres setzt ein leeres Verzeichnis `mkdocs/docs/tree` voraus, in dem Markdown-Dateien angelegt werden, die wikidata referenzieren.

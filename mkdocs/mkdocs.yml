@@ -35,3 +35,6 @@ nav:
           - Constraints: tree/Q21502838.md
           - Symmetric Properties: tree/Q18647518.md
           - Entailment: tree/Q3149445.md
+markdown_extensions:
+    - pymdownx.superfences
+    - pymdownx.highlight

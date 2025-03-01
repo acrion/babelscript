@@ -305,37 +305,36 @@ void Wikidata::index_entry(const std::wstring& line, const std::streamoff stream
     }
 }
 
-void Wikidata::traverse(int /*max_depth*/, std::wstring start_entry)
+void Wikidata::traverse(std::wstring start_entry)
 {
     if (start_entry.empty())
     {
         std::wifstream stream(_pImpl->_file_name);
-        for (int i = 0; i < 4; ++i) // TODO: Do not repeat, but introduce dedicated command to trigger processing (which may be manually executed several times).
-            for (const auto& it : _pImpl->_n->get_nodes_in_language("wikidata"))
+        for (const auto& it : _pImpl->_n->get_nodes_in_language("wikidata"))
+        {
+            const Node         node  = it.first;
+            const std::wstring entry = it.second;
+            std::wstring       name  = _pImpl->_n->get_name(node, "en");
+            if (name.empty())
             {
-                const Node         node  = it.first;
-                const std::wstring entry = it.second;
-                std::wstring       name  = _pImpl->_n->get_name(node, "en");
-                if (name.empty())
+                if (_pImpl->_index.count(utils::str(entry)) == 0)
                 {
-                    if (_pImpl->_index.count(utils::str(entry)) == 0)
-                    {
-                        _pImpl->_n->print(L"Cannot find wikidata entry '" + entry + L"' in " + _pImpl->_file_name.wstring(), true);
-                    }
-                    else
-                    {
-                        stream.seekg(_pImpl->_index[utils::str(entry)]);
-
-                        std::wstring line;
-                        std::getline(stream, line);
-                        process_entry(line);
-                    }
+                    _pImpl->_n->print(L"Cannot find wikidata entry '" + entry + L"' in " + _pImpl->_file_name.wstring(), true);
                 }
                 else
                 {
-                    _pImpl->_n->print(name + L" (" + entry + L") is already known.", true);
+                    stream.seekg(_pImpl->_index[utils::str(entry)]);
+
+                    std::wstring line;
+                    std::getline(stream, line);
+                    process_entry(line);
                 }
             }
+            else
+            {
+                //_pImpl->_n->print(name + L" (" + entry + L") is already known.", true);
+            }
+        }
     }
     else
     {
