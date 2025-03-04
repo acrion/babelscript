@@ -1,3 +1,3 @@
-bls = require("zelph")
+zelph = require("zelph")
 
-local R = bls.fact("A", "is a", "B")
+local R = zelph.fact("A", "is a", "B")

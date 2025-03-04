@@ -24,7 +24,7 @@ namespace zelph
 
             void import_all();
             void generate_index() const;
-            void traverse(int max_depth, std::wstring start_entry = L"");
+            void traverse(std::wstring start_entry = L"");
             void process_node(network::Node node, const std::string& lang);
 
         private:

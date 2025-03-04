@@ -26,6 +26,7 @@ along with zelph. If not, see <https://www.gnu.org/licenses/>.
 #include "utils.hpp"
 
 #include <codecvt>
+#include <iostream>
 #include <locale>
 #include <regex>
 #include <stdexcept>
@@ -60,10 +61,44 @@ namespace zelph
                 return result;
             }
 
-            std::string str(const std::wstring& str)
+            std::string str(const std::wstring& wstr)
             {
-                std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-                return converter.to_bytes(str);
+                try
+                {
+                    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+                    return converter.to_bytes(wstr);
+                }
+                catch (const std::range_error& e)
+                {
+                    std::wcerr << L"Error converting wstring to UTF-8 string: " << e.what() << std::endl;
+
+                    std::string result;
+                    for (size_t i = 0; i < wstr.length(); ++i)
+                    {
+                        wchar_t wc = wstr[i];
+
+                        if (wc >= 0 && wc <= 127)
+                        {
+                            result.push_back(static_cast<char>(wc));
+                        }
+                        else
+                        {
+                            try
+                            {
+                                std::wstring                                     singleChar(1, wc);
+                                std::wstring_convert<std::codecvt_utf8<wchar_t>> singleConverter;
+                                result += singleConverter.to_bytes(singleChar);
+                            }
+                            catch (...)
+                            {
+                                result += "?";
+                                std::wcerr << L"Replaced invalid character at position " << i << std::endl;
+                            }
+                        }
+                    }
+
+                    return result;
+                }
             }
 
             std::wstring wstr(std::string str)

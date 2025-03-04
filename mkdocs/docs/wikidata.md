@@ -1,332 +1,260 @@
-Wikidata ist ein ausgezeichneter Anwendungsfall für zelph.
-Die Einträge von Wikidata sind über Relationen untereinander vernetzt.
-Diese Verknüpfungen unterliegen logischen Einschränkungen.
-Wenn zum Beispiel die Klasse `A` das Gegenteil der Klasse `B` ist (Beispiel [successor](tree/Q106110771.md) und [predecessor](tree/Q106110777.md), dann kann es kein `X` geben,
-das zu beiden Klassen gehört (wie zum Beispiel [replacing entity](tree/Q45025415.md))
+# zelph and Wikidata: Finding Logical Connections and Contradictions
 
-Ausserdem können Schlussfolgerungen getroffen werden.
-Wenn zum Beispiel X in Relation zu Y steht und Y in derselben Relation zu Z (Beispiel X=[Canada](Q16.md) und Y=[American continent](tree/Q828.md), Z=[Earth's surface](Q1349417.md), Relation=[is part of](tree/P361.md)),  
-und ausserdem die Relation eine [transitive relation](tree/Q64861.md) ist, dann folgt daraus, dass X auch in derselben Relation zu Z steht, also im Beispiel [Canada](Q16.md) [*is part of*](P361.md) [Earth's surface](Q1349417.md).
+## Wikidata as an Ideal Use Case for zelph
 
-Die Daten in Form von JSON sind ca. 1.4 TB und beinhalten über 113 Mio. Einträge.
-Nach dem Einlesen durch zelph belegt zelph nur 9.2 GB.
-Dies wird durch eine auf Bitebene optimierte [Datenstruktur](https://github.com/acrion/zelph/blob/main/src/lib/network.hpp) im Speicher ermöglicht. Für Wikidata werden somit im Durchschnitt nur 80 Byte pro Item benötigt (inklusive der Vernetzungen),
-wobei nur die englischen Namen der Items sowie deren wikidata-IDs abgelegt werden.
-Einem Item in zelph können Namen in beliebig vielen Sprachen zugewiesen werden, wobei wikidata-IDs gleichberechtigt zu den anderen Sprachen gehandhabt werden (Name der Sprache: "wikidata").
-Es gibt ausserdem eine Sprache "zelph", die standardmässig in zelph-Skripten genutzt wird, aber auch dies ist variabel konfigurierbar (über das Kommando `.lang`). 
-Das Durchführen sämtlicher anwendbarer Regeln, die aus wikidata.zph hervorgehen, dauert für 4 Durchläufe 2.5 Stunden auf einem Intel Core i9-12900T.
-Dabei muss berücksichtigt werden, dass das aktuelle Verfahren noch kein multi threading nutzt.
-Jeder Durchlauf kann stark unterschiedliche Zeit benötigen, weil dies von der Zahl der anwendbaren Regeln abhängt.
-Nach 4 Durchläufen ist der überwiegende Teil der Inferenz-Möglichkeiten (die neue Facts und Contradictions erzeugen) in den wikidata-Daten ausgeschöpft.
+Wikidata represents an excellent application case for zelph’s capabilities.
+It contains over 113 million entries interconnected by relations, all subject to logical constraints.
+This complex web of knowledge presents two key opportunities for zelph:
 
-Auf dieser Website veröffentliche ich einen Baum von Seiten. Jede Seite hat eine Entsprechung in Wikidata und ist im Titel verlinkt.
-Auf jeder Seite gibt es maximal zwei Abschnitte "Deductions" und "Contradictions". Dies sind Deducations bzw. Contradictions, die in Zusammenhang mit dem Item stehen, das auf der Seite genannt wird.
-Zum Beispiel:
+1. **Finding contradictions**: Identifying logical inconsistencies in the data
+2. **Making deductions**: Deriving new facts through logical inference
 
-- [natural physical object](tree/Q16686022.md) [is for example](tree/Q21514624.md) [Universe](tree/Q1.md) ⇐ ([Universe](tree/Q1.md) [*is a*](tree/P31.md) [natural physical object](tree/Q16686022.md)), ([*is a*](tree/P31.md) [*is inverse of*](tree/P1696.md) [is for example](tree/Q21514624.md))
+For example, if class `A` is the opposite of class `B` (such as [successor](tree/Q106110771.md) and [predecessor](tree/Q106110777.md)), then no entity `X` can belong to both classes (like [replacing entity](tree/Q45025415.md)).
 
-Der Teil vor dem Zeichen "⇐" ist die Schlussfolgerung. Sie ergibt sich aufgrund unten stehender Regeln aus den Fakten, die hinter dem Zeichen "⇐" stehen.
-Im Beispiel wurde diese Regeln angewendet:
+Similarly, inferences can be made. Example: If X is related to Y and Y is related to Z through the same relation (e.g., X=[Canada](tree/Q16.md), Y=[American continent](tree/Q828.md), Z=[Earth's surface](tree/Q1349417.md), relation=[is part of](tree/P361.md)), and the relation is [transitive](tree/Q64861.md), then X must also be related to Z in the same way.
 
-```
-R is inverse of S,  X R Y    => Y S X   
-```
+### Architectural Synergy with Wikidata
 
-Mit
-  - `X`: Universe
-  - `Y`: natural physical object
-  - `R`: is a
-  - `S`: is for example
+zelph’s architecture of treating relations as first-class nodes creates a perfect alignment with Wikidata’s data model.
+In Wikidata, properties (P-entities) are not merely labels on edges but are themselves entities with their own attributes, constraints, and relationships to other entities.
+This fundamental similarity enables zelph to:
 
-"is a" ist der Name eines Items in der Sprache "zelph", wie er in unten stehendem Skript festgelegt wird (er ist also nicht hartkodiert).
-Der zugehörige englische Name ist "instance of", der zugehörige wikidata-Name ist "P31", siehe https://www.wikidata.org/wiki/Property:P31.
+1. **Naturally represent Wikidata’s property hierarchy**: Properties in Wikidata can have subproperties, domains, ranges, and other metadata - all of which are directly representable in zelph’s relation-as-node approach.
 
-Die Sprache "zelph" wird durch das Kommando `.lang zelph` am Anfang des Skripts festgelegt.
+2. **Reason about properties themselves**: zelph can apply inference rules to properties just as it does to regular entities, enabling powerful meta-reasoning capabilities essential for working with Wikidata’s complex property structure.
 
+3. **Enforce property constraints**: Wikidata’s property constraints (symmetry, transitivity, inverse relationships) map directly to zelph’s rule system, allowing automatic validation and inference.
 
+This structural compatibility makes zelph well-suited for analyzing and enriching Wikidata’s knowledge graph while maintaining its semantic integrity.
+
+### Navigating the Generated Knowledge Tree
+
+zelph has processed Wikidata’s vast knowledge graph and generated a [tree of 4,580 pages](tree-explanation.md) representing entities and properties where meaningful deductions or contradictions were found.
+This represents the practical application of zelph’s semantic inference capabilities to real-world data.
+
+The navigation menu provides entry points to explore various branches of this knowledge tree, organized by knowledge domains and semantic relation types.
+Particularly noteworthy is the [Logical Contradictions](tree/Q363948.md) page, which highlights inconsistencies in Wikidata’s knowledge structure that could be valuable for Wikidata curators.
+
+For a detailed explanation of how this tree was generated and what it represents, see the [Tree Explanation](tree-explanation.md) page.
+
+## Technical Implementation
+
+### Memory Efficiency
+
+The complete Wikidata in JSON format is approximately 1.4 TB, containing over 113 million entries.
+After processing by zelph, the data occupies only 9.2 GB in memory.
+This reduction is achieved through two factors: a [bit-optimized data structure](https://github.com/acrion/zelph/blob/main/src/lib/network.hpp) and selective data inclusion.
+
+On average, zelph requires only 80 bytes per Wikidata item, which includes:
+
+1. All relations to other items (i.e., connections via Wikidata properties, which define the relationships between items in the Wikidata structure)
+2. The English names of the items
+3. The Wikidata IDs of the items
+
+In a semantic network like zelph, properties represent the labels that appear above the connection arrows between two items.
+While Wikidata refers to these as "properties," zelph uses the term "relation names" for the same concept.
+
+Items in zelph can be assigned names in any number of languages, with Wikidata IDs handled as a specific language ("wikidata").
+There is also a language "zelph" that is used by default in zelph scripts, but this is configurable (via the `.lang` command).
+
+### Processing Performance
+
+Running the inference process on Wikidata data requires significant computational resources:
+
+- A complete inference pass takes approximately 2.5 hours on an Intel Core i9-12900T
+- Processing time varies depending on the number of applicable rules
+- The current implementation does not yet utilize multi-threading
+- Additional inference passes can be run using the `.run` or `.run-md` commands to discover more facts and contradictions
+
+## Wikidata Integration Script
+
+The following script demonstrates how zelph connects with Wikidata data:
 
 ```
 .lang zelph
 
 .name !                wikidata Q363948
-.name ~                zelph "is a"
 .name ~                wikidata P31
 .name "is subclass of" wikidata P279
-.name =>               wikidata Q7881229
-.name ->               wikidata Q18616576
+.name "is facet of"    wikidata P1269
+.name =>               wikidata Q374182
+.name ->               wikidata Q130901
 .name "is part of"     wikidata P361
 .name "has part"       wikidata P527
 .name "is opposite of" wikidata P461
 .name "is inverse of"  wikidata P1696
 .name "has quality"    wikidata P1552
 .name "is for example" wikidata Q21514624
-.name "transitive relation" wikidata Q18647515
-
-#has quality    is a ->
-#has part       is a ->
-#is opposite of is a ->
-#is inverse of  is a ->
-#is for example is a ->
-#"is subclass of" "is a" ->
+.name "transitive relation" wikidata Q64861
 
 # The following facts are part of wikidata:
-#"is subclass of" is a  transitive relation
-#"has part"       is a transitive relation
+#"is subclass of" ~ transitive relation
+#"has part"       ~ transitive relation
 #"is part of"     is inverse of "has part"
 
 # The following facts are not part of wikidata:
-"has quality" is a transitive relation
+"has quality" ~ transitive relation
+"is facet of" ~ transitive relation
 
-# The following (quite obvious) fact is not part of wikidata. Wikidata only includes the fact "is subclass of" "subject item of this property" "is for example"
-"is for example"  is inverse of "is a"
+X is facet of Y, Y ~ C => X ~ C
+X is facet of Y, Y is subclass of C => X is subclass of C
+X is facet of Y, Y has part P => X has part P
+X is facet of Y, Y is part of P => X is part of P
+X is facet of Y, Y has quality Q => X has quality Q
 
-R is a transitive relation, X R Y, Y R Z => X R Z
-P is a transitive relation, P is inverse of Q => Q is a transitive relation
-X is a K, K is subclass of U => X is a U
+# The following fact is not part of wikidata. Wikidata only includes the fact "is subclass of" "subject item of this property" "is for example"
+"is for example"  is inverse of "~"
 
-X has quality E,   E is a K            => X has quality K
-X has quality E,   E is subclass of K  => X has quality K
-K has quality E,   X is a K            => X has quality E
-K has quality E,   X is subclass of K  => X has quality E
-X has part P,      P is a K            => X has part K
-K has part P,      X is subclass of K  => X has part P
+R ~ transitive relation, X R Y, Y R Z => X R Z
+P ~ transitive relation, P is inverse of Q => Q ~ transitive relation
+X ~ K, K is subclass of U => X ~ U
 
-X is opposite of Y, X is a K           => Y is a K
-X is opposite of Y, X is subclass of K => Y is subclass of K
-X is inverse of Y,  X is a K           => Y is a K
-X is inverse of Y,  X is subclass of K => Y is subclass of K
-X is opposite of Y           => Y is opposite of X
-X is inverse of Y            => Y is inverse of X
-R is opposite of S, X R Y    => Y S X
-R is inverse of S,  X R Y    => Y S X
+X has quality E,   E ~ K                => X has quality K
+X has quality E,   E is subclass of K   => X has quality K
+K has quality E,   X ~ K                => X has quality E
+K has quality E,   X is subclass of K   => X has quality E
+X has part P,      P ~ K                => X has part K
+K has part P,      X is subclass of K   => X has part P
+
+X is opposite of Y, X ~ K               => Y ~ K
+X is opposite of Y, X is subclass of K  => Y is subclass of K
+X is inverse of Y,  X ~ K               => Y ~ K
+X is inverse of Y,  X is subclass of K  => Y is subclass of K
+
+X is opposite of Y        => Y is opposite of X
+X is inverse of Y         => Y is inverse of X
+R is opposite of S, X R Y => Y S X
+R is inverse of S,  X R Y => Y S X
 
 X is opposite of Y, A has quality X, A has quality Y => !
 X is inverse of Y,  A has quality X, A has quality Y => !
-X is opposite of Y, A has part X, A has part Y => !
-X is inverse of Y,  A has part X, A has part Y => !
-X is opposite of Y, A is a X,           A is a Y => !
+X is opposite of Y, A has part X,    A has part Y    => !
+X is inverse of Y,  A has part X,    A has part Y    => !
+
+X is opposite of Y, A ~ X,              A ~ Y              => !
 X is opposite of Y, A is subclass of X, A is subclass of Y => !
-X is inverse of Y,  A is a X,           A is a Y => !
+X is inverse of Y,  A ~ X,              A ~ Y              => !
 X is inverse of Y,  A is subclass of X, A is subclass of Y => !
 
-X has quality E, X is a E           => !
+X has quality E, X ~ E              => !
 X has quality E, X is subclass of E => !
-X has quality E, E is a X           => !
+X has quality E, E ~ X              => !
 X has quality E, E is subclass of X => !
 X has quality E, E has part X       => !
 
-X has part E, X is a E           => !
+X has part E, X ~ E              => !
 X has part E, X is subclass of E => !
-X has part E, E is a X           => !
+X has part E, E ~ X              => !
 X has part E, E is subclass of X => !
-#(matter  has part  chemical substance), (chemical substance  is subclass of  matter)
 
 # The following contradiction requires that X cannot be at the same time an instance and a subclass:
-X is a A, X is subclass of B => !
-# But this doesn't seem to make sense for wikidata, because there are X that are at the same time subclasses and instances, e. g. "black":
-# ! <= (Q23445  is a  Q1075), (Q23445  is subclass of  Q40890790)
-# ! <= (black  is a  color), (black  is subclass of  absorbed or reflected object light)
+X ~ A, X is subclass of B => !
 
-A is a B, B is a A                     => !
+A ~ B, B ~ A                           => !
 A is subclass of B, B is subclass of A => !
-A is a B, B is subclass of A           => !
-
-#.wikidata Q23445-black.json
-#.wikidata /Users/stefan/_excludedFromBackup/latest-all.json 2
-#.wikidata Y:/_excludedFromBackup/latest-all.json 2
-#.wikidata /mnt/hgfs/_excludedFromBackup/latest-all.json 2
-#.wikidata latest-all.json 2
+A is facet of B, B is facet of A       => !
+A ~ B, B is subclass of A              => !
+A ~ B, B is facet of A                 => !
+A is subclass of B, B is facet of A    => !
 ```
 
-Hier beispielhaft eine der vielen Auswirkungen, die dieses Skript auf die Art und Weise hat, wie zelph die wikidata-Daten verarbeitet.
-Wikidata macht eine granulare Unterscheidung zwischen "is a"-Relationen. Es gibt folgende Arten:
+This script maps zelph’s relation types to Wikidata properties and items, defines inference rules, and establishes contradiction checks.
 
- - [instance of](tree/P31)
- - [subclass of](tree/P279)
- - [facet of](tree/P1269)
+## Understanding the Script
 
-zelph is so flexibel designt, dass es dies problemlos abbilden kann. Obiges Skript soll allgemeingültig auf den wikidata-Daten
-funktionieren. Das bedeutet nicht, dass es keine Widersprüche in wikidata finden darf (denn sie könnten unbeabsichtigt sein).
-Der Anspruch ist, dass es in exaktem Einklang mit den [Wikidata usage instructions](https://www.wikidata.org/wiki/Property:P2559) ist, die auf vielen Seiten angegeben sind.
+### Relation Mapping
 
-Im konkreten Beispiel der drei obigen "is a" Relationen fällt auf, dass wikidata nur "subclass of" als transitiv auszeichnet,
-nicht die anderen beiden. Für "instance of" ergibt das Sinn, denn eine Instanz ist keine Klasse. Für "facet of" ergänzt das Skript
-diese Eigenschaft und ergänzt ausserdem Regeln, die dessen auf https://wikidata.org/wiki/Property:P1269 dokumentierte Bedeutung
-widerspiegeln: Ist X eine [facet of](tree/P1269) Y, dann erbt X alle Eigenschaften von Y. Daher stehen für diesen Fall folgende Regeln im Skript:
+The script begins by mapping zelph’s internal names to Wikidata entities:
 
-- Ist `X` eine [instance of](tree/P31) `C`, dann muss auch `Y` eine [instance of](tree/P31) `C` sein.
-- Ist `X` ist eine [subclass of](tree/P279) `C`, dann muss auch `Y` eine [subclass of](tree/P279) `C` sein.
-- Hat `X` [einen Teil](tree/P527) `P`, dann muss auch `Y` [einen Teil](tree/P527) `P` haben.  
-- Ist `X` [Teil von](tree/P361) `P`, dann muss auch `Y` [Teil von](tree/P361) `P` sein.
-- Hat `X` [eine Characteristic](tree/P1552) `Q`, dann muss auch `Y` [eine Characteristic](tree/P1552) `Q` haben.
+- `~` is mapped to Wikidata’s [instance of (P31)](https://www.wikidata.org/wiki/Property:P31)
+- `is subclass of` is mapped to [subclass of (P279)](https://www.wikidata.org/wiki/Property:P279)
+- `is facet of` is mapped to [facet of (P1269)](https://www.wikidata.org/wiki/Property:P1269)
 
-Hier die schrittweise Beschreibung einer konkreten Schlussfolgerung, die zelph aufgrund der wikidata-Daten und des Skripts wikidata.zlp trifft:
+This careful mapping ensures that zelph can interpret Wikidata’s relational structure correctly.
 
-Die Property [greater than](tree/P5135) ist laut wikidata eine Instanz von [transitive Wikidata property](tree/Q18647515).
-Da [transitive Wikidata property](tree/Q18647515) eine [facet of](tree/P1269) [transitive relation](tree/Q64861) ist,
-greift die Regel `X is facet of Y, Y is a C => X is a C`. Somit schlussfolgert zelph, dass [greater than](tree/P5135)
-auch Instanz von [transitive relation](tree/Q64861) ist. Wenn wir 
+### Handling "is a" Relations
 
-[logical consequence](tree/Q374182)
+Wikidata makes a granular distinction between different types of category relations:
 
-[transitive Wikidata property](tree/Q18647515)
-"facet of"
-[transitive relation](tree/Q64861)
-"subclass of"
-[quasitransitive relation](tree/Q7269539)
-"subclass of"
-[binary relation](tree/Q130901)
+1. [instance of (P31)](tree/P31.md)
+2. [subclass of (P279)](tree/P279.md)
+3. [facet of (P1269)](tree/P1269.md)
 
+zelph’s flexible design accommodates these distinctions.
+The idea of the script is to follow the [Wikidata usage guidelines](https://www.wikidata.org/wiki/Property:P2559).
+It can be easily adapted or extended for further improvements.
 
-im Abschnitt [Semantic Analysis of Wikidata]()
+Notably, Wikidata only marks "subclass of" as transitive, not the other two relations.
+This makes sense for "instance of" (since an instance is not a class), but the script adds transitivity for "facet of" along with additional rules that reflect its documented meaning:
+if X is a "facet of" Y, then X inherits all properties of Y.
 
-Allgemeines:
+For this case, the following rules are included in the script:
 
-Regeln sind im gleichen semantischen Netzwerk kodiert, wie die Fakten.
-Dieser innovative Ansatz ermöglicht ein enges Zusammenspiel zwischen der Faktenbasis und den Regeln.
-Eine Regel ist nur ein Spezialfall eines Faktums, das die Relation `=>` nutzt.
-Im Falle der [Anwendung von zelph auf Wikidata-Daten](wikidata.md) entspricht diese Relation der [logical consequence](tree/Q374182).
+- If `Y` is an [instance of](tree/P31.md) `C`, then `X` must also be an [instance of](tree/P31.md) `C`.
+- If `Y` is a [subclass of](tree/P279.md) `C`, then `X` must also be a [subclass of](tree/P279.md) `C`.
+- If `Y` [has part](tree/P527.md) `P`, then `X` must also [have part](tree/P527.md) `P`.
+- If `Y` is [part of](tree/P361.md) `P`, then `X` must also be [part of](tree/P361.md) `P`.
+- If `Y` has a [characteristic](tree/P1552.md) `Q`, then `X` must also have a [characteristic](tree/P1552.md) `Q`.
 
-Fakten, die logische Aussagen
-über Relationen machen, sind ein mächtiger Anwendungsfall von zelph. Beispiel:
+### Example Inference Process
 
-```
-R is transitive, X R Y, Y R Z => X R Z
-```
+Here’s a step-by-step example of zelph’s inference process when working with Wikidata:
 
-wikidata kennt selbst Aussagen über Relationen, inklusive der [Transitivität](tree/Q18647515.md).
-Dadurch 
+1. According to Wikidata, the property [greater than (P5135)](tree/P5135.md) is an instance of [transitive Wikidata property (Q18647515)](tree/Q18647515.md).
+2. Wikidata also states that [transitive Wikidata property (Q18647515)](tree/Q18647515.md) is a [facet of (P1269)](tree/P1269.md) [transitive relation (Q64861)](tree/Q64861.md).
+3. The script contains the rule: `X is facet of Y, Y ~ C => X ~ C`
+4. Therefore, zelph infers that [greater than (P5135)](tree/P5135.md) is also an instance of [transitive relation (Q64861)](tree/Q64861.md).
 
-Ein Beispiel-Skript:
+## Rules in the Semantic Network
 
-```
-X is a Y  => X ~ Y
-X is an Y => X is a Y
+Rules in zelph are encoded in the same semantic network as facts, using the special relation `=>` (which corresponds to [logical consequence (Q374182)](https://www.wikidata.org/wiki/Q374182) in Wikidata).
 
-is               is a ->
-has part         is a ->
-"is opposite of" is a ->
+This innovative approach enables tight integration between the fact base and the rules, allowing rules to be reasoned about in the same way as facts.
+This makes zelph particularly powerful for applications like Wikidata, where the knowledge base itself contains statements about relations, including properties like [transitivity](tree/Q18647515.md).
 
-"is attribute of" is opposite of "is"
-"is part of"      is opposite of "has part"
-"is for example"  is opposite of "is a"
+A rule is just a special case of a fact that uses the relation `=>`. In the case of the application of zelph to Wikidata data, this relation corresponds to [logical consequence](tree/Q374182.md).
 
-"has part"      is transitive
-"has attribute" is transitive
-~               is transitive
+## Publishing Results
 
-R is transitive, X R Y, Y R Z => X R Z
-X is E, E is a K  => X is K
-X has part P,      P is a K  => X has part K
-K is E, X is a K  => X is E
-K has part P,      X is a K  => X has part P
-X is opposite of Y, X is a K => Y is a K
-X is opposite of Y           => Y is opposite of X
-R is opposite of S, X R Y    => Y S X
+The results of zelph’s analysis are published as a tree of pages, where each page corresponds to a Wikidata item. Pages can contain two sections:
 
-X is opposite of Y, A is X, A is Y => !
-X is opposite of Y, A has part X, A has part Y => !
-X is opposite of Y, A is a X, A is a Y => !
-X is E, X is a E     => !
-X is E, E is a X     => !
-X is E, E has part X => !
+1. **Deductions**: New facts derived about the item through logical inference
+2. **Contradictions**: Logical inconsistencies involving the item
 
-generates is a ->
-needs is a ->
+Example of a deduction:
 
-"is needed by" is opposite of needs
-"is generated by" is opposite of generates
+- [natural physical object](tree/Q16686022.md) [is for example](tree/Q21514624.md) [Universe](tree/Q1.md) ⇐ ([Universe](tree/Q1.md) [*is a*](tree/P31.md) [natural physical object](tree/Q16686022.md)), ([*is a*](tree/P31.md) [*is inverse of*](tree/P1696.md) [is for example](tree/Q21514624.md))
 
-is needed by is opposite of needs
-is generated by  is opposite of generates
+The part before `⇐` is the conclusion, derived from the facts listed after `⇐` using the applicable rules.
 
-X generates energy  => X is an "energy source"
-A is hot => A generates heat
-A generates oxygen  => A is alive
+## Loading and Processing Wikidata
 
+To download the compressed JSON file, browse to https://dumps.wikimedia.org/wikidatawiki/entities/. You may need to
+search through the sub directories to find a download link for `wikidata-*-all.json.bz2`.
 
-chimpanzee is an ape
-ape is alive
+After uncompression, you may start zelph with the provided `wikidata.zph` script:
 
-chimpanzee has part hand
-hand has part finger
-
-"green mint" is an mint
-
-"water mint" is a mint
-
-peppermint is an mint
-
-mint is a lamiacea
-
-catnip is a lamiacea
-
-"green mint" is sweet
-
-"is ancestor of" is transitive
-peter is ancestor of paul
-paul is ancestor of pius
-A is ancestor of pius
+```bash
+zelph_app sample_scripts/wikidata.zph
 ```
 
-Die letzte Codezeile `A is ancestor of pius` wird als Frage interpretiert. Das Ergebnis sieht man in der ersten
-Zeile unten stehender Antwort, gefolgt von weiteren Schlussfolgerungen:
+To import Wikidata data, use the `.wikidata` command:
 
 ```
-Answer: «paul» «is ancestor of» «pius»
-«catnip» «~» «lamiacea» ⇐ «catnip» «is a» «lamiacea»
-«needs» «~» «->» ⇐ «needs» «is a» «->»
-«water mint» «~» «mint» ⇐ «water mint» «is a» «mint»
-«mint» «~» «lamiacea» ⇐ «mint» «is a» «lamiacea»
-«chimpanzee» «has part» «finger» ⇐ («hand» «has part» «finger»), («chimpanzee» «has part» «hand»), («has part» «is» «transitive»)
-«peter» «is ancestor of» «pius» ⇐ («paul» «is ancestor of» «pius»), («peter» «is ancestor of» «paul»), («is ancestor of» «is» «transitive»)
-«water mint» «~» «lamiacea» ⇐ («mint» «~» «lamiacea»), («water mint» «~» «mint»), («~» «is» «transitive»)
-«peppermint» «is a» «mint» ⇐ «peppermint» «is an» «mint»
-«chimpanzee» «is a» «ape» ⇐ «chimpanzee» «is an» «ape»
-«green mint» «is a» «mint» ⇐ «green mint» «is an» «mint»
-«chimpanzee» «is» «alive» ⇐ («chimpanzee» «is a» «ape»), («ape» «is» «alive»)
-«generates» «is opposite of» «is generated by» ⇐ «is generated by» «is opposite of» «generates»
-«has part» «is opposite of» «is part of» ⇐ «is part of» «is opposite of» «has part»
-«is a» «is opposite of» «is for example» ⇐ «is for example» «is opposite of» «is a»
-«is» «is opposite of» «is attribute of» ⇐ «is attribute of» «is opposite of» «is»
-«needs» «is opposite of» «is needed by» ⇐ «is needed by» «is opposite of» «needs»
-«finger» «is part of» «hand» ⇐ («hand» «has part» «finger»), («has part» «is opposite of» «is part of»)
-«hand» «is part of» «chimpanzee» ⇐ («chimpanzee» «has part» «hand»), («has part» «is opposite of» «is part of»)
-«finger» «is part of» «chimpanzee» ⇐ («chimpanzee» «has part» «finger»), («has part» «is opposite of» «is part of»)
-«sweet» «is attribute of» «green mint» ⇐ («green mint» «is» «sweet»), («is» «is opposite of» «is attribute of»)
-«alive» «is attribute of» «ape» ⇐ («ape» «is» «alive»), («is» «is opposite of» «is attribute of»)
-«transitive» «is attribute of» «is ancestor of» ⇐ («is ancestor of» «is» «transitive»), («is» «is opposite of» «is attribute of»)
-«alive» «is attribute of» «chimpanzee» ⇐ («chimpanzee» «is» «alive»), («is» «is opposite of» «is attribute of»)
-«transitive» «is attribute of» «has part» ⇐ («has part» «is» «transitive»), («is» «is opposite of» «is attribute of»)
-«transitive» «is attribute of» «~» ⇐ («~» «is» «transitive»), («is» «is opposite of» «is attribute of»)
-«transitive» «is attribute of» «has attribute» ⇐ («has attribute» «is» «transitive»), («is» «is opposite of» «is attribute of»)
-«mint» «is for example» «green mint» ⇐ («green mint» «is a» «mint»), («is a» «is opposite of» «is for example»)
-«lamiacea» «is for example» «catnip» ⇐ («catnip» «is a» «lamiacea»), («is a» «is opposite of» «is for example»)
-«->» «is for example» «needs» ⇐ («needs» «is a» «->»), («is a» «is opposite of» «is for example»)
-«mint» «is for example» «water mint» ⇐ («water mint» «is a» «mint»), («is a» «is opposite of» «is for example»)
-«->» «is for example» «is» ⇐ («is» «is a» «->»), («is a» «is opposite of» «is for example»)
-«->» «is for example» «has part» ⇐ («has part» «is a» «->»), («is a» «is opposite of» «is for example»)
-«ape» «is for example» «chimpanzee» ⇐ («chimpanzee» «is a» «ape»), («is a» «is opposite of» «is for example»)
-«lamiacea» «is for example» «mint» ⇐ («mint» «is a» «lamiacea»), («is a» «is opposite of» «is for example»)
-«->» «is for example» «is opposite of» ⇐ («is opposite of» «is a» «->»), («is a» «is opposite of» «is for example»)
-«->» «is for example» «generates» ⇐ («generates» «is a» «->»), («is a» «is opposite of» «is for example»)
-«mint» «is for example» «peppermint» ⇐ («peppermint» «is a» «mint»), («is a» «is opposite of» «is for example»)
-«green mint» «~» «mint» ⇐ «green mint» «is a» «mint»
-«chimpanzee» «~» «ape» ⇐ «chimpanzee» «is a» «ape»
-«peppermint» «~» «mint» ⇐ «peppermint» «is a» «mint»
-«peppermint» «~» «lamiacea» ⇐ («mint» «~» «lamiacea»), («peppermint» «~» «mint»), («~» «is» «transitive»)
-«green mint» «~» «lamiacea» ⇐ («mint» «~» «lamiacea»), («green mint» «~» «mint»), («~» «is» «transitive»)
-«is needed by» «is a» «->» ⇐ («needs» «is a» «->»), («needs» «is opposite of» «is needed by»)
-«is attribute of» «is a» «->» ⇐ («is» «is a» «->»), («is» «is opposite of» «is attribute of»)
-«is part of» «is a» «->» ⇐ («has part» «is a» «->»), («has part» «is opposite of» «is part of»)
-«is generated by» «is a» «->» ⇐ («generates» «is a» «->»), («generates» «is opposite of» «is generated by»)
-«->» «is for example» «is generated by» ⇐ («is generated by» «is a» «->»), («is a» «is opposite of» «is for example»)
-«->» «is for example» «is attribute of» ⇐ («is attribute of» «is a» «->»), («is a» «is opposite of» «is for example»)
-«->» «is for example» «is needed by» ⇐ («is needed by» «is a» «->»), («is a» «is opposite of» «is for example»)
-«->» «is for example» «is part of» ⇐ («is part of» «is a» «->»), («is a» «is opposite of» «is for example»)
-«is generated by» «~» «->» ⇐ «is generated by» «is a» «->»
-«is needed by» «~» «->» ⇐ «is needed by» «is a» «->»
-Ready.
+.wikidata download/wikidata-20250127-all.json
 ```
 
- 
+This creates an `.index` file in the same directory to accelerate future loading. Then, the inference mechanism can be started with either:
+
+```
+.run
+```
+
+or:
+
+```
+.run-md
+```
+
+The latter command generates Markdown files in the `mkdocs/docs/tree` directory, referencing Wikidata entities.
+You can run these commands multiple times to perform additional inference passes, which can discover more facts and contradictions based on the knowledge already inferred.

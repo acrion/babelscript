@@ -305,12 +305,13 @@ void Wikidata::index_entry(const std::wstring& line, const std::streamoff stream
     }
 }
 
-void Wikidata::traverse(int /*max_depth*/, std::wstring start_entry)
+void Wikidata::traverse(std::wstring start_entry)
 {
     if (start_entry.empty())
     {
         std::wifstream stream(_pImpl->_file_name);
-        for (int i = 0; i < 4; ++i) // TODO: Do not repeat, but introduce dedicated command to trigger processing (which may be manually executed several times).
+        for (int i = 0; i < 4; ++i) // TODO: workaround!
+        {
             for (const auto& it : _pImpl->_n->get_nodes_in_language("wikidata"))
             {
                 const Node         node  = it.first;
@@ -333,13 +334,14 @@ void Wikidata::traverse(int /*max_depth*/, std::wstring start_entry)
                 }
                 else
                 {
-                    _pImpl->_n->print(name + L" (" + entry + L") is already known.", true);
+                    //_pImpl->_n->print(name + L" (" + entry + L") is already known.", true);
                 }
             }
+        }
     }
     else
     {
-        process_name(start_entry);
+        process_name(start_entry); // TODO this causes a segmentation fault!
     }
 }
 

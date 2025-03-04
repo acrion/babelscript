@@ -49,7 +49,7 @@ int main(int argc, char** argv)
             {
                 interactive.process(line);
             }
-            interactive.run(true, true);
+            interactive.run(true, false);
         }
 
         if (argc > 1) std::cout << "Ready." << std::endl;
@@ -63,10 +63,14 @@ int main(int argc, char** argv)
             if (line.empty())
                 std::wcout << "type " << exit_command << L" to exit --" << std::endl;
             else
-            {
-                interactive.process(line);
-                interactive.run(true, true);
-            }
+                try
+                {
+                    interactive.process(line);
+                }
+                catch (const std::exception& e)
+                {
+                    std::cerr << e.what() << std::endl;
+                }
         }
 
 #if 0

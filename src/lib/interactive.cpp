@@ -166,6 +166,8 @@ void console::Interactive::process(std::wstring line) const
                     _pImpl->_n->apply_rule(0, fact, 0); // query
                 }
             }
+
+            run(true, false);
         }
     }
     catch (std::exception& ex)
@@ -176,6 +178,9 @@ void console::Interactive::process(std::wstring line) const
 
 void console::Interactive::Impl::process_command(const std::vector<std::wstring>& cmd)
 {
+    _n->set_print([](const std::wstring& str, bool)
+                  { std::cout << network::utils::str(str) << std::endl; });
+
     if (cmd[0] == L".lang")
     {
         if (cmd.size() < 2) throw std::runtime_error("Command .lang: Missing language identifier");
@@ -198,6 +203,17 @@ void console::Interactive::Impl::process_command(const std::vector<std::wstring>
         if (max_depth < 2) throw std::runtime_error("Command .dot: Maximum depth must be greater than 1");
         _n->gen_dot(nd, network::utils::str(cmd[1]) + ".dot", max_depth);
     }
+    else if (cmd[0] == L".run")
+    {
+        _n->run(true, false);
+        _n->print(L"> Ready.", true);
+    }
+    else if (cmd[0] == L".run-md")
+    {
+        network::StopWatch watch;
+        _n->run(true, true);
+        _n->print(L" Time needed: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s", true);
+    }
     else if (cmd[0] == L".wikidata")
     {
         if (cmd.size() < 2) throw std::runtime_error("Command .wikidata: Missing json file name");
@@ -216,36 +232,26 @@ void console::Interactive::Impl::process_command(const std::vector<std::wstring>
         {
             network::StopWatch watch;
             watch.start();
-            {
-                _wikidata = std::make_shared<Wikidata>(_n, cmd[1]);
-                _wikidata->import_all();
-            }
+            // _wikidata = std::make_shared<Wikidata>(_n, cmd[1]);
+            // _wikidata->import_all();
+
+            _wikidata = std::make_shared<Wikidata>(_n, cmd[1]);
+            _wikidata->generate_index();
+            _wikidata->traverse();
             _n->print(L" Time needed for importing: " + std::to_wstring(static_cast<double>(watch.duration()) / 1000) + L"s", true);
         }
         else if (cmd.size() == 3)
         {
-            int max_depth = std::stoi(network::utils::str(cmd[2]));
-            _n->print(L"Link distance=" + std::to_wstring(max_depth), true);
+            const std::wstring& start_entry = cmd[2];
+            _n->print(L"start entry='" + start_entry + L"'", true);
             _wikidata = std::make_shared<Wikidata>(_n, cmd[1]);
             _wikidata->generate_index();
-            _wikidata->traverse(max_depth);
-        }
-        else if (cmd.size() == 4)
-        {
-            int                 max_depth   = std::stoi(network::utils::str(cmd[2]));
-            const std::wstring& start_entry = cmd[3];
-            _n->print(L"Link distance=" + std::to_wstring(max_depth) + L", start entry='" + start_entry + L"'", true);
-            _wikidata = std::make_shared<Wikidata>(_n, cmd[1]);
-            _wikidata->generate_index();
-            _wikidata->traverse(max_depth, start_entry);
+            _wikidata->traverse(start_entry);
         }
         else
         {
             throw std::runtime_error("Command .wikidata: You need to specify the json file to import and optionally add the maximum link distance and the start entry to be imported");
         }
-
-        _n->set_print([](const std::wstring& str, bool)
-                      { std::cout << network::utils::str(str) << std::endl; });
     }
     else
     {

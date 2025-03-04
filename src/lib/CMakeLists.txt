@@ -21,6 +21,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with zelph. If not, see <https://www.gnu.org/licenses/>.
 
+cmake_minimum_required(VERSION 3.25.2)
+cmake_policy(VERSION 3.25.2)
+
+#include(FetchContent)
+#FetchContent_Declare(
+#    acrion_cmake
+#    GIT_REPOSITORY git@github.com:acrion/cmake.git
+#    GIT_TAG main
+#)
+#FetchContent_MakeAvailable(acrion_cmake)
+#
+#include(${acrion_cmake_SOURCE_DIR}/set-cpp-version.cmake)
+
 add_library(zelph SHARED
     # zelph::network
     answer.cpp
