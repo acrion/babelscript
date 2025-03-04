@@ -471,6 +471,17 @@ or
 ./build/bin/zelph_app sample_scripts/english.zph
 ```
 
+## Licensing
+
+zelph is dual-licensed:
+
+1. **AGPL v3 or later** for open-source use,
+2. **Commercial licensing** for closed-source integration or special requirements.
+
+We would like to emphasize that offering a dual license does not restrict users of the normal open-source license (including commercial users).
+The dual licensing model is designed to support both open-source collaboration and commercial integration needs.
+For commercial licensing inquiries, please contact us at [https://acrion.ch/sales](https://acrion.ch/sales).
+
 # zelph and Wikidata: Finding Logical Connections and Contradictions
 
 ## Wikidata as an Ideal Use Case for zelph
