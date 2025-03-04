@@ -425,7 +425,7 @@ The project is currently in alpha status. Core functionality is operational, but
 - **Dependency modernization**: The project currently relies on an outdated version of the Boost library. Rather than a direct update, replacing Boost with [Cbeam](https://github.com/acrion/cbeam) represents a more strategic approach. This would also facilitate robust implementation of multithreading support, critical for performance optimization.
 - **REPL and parser refinement**: The REPL interface and the zelph language parser require architectural improvements.
 - **Enhancement of semantic rules**: The [wikidata.zph](https://github.com/acrion/zelph/blob/main/sample_scripts/wikidata.zph) script offers significant room for enhancement. Note that the node tree published on this site was generated using an earlier version of this script, [wikidata-var.zph](https://github.com/acrion/zelph/blob/main/sample_scripts/wikidata-var.zph).
-- **Potential Wikidata integration**: Exploring pathways for integration with the Wikidata ecosystem.
+- **Potential Wikidata integration**: Exploring pathways for integration with the Wikidata ecosystem, e.g. the [WikiProject Ontology](https://www.wikidata.org/wiki/Wikidata:WikiProject_Ontology).
 
 Regarding potential Wikidata integration and the enhancement of `wikidata.zph`, collaboration with domain experts would be particularly valuable. Expert input on conceptual alignment and implementation of best practices would significantly accelerate development and ensure optimal compatibility with existing Wikidata infrastructure and standards.
 
