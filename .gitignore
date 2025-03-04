@@ -56,5 +56,6 @@ xcode/*
 *.crdownload
 latest-all*.json
 mkdocs/docs/tree
+mkdocs/site
 /*.svg
 /*.dot
