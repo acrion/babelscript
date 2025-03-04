@@ -230,7 +230,7 @@ The part before `‚áê` is the conclusion, derived from the facts listed after `‚á
 ## Loading and Processing Wikidata
 
 To download the compressed JSON file, browse to https://dumps.wikimedia.org/wikidatawiki/entities/. You may need to
-search through the sub directories to find a download link for `wikidata-*-all.json.bz2`.
+search through the subdirectories to find a download link for `wikidata-*-all.json.bz2`.
 
 After uncompression, you may start zelph with the provided `wikidata.zph` script:
 
