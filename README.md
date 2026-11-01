@@ -1,3 +1,13 @@
+> **Archived.** This repository holds the history of babelscript, the C++ engine that evolved into [zelph](https://github.com/acrion/zelph). Development proceeds in zelph.
+
+## History
+
+babelscript began on 23 March 2018 as a C++ port of NeoCortex, a C# reasoning library initially created in 2010, and has been reading Wikidata since April 2018. Development paused from September 2020 through February 2025. On 5 March 2025, the state of this repository (commit e63a780) became the first commit of zelph; the two file trees are identical.
+
+All contributions originate from Stefan Zipproth. As of 2025, acrion innovations GmbH holds the rights. Every prior version of this repository is available under the GNU Affero General Public License v3.0 or later, just like zelph; acrion also offers a commercial licence.
+
+---
+
 # zelph: A Sophisticated Semantic Network System
 
 ## Introduction
